@@ -3,15 +3,15 @@
 
 #include "Core/Vec.h"
 
-template <int N>
+template <int Dim>
 class IT_VectorFunction
 {
-    using rVec = Vec<Real, N>;
+    using Point = Vec<Real, Dim>;
 
 public:
     virtual ~IT_VectorFunction(){};
 
-    virtual const rVec operator()(const rVec &pt, Real t) const =0 ;
+    virtual const Point operator()(const Point &pt, Real t) const =0 ;
 };
 
 #endif

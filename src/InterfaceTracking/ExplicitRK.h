@@ -47,7 +47,7 @@ public:
         }
     }*/
 
-    virtual Point timeStep(const IT_VectorFunction<Dim> &v, const Point &pt, Real tn, Real dt)
+    virtual const Point timeStep(const IT_VectorFunction<Dim> &v, const Point &pt, Real tn, Real dt)
     {
         Vector<Point> step;
         step.resize(RKC::nS);
@@ -61,7 +61,7 @@ public:
                 tmp = tmp + step[j] * RKC::a[i][j] / RKC::a[i][RKC::nS] * dt;
             }
             step[i] = v(tmp, tn + RKC::c[i] / RKC::c[RKC::nS] * dt);
-            result = result + step[i] * RKC::a[RKC::nS][i] / RKC::a[RKC::nS][RKC::nS] * dt;
+            result = result + step[i] * RKC::b[i] / RKC::b[RKC::nS] * dt;
         }
         return result;
     }
