@@ -1,0 +1,14 @@
+set(YinSet_Files
+    YinSet/Segment.h
+    YinSet/SegmentsIntersector.cpp
+    YinSet/SegmentsIntersector.h
+    YinSet/PointsLocater.cpp
+    YinSet/PointsLocater.h
+    YinSet/SegmentedRealizableSpadjor.cpp
+    YinSet/SegmentedRealizableSpadjor.h
+    YinSet/PastingMap.cpp
+    YinSet/PastingMap.h
+    YinSet/YinSet.cpp
+    YinSet/YinSet.h
+    PARENT_SCOPE
+    )
