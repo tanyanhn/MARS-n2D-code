@@ -18,11 +18,12 @@ class ExplicitRungeKutta : public IT_TimeIntegrator<Dim>
 
     using Point = Vec<Real, Dim>;
 
+    using ButcherTab = ButcherTableau<ERK, Type>;
+
 private:
     //static constexpr int nStages = RKC::nS;
     //Vector<Vector<Real>> a;
     //Vector<Real> b, c;
-    static ButcherTableau<ERK, Type> ButcherTab;
 
 public:
     /*ExplicitRungeKutta()
@@ -49,18 +50,18 @@ public:
     virtual const Point timeStep(const IT_VectorFunction<Dim> &v, const Point &pt, Real tn, Real dt)
     {
         Vector<Point> step;
-        step.resize(ButcherTab.nStages);
+        step.resize(ButcherTab::nStages);
         Point tmp;
         Point result(pt);
-        for (int i = 0; i < ButcherTab.nStages; i++)
+        for (int i = 0; i < ButcherTab::nStages; i++)
         {
             tmp = pt;
             for (int j = 0; j < i; j++)
             {
-                tmp = tmp + step[j] * ButcherTab.a[i][j] * dt;
+                tmp = tmp + step[j] * ButcherTab::a[i][j] * dt;
             }
-            step[i] = v(tmp, tn + ButcherTab.c[i] * dt);
-            result = result + step[i] * ButcherTab.b[i] * dt;
+            step[i] = v(tmp, tn + ButcherTab::c[i] * dt);
+            result = result + step[i] * ButcherTab::b[i] * dt;
         }
         return result;
     }
