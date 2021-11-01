@@ -58,7 +58,7 @@ int main()
 
     YinSet<2,4> YS(SegmentedRealizableSpadjor<4>(vcrv),tol);
 
-    ExplicitRungeKutta<2, RK_ButcherTableau<ERK, ClassicRK4>> ERK;
+    ExplicitRungeKutta<2, ClassicRK4> ERK;
 
     rVec<2> pt{1,1};
 
@@ -67,10 +67,8 @@ int main()
 
     cout << "chdLenRange: " << M_PI/6 << ", " << M_PI/6*0.1 << endl;
 
-    auto ptsorigin = pts;
-    auto stayid = CM.removeSmallEdges(pts);
 
-    /*CM.trackInterface(V(), YS, 0, 0.1, 1);
+    CM.trackInterface(V(), YS, 0, 0.1, 1);
 
     crv = (YS.getBoundaryCycles())[0];
 
@@ -80,7 +78,7 @@ int main()
     {
         cout << norm((*(i+1))[0]-(*i)[0]) << endl;
     }
-    cout << norm((polys[0])[0]-(*(polys.end()-1))[0]) << endl;*/
+    cout << norm((polys[0])[0]-(*(polys.end()-1))[0]) << endl;
 
 
     //MARS<2,4> CM(&ERK, )

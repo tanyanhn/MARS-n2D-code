@@ -1,0 +1,203 @@
+\documentclass[a4paper,twoside]{ctexart}
+\usepackage{geometry}
+\geometry{margin=1cm,vmargin={0pt,1cm}}
+\setlength{\topmargin}{-2cm}
+\setlength{\paperheight}{23cm}
+\setlength{\paperwidth}{18cm}
+\setlength{\textheight}{19.6cm}
+\setlength{\textwidth}{15cm}
+\usepackage{makecell}
+\usepackage{fancyhdr}
+\usepackage{siunitx}
+\usepackage{amssymb}
+\usepackage{indentfirst}
+\setlength{\parindent}{0.5em}
+
+\pagenumbering{arabic}
+
+% useful packages.
+\usepackage{multirow}
+\usepackage{caption}
+\usepackage{mathrsfs}
+\usepackage{amsfonts}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{enumerate}
+\usepackage{xcolor,graphicx,float}
+\usepackage{epstopdf}
+\usepackage{multicol}
+\usepackage{fancyhdr}
+\usepackage{layout}
+\usepackage{listings}
+\lstset{language=Matlab}
+\lstset{breaklines}
+\lstset{extendedchars=false}
+\usepackage[colorlinks,linkcolor=blue]{hyperref}
+\usepackage{xcolor}
+\usepackage{cite}
+\usepackage[numbers,sort&compress]{natbib} 
+\setcitestyle{open={},close={}}
+%\usepackage{natbibspacing}
+%\renewcommand{\refname}{}
+\usepackage{anyfontsize}
+
+
+% some common command
+\newcommand{\dif}{\mathrm{d}}
+\newcommand{\avg}[1]{\left\langle #1 \right\rangle}
+\newcommand{\pdfrac}[2]{\frac{\partial #1}{\partial #2}}
+\newcommand{\op}{\odot}
+\newcommand{\Eabs}{E_{\mathrm{abs}}}
+\newcommand{\Erel}{E_{\mathrm{rel}}}
+\newcommand{\Ediv}{\mathrm{div}}%\div是除号
+\newcommand{\lrq}[1]{\left( #1 \right)}
+\newcommand{\avint}[1]{\frac{1}{\left|#1\right|}\int_{#1}}
+
+\newcommand{\upcite}[1]{\textsuperscript{\textsuperscript{\cite{#1}}}} 
+
+\makeatletter
+\newcommand\sixteen{\@setfontsize\sixteen{17pt}{6}}
+\renewcommand{\maketitle}{\bgroup\setlength{\parindent}{0pt}
+\begin{flushleft}
+\sixteen\bfseries \@title
+\medskip
+\end{flushleft}
+\textit{\@author}
+\egroup}
+\makeatother
+
+\CTEXsetup[format={\Large\bfseries}]{section}
+
+\title{MARS2D 程序设计文档}
+
+
+\begin{document}
+\maketitle
+\noindent 下文中 \texttt{Vector} 表示 \texttt{std::vector}， \texttt{Point} 表示 \texttt{Vec<Real, Dim>}。
+
+\section{class VectorFunction}
+\begin{itemize}
+    \item 函数$\mathbb{R}^{\texttt{Dim}}\times\mathbb{R}\rightarrow\mathbb{R}^{\texttt{Dim}}$的基类，可以作为速度场的基类使用。
+    \item \textbf{模板：}\texttt{template<int Dim>}：\\\texttt{Dim} 表示空间维数。
+    \item \textbf{成员函数：}
+            \begin{enumerate}[(1)]
+                \item \texttt{virtual const Point operator()(const Point \&pt, Real t) const = 0：}\\
+                \textbf{输入：}\texttt{pt} 为当前点坐标，\texttt{t} 为当前时间。\\
+                \textbf{输出：}\texttt{pt} 点处的速度场。\\
+            \end{enumerate}
+\end{itemize}
+
+\section{class TimeIntegrator}
+\begin{itemize}
+    \item 时间积分方法的基类。
+    \item \textbf{模板：}\texttt{template<int Dim>}：\\\texttt{Dim} 表示空间维数。
+    \item \textbf{成员函数：}
+            \begin{enumerate}[(1)]
+                \item \texttt{virtual const Point timeStep(const VectorFunction<Dim> \&v, const Point \&pt, Real tn, Real dt) = 0：}\\
+                \textbf{输入：}\texttt{v} 为速度场，\texttt{pt} 为当前点坐标，\texttt{tn} 为当前时间，\texttt{dt} 为时间步长。\\
+                \textbf{输出：}新的点坐标。\\
+                \textbf{作用：}使得 \texttt{pt} 在速度场 \texttt{v} 的作用下运动 \texttt{dt} 时间。
+                \item \texttt{virtual void timeStep(const VectorFunction<Dim> \&v, Vector<Point> \&pts, Real tn, Real dt)：}\\
+                \textbf{输入：}\texttt{v} 为速度场，\texttt{pts} 表示一列 Point ，\text{tn} 为当前时间，\texttt{dt} 为时间步长。\\
+                \textbf{输出：}\texttt{void}，原址更改 pts。\\
+                \textbf{作用：}函数使得 pts 中的一列点在速度场 \texttt{v} 的作用下运动 \texttt{dt} 时间，调用单点版本的 \texttt{timeStep} 成员函数进行实现。
+            \end{enumerate}
+\end{itemize}
+
+\section{ButcherTableau}
+\subsection{enum RK\_Category1}
+\begin{itemize}
+    \item \texttt{enum RK\_Category1\{ERK=1, DIRK, ARK, nRK\_Family\}}。
+    \item \textbf{作用：}表示 RK 方法的一般类型。
+\end{itemize}
+
+\subsection{enum RK\_Category2}
+\begin{itemize}
+    \item \texttt{enum RK\_Category2\{ForwardEuler=1, ClassicRK4, nRK\_Type\}}。
+    \item \textbf{作用：}表示 RK 方法的细分类型。
+\end{itemize}
+
+\subsection{struct ButcherTableau}
+\begin{itemize}
+    \item \textbf{模板：}\texttt{template<RK\_Category1 Type1, RK\_Category2 Type2>}：\\\texttt{Type1} 表示 RK 的一般类型，如 ERK, DIRK, ARK 等；\texttt{Type2} 表示 RK 的细分类型，如 \texttt{Type1}=ERK 时，\texttt{Type2} 可以是 ForwardEuler, ClassicRK4 等。对于给定的 \texttt{RK\_Category1} 中的一般类型，其数据结构是固定的。
+    \item \textbf{特例化：}
+            \begin{enumerate}[(1)]
+                \item \texttt{template <>\\
+                struct ButcherTableau<ERK, ForwardEuler>\\
+                \{\\
+                \hspace*{4pt} static constexpr int nStages = 1;\\
+                \hspace*{4pt} static constexpr Real a[nStages][nStages] = ...;\\
+                \hspace*{4pt} static constexpr Real b[nStages] = ...;\\
+                \hspace*{4pt} static constexpr Real c[nStages] = ...;\\
+                \};}
+            \item \texttt{template <>\\
+                struct ButcherTableau<ERK, ClassicRK4>\\
+                \{...\};}
+            \end{enumerate} 
+\end{itemize}
+
+\section{class ExplicitRungeKutta}
+\begin{itemize}
+    \item 继承自 \texttt{TimeIntegrator<Dim>}，用于实现所有 ERK 方法。
+    \item \textbf{模板：}\texttt{template<int Dim, RK\_Category2 Type>}：\\\texttt{Dim} 表示空间维数，\texttt{Type} 是 ERK 方法的某个子方法。这里可以这么做是因为所有 ERK 方法的数据结构都是一致的，所以在 \texttt{class ExplicitRungeKutta} 中，只需要知道所用的是哪种子方法就可以建立对应的 Butcher 表，进而实现对应的 ERK 方法。
+    \item \texttt{using ButcherTab = ButcherTableau<ERK, Type>;}
+    \item \textbf{成员函数：}
+            \begin{enumerate}[(1)]
+                \item \texttt{const Point timeStep(const VectorFunction \&v, const Point \&pt, Real tn, Real dt)：}\\
+                \textbf{输入：}同时间积分方法中的纯虚函数 \texttt{timeStep} 一致。\\
+                \textbf{输出：}同时间积分方法中的纯虚函数 \texttt{timeStep} 一致。\\
+                \textbf{作用：}调用 \texttt{ButcherTab} 中的成员常量实现对应的 ERK 方法，进一步实现 \texttt{TimeInteg-\\rator<Dim>} 中的纯虚函数 \texttt{timeStep}。
+            \end{enumerate}
+\end{itemize}
+
+\section{class MARS}
+\begin{itemize}
+    \item 殷集的界面追踪方法。
+    \item \textbf{模板：}\texttt{template<int Dim, int Order>}:\\
+    其中 \texttt{Dim} 表示维数， \texttt{Order} 表示殷集边界所用样条曲线的阶数。
+    \item \textbf{成员变量：}
+            \begin{enumerate}[(1)]
+                \item \texttt{TimeIntegrator<Dim> *TI：}时间积分方法基类指针。
+                \item \texttt{Interval<1> chdLenRange：}殷集边界上相邻节点间弦长取值范围。
+            \end{enumerate}
+    \item \textbf{成员函数：}
+            \begin{enumerate}[(1)]
+                \item \texttt{MARS()=delete}。
+                \item \texttt{MARS(TimeIntegrator *\_TI, Real hL, Real rtiny=0.1)：}\\
+                构造函数，使 \texttt{chdLenRange} 为\texttt{[rtiny*hL,hL]}，\texttt{rtiny} 默认值为 0.1。
+                \item \texttt{void discreteFlowMap(const VectorFunction \&v, Vector<Point> \&pts, Real tn, Real dt)：}\\
+                \textbf{Private 成员函数}\\
+                \textbf{输入：}\texttt{v} 为速度场，\texttt{pts} 为示踪点列，\texttt{tn} 和 \texttt{dt} 的定义同时间积分方法中的一致。\\
+                \textbf{输出：}\texttt{void}，原址更改 \texttt{pts}。\\
+                \textbf{作用：}函数调用 \texttt{TI->timeStep} 的 \texttt{Vector} 版本将 \texttt{pts} 映射到 \texttt{dt} 时间后的示踪点列。
+                \item \texttt{Vector<unsigned int> removeSmallEdges(Vector<Point> \&pts)：}\\
+                \textbf{Private 成员函数}\\
+                \textbf{输入：}\texttt{pts} 为下一时刻的示踪点列。\\
+                \textbf{输出：}删除的节点在原 pts 中的序号。\\
+                \textbf{作用：}函数将 \texttt{pts} 中相邻点间弦长过小的点在原址进行删除，满足不删除首尾两点、不连续删点的条件。
+                \item \texttt{Vector<unsigned int> splitLongEdges(const VectorFunction \&v, Vector<Point> \\\&pts, const Curve<Dim, Order> \&crvtn, Real tn, Real dt)：}\\
+                \textbf{Private 成员函数}\\
+                \textbf{输入：}\texttt{v} 为速度场，\texttt{pts} 为下一时刻的示踪点列，\texttt{crvtn} 为当前时刻对应的样条曲线，\texttt{tn} 和 \texttt{dt} 的定义同时间积分方法中的一致。\\
+                \textbf{输出：}\texttt{pts} 中新加入点的序号。\\
+                \textbf{作用：}函数在 \texttt{pts} 中寻找相邻点间距离过长的弦，并在 \texttt{crv} 中对应的曲线段上加点，利用 \texttt{TI->timeStep} 将新加入的点映射到下一时刻并添加到 \texttt{pts} 中(注意这里调用的是 timeStep 的单点映射版本，避免对本身就存在于 pts 中的点进行重复操作)。
+                \item \texttt{void timeStep(const VectorFunction \&v, YinSet<Dim,Order> \&ys, Real tn, Real dt)：}\\
+                \textbf{输入：}\texttt{v} 为速度场，\texttt{ys} 为殷集，\texttt{tn} 和 \texttt{dt} 的定义同时间积分方法中一致。\\
+                \textbf{输出：}\texttt{void}，原址更改 \texttt{ys}。\\
+                \textbf{作用：}函数调用 discreteFlowMap, splitLongEdges， removeSmallEdges 和 fitCurve 实现 MARS 方法中的一个时间步，即预处理、流映射、后处理的复合，将当前时刻的殷集映射到 \texttt{dt} 时间后的殷集并赋值给 \texttt{ys}。
+                \item \texttt{void trackInterface(const VectorFunction \&v, YinSet<Dim,Order> \&ys, Real startTime, Real dt, Real endTime)：}\\
+                \textbf{输入：}\texttt{v} 为速度场，\texttt{ys} 为殷集，\texttt{startTime} 和 \texttt{endTime} 表示 MARS 方法作用的起止时间，\texttt{dt} 为时间步长。\\
+                \textbf{输出：}\texttt{void}，原址更改 \texttt{ys}。\\
+                \textbf{作用：}在速度场 \texttt{v} 的作用下，将 \texttt{startTime} 时刻的殷集 \texttt{ys} 通过时间步长为 \texttt{dt} 的 MARS 方法映射到 \texttt{endTime} 时刻的殷集并赋值给 \texttt{ys}。调用 \texttt{timeStep} 进行实现。
+            \end{enumerate}
+          \end{itemize}
+
+
+
+
+%\begin{figure}[!htbp]
+%  \centering
+%  \includegraphics[angle=90,width = 0.6\textwidth]{2DMARS}
+%  \caption{2DMARS框架}
+%\end{figure}
+
+\end{document}

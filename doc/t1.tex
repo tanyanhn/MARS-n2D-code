@@ -1,0 +1,32 @@
+\documentclass[10pt]{article}
+
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{pstricks,pst-eps}
+
+\pagestyle{empty}
+
+\begin{document}
+\begin{TeXtoEPS}
+
+
+  \begin{pspicture}(-3,-3)(4.5,3)
+    \psline[linestyle=dashed](-3,2.5)(4,2.5)
+    \psline[linestyle=dashed](-3,1)(4,1)
+    \psline[linestyle=dashed](-3,-1)(4,-1)
+    
+    \psline[arrows=o-o](-2,2)(-1,0)
+    \psline[arrows=o-o](0.8,2.5)(0.8,-2.5)
+    \psline[arrows=*-*](0.8,1)(0.8,-1)
+
+    \uput[d](2.8,2.5){$\mathcal{T} = \{\{s_1\}\}$}
+    \uput[d](2.8,1){$\mathcal{T} = \{\{s_3\}, \{s_1,s_2\}\}$}
+    \uput[d](2.8,-1){$\mathcal{T} = \{\{s_1,s_2\}\}$}
+
+    \uput[l](0.8,2){$s_1$}
+    \uput[l](0.8,0){$s_2$}
+    \uput[l](-2,2){$s_3$}
+  \end{pspicture}
+
+\end{TeXtoEPS}
+\end{document}
