@@ -218,9 +218,9 @@ Vector<unsigned int> MARS<Dim, Order>::splitLongEdges(const IT_VectorFunction<Di
             ids[j] = count;
         }
         count++;
-        for (size_t j = chdt.size() - 1; j >= 0; j--)
+        for (size_t j = chdt.size(); j >= 1; j--)
         {
-            Point opt = crv(chdt[j]);
+            Point opt = crv(chdt[j-1]);
             oit = oldpts.emplace(oit, opt);
             it = pts.emplace(it, TI->timeStep(v, opt, tn, dt));
         }
