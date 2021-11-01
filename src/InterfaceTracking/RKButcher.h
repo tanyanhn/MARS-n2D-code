@@ -16,43 +16,43 @@ enum RK_Category2
 };
 
 template <RK_Category1 Type1, RK_Category2 Type2>
-struct RK_ButcherTableau;
+struct ButcherTableau;
 
 template <>
-struct RK_ButcherTableau<ERK, ForwardEuler>
+struct ButcherTableau<ERK, ForwardEuler>
 {
-    static constexpr int nS = 1;
-    static constexpr int a[][2] =
-        {{0, 1}};
-    static constexpr int b[] =
-        {1, 1};
-    static constexpr int c[] =
-        {0, 1};
+    static constexpr int nStages = 1;
+    static constexpr Real a[][1] =
+        {{0}};
+    static constexpr Real b[] =
+        {1};
+    static constexpr Real c[] =
+        {0};
 };
 
-constexpr int RK_ButcherTableau<ERK, ForwardEuler>::nS;
-constexpr int RK_ButcherTableau<ERK, ForwardEuler>::a[][RK_ButcherTableau<ERK, ForwardEuler>::nS + 1];
-constexpr int RK_ButcherTableau<ERK, ForwardEuler>::b[];
-constexpr int RK_ButcherTableau<ERK, ForwardEuler>::c[];
+constexpr int ButcherTableau<ERK, ForwardEuler>::nStages;
+constexpr Real ButcherTableau<ERK, ForwardEuler>::a[][ButcherTableau<ERK, ForwardEuler>::nStages];
+constexpr Real ButcherTableau<ERK, ForwardEuler>::b[];
+constexpr Real ButcherTableau<ERK, ForwardEuler>::c[];
 
 template <>
-struct RK_ButcherTableau<ERK, ClassicRK4>
+struct ButcherTableau<ERK, ClassicRK4>
 {
-    static constexpr int nS = 4;
-    static constexpr int a[][5] =
-        {{0, 0, 0, 0, 1},
-         {1, 0, 0, 0, 2},
-         {0, 1, 0, 0, 2},
-         {0, 0, 1, 0, 1}};
-    static constexpr int b[] =
-        {1, 2, 2, 1, 6};
-    static constexpr int c[] =
-        {0, 1, 1, 2, 2};
+    static constexpr int nStages = 4;
+    static constexpr Real a[][4] =
+        {{0, 0, 0, 0},
+         {0.5, 0, 0, 0},
+         {0, 0.5, 0, 0},
+         {0, 0, 1, 0}};
+    static constexpr Real b[] =
+        {1.0 / 6, 1.0 / 3, 1.0 / 3, 1.0 / 6};
+    static constexpr Real c[] =
+        {0.0, 0.5, 0.5, 1.0};
 };
 
-constexpr int RK_ButcherTableau<ERK, ClassicRK4>::nS;
-constexpr int RK_ButcherTableau<ERK, ClassicRK4>::a[][RK_ButcherTableau<ERK, ClassicRK4>::nS + 1];
-constexpr int RK_ButcherTableau<ERK, ClassicRK4>::b[];
-constexpr int RK_ButcherTableau<ERK, ClassicRK4>::c[];
+constexpr int ButcherTableau<ERK, ClassicRK4>::nStages;
+constexpr Real ButcherTableau<ERK, ClassicRK4>::a[][ButcherTableau<ERK, ClassicRK4>::nStages];
+constexpr Real ButcherTableau<ERK, ClassicRK4>::b[];
+constexpr Real ButcherTableau<ERK, ClassicRK4>::c[];
 
 #endif

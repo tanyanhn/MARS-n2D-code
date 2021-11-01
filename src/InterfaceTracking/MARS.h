@@ -41,7 +41,7 @@ public:
 
     Vector<unsigned int> removeSmallEdges(Vector<Point> &pts);
 
-    Vector<unsigned int> splitLongEdges(const IT_VectorFunction<Dim> &v, Vector<Point> &pts, Crv &crv, Real tn, Real dt);
+    Vector<unsigned int> splitLongEdges(const IT_VectorFunction<Dim> &v, Vector<Point> &pts, const Crv &crv, Real tn, Real dt);
 
     void timeStep(const IT_VectorFunction<Dim> &v, YS &ys, Real tn, Real dt);
 
@@ -151,7 +151,7 @@ Vector<unsigned int> MARS<Dim, Order>::removeSmallEdges(Vector<Point> &pts)
 }
 
 template <int Dim, int Order>
-Vector<unsigned int> MARS<Dim, Order>::splitLongEdges(const IT_VectorFunction<Dim> &v, Vector<Point> &pts, Crv &crv, Real tn, Real dt)
+Vector<unsigned int> MARS<Dim, Order>::splitLongEdges(const IT_VectorFunction<Dim> &v, Vector<Point> &pts, const Crv &crv, Real tn, Real dt)
 {
     assert(crv.isClosed(tol));
     size_t Num = pts.size();
@@ -227,7 +227,7 @@ Vector<unsigned int> MARS<Dim, Order>::splitLongEdges(const IT_VectorFunction<Di
         it += chdt.size() + 1;
         oit += chdt.size() + 1;
     }
-    crv = fitCurve<Order>(oldpts, true);
+    //crv = fitCurve<Order>(oldpts, true);
     return ids;
 }
 
