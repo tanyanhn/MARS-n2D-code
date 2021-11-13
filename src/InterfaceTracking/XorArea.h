@@ -4,6 +4,8 @@
 #include "Core/Curve.h"
 #include "Core/numlib.h"
 #include <tuple>
+#include <cmath>
+#include <numeric>//debug mode 
 
 using Point = Vec<Real, 2>;
 
@@ -46,15 +48,15 @@ std::tuple<bool, Real, Real> segIntSeg(Point lp1, Point hp1, Point lp2, Point hp
 
 Real segIntCurve(Point pt, Point grad, const Crv &crv, Real tol)
 {
-    auto polys2 = crv.getPolys();
-    auto knots2 = crv.getKnots();
-    int Num = polys2.size();
+    auto polys = crv.getPolys();
+    auto knots = crv.getKnots();
+    int Num = polys.size();
     std::vector<Point> pts(Num + 1);
     for (int i = 0; i < Num; i++)
     {
-        pts[i] = polys2[i][0];
+        pts[i] = polys[i][0];
     }
-    pts[Num] = polys2[0][0];
+    pts[Num] = polys[0][0];
 
     std::vector<std::tuple<int, Real, Real>> intersect;
     for (int i = 0; i < Num; i++)
@@ -71,7 +73,7 @@ Real segIntCurve(Point pt, Point grad, const Crv &crv, Real tol)
     int no;
     for (int i = 0; i < (int)intersect.size(); i++)
     {
-        if (abs(std::get<1>(intersect[i])) <= abs(min))
+        if (std::abs(std::get<1>(intersect[i])) <= std::abs(min))
         {
             id = std::get<0>(intersect[i]);
             min = std::get<1>(intersect[i]);
@@ -80,31 +82,36 @@ Real segIntCurve(Point pt, Point grad, const Crv &crv, Real tol)
     }
 
     //find the intersection between segment and local curve, return the signed distance
-    Real t0 = (knots2[id + 1] - knots2[id]) * std::get<2>(intersect[no]);
-    if (t0 < (knots2[id + 1] - knots2[id])*tol && t0 > (knots2[id + 1] - knots2[id]) * (1 - tol))
+    Real t0 = (knots[id + 1] - knots[id]) * std::get<2>(intersect[no]);
+    if (t0 < (knots[id + 1] - knots[id]) * tol && t0 > (knots[id + 1] - knots[id]) * (1 - tol))
         return min;
 
-    auto xcf = getComp(polys2[id], 0);
-    auto ycf = getComp(polys2[id], 1);
-    if (abs(grad[0]) < tol * norm(grad, 2))
+    auto xcf = getComp(polys[id], 0);
+    auto ycf = getComp(polys[id], 1);
+    if (std::abs(grad[0]) < tol * norm(grad, 2))
     {
         xcf[0] -= pt[0];
-        Real t = fzero(xcf, xcf.der(), t0, 10, (knots2[id + 1] - knots2[id]) * tol);
-        return polys2[id](t)[1] / grad[1];
+        Real t = fzero(xcf, xcf.der(), t0, 10, (knots[id + 1] - knots[id]) * tol);
+        Point apt = polys[id](t);
+        return ((apt[1] - pt[1]) / grad[1] > 0) ? norm(apt[1] - pt[1],2) : -norm(apt[1] - pt[1],2);
     }
-    if (abs(grad[1]) < tol * norm(grad, 2))
+    if (std::abs(grad[1]) < tol * norm(grad, 2))
     {
         ycf[0] -= pt[1];
-        Real t = fzero(ycf, ycf.der(), t0, 10, (knots2[id + 1] - knots2[id]) * tol);
-        return polys2[id](t)[0] / grad[0];
+        Real t = fzero(ycf, ycf.der(), t0, 10, (knots[id + 1] - knots[id]) * tol);
+        Point apt = polys[id](t);
+        return ((apt[0] - pt[0]) / grad[0] > 0) ? norm(apt[0] - pt[0],2) : -norm(apt[0] - pt[0],2);
     }
     Real k = grad[1] / grad[0];
     ycf[0] -= pt[1];
     xcf[0] -= pt[0];
     auto coef = ycf - xcf * k;
-    Real t = fzero(coef, coef.der(), t0, 10, (knots2[id + 1] - knots2[id]) * tol);
-    Point apt = polys2[id](t);
-    return ((apt[0] - pt[0]) / grad[0] > 0) ? norm(apt - pt, 2) : -norm(apt - pt, 2);
+    Real t = fzero(coef, coef.der(), t0, 10, (knots[id + 1] - knots[id]) * tol);
+    Point apt = polys[id](t);
+    if (std::abs(grad[0]) > std::abs(grad[1]))
+        return ((apt[0] - pt[0]) / grad[0] > 0) ? norm(apt - pt, 2) : -norm(apt - pt, 2);
+    else
+        return ((apt[1] - pt[1]) / grad[1] > 0) ? norm(apt - pt, 2) : -norm(apt - pt, 2);
 }
 
 Real xorArea(const Curve<2, 4> &fCrv, const Curve<2, 4> &cCrv, Real tol)
@@ -129,25 +136,32 @@ Real xorArea(const Curve<2, 4> &fCrv, const Curve<2, 4> &cCrv, Real tol)
         auto dydt = getComp(polys[i], 1).der();
         Point grad{dydt[0], -dxdt[0]};
         grad = grad / norm(grad, 2);
-        Point lp = pt1 - grad;
-        Point hp = pt1 + grad;
 
         //find approx vertical alignment point
-        normaldist[i] = segIntCurve(lp, hp, cCrv, tol);
+        normaldist[i] = segIntCurve(pt1, grad, cCrv, tol);
     }
+
+    //debug mode
+    /*
+    for(auto &i: normaldist)
+    {
+        std::cout << i << ", ";
+    }
+    std::cout << std::endl;
+    */
 
     Real area = 0;
     for (int i = 0; i < num - 1; i++)
     {
         if (normaldist[i] * normaldist[i + 1] >= 0)
-            area += abs(normaldist[i] * normaldist[i + 1]) / 2 * arcLength[i];
+            area += std::abs(normaldist[i] + normaldist[i + 1]) / 2 * arcLength[i];
         else
-            area += (pow(normaldist[i], 2) + pow(normaldist[i + 1], 2)) * arcLength[i] / 2 / (abs(normaldist[i]) + abs(normaldist[i + 1]));
+            area += (pow(normaldist[i], 2) + pow(normaldist[i + 1], 2)) * arcLength[i] / 2 / (std::abs(normaldist[i]) + std::abs(normaldist[i + 1]));
     }
     if (normaldist[num - 1] * normaldist[0] >= 0)
-        area += abs(normaldist[num - 1] * normaldist[0]) / 2 * arcLength[num - 1];
+        area += std::abs(normaldist[num - 1] + normaldist[0]) / 2 * arcLength[num - 1];
     else
-        area += (pow(normaldist[num - 1], 2) + pow(normaldist[0], 2)) * arcLength[num - 1] / 2 / (abs(normaldist[num - 1]) + abs(normaldist[0]));
+        area += (pow(normaldist[num - 1], 2) + pow(normaldist[0], 2)) * arcLength[num - 1] / 2 / (std::abs(normaldist[num - 1]) + std::abs(normaldist[0]));
     return area;
 }
 
