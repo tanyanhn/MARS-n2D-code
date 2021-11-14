@@ -8,6 +8,7 @@
 #include "InterfaceTracking/TimeIntegrator.h"
 #include "InterfaceTracking/VectorFunction.h"
 #include "InterfaceTracking/XorArea.h"
+#include "InterfaceTracking/ComputeError.h"
 
 using namespace std;
 
@@ -35,9 +36,9 @@ void func(cont<int> i) { return; };
 int main()
 {
     cout << setiosflags(ios::scientific) << setprecision(4);
-    Real err[3];
     int n = 16;
-    for (int k = 0; k < 3; k++)
+    Vector<Curve<2,4>> crvs(4);
+    for (int k = 0; k < 4; k++)
     {
         Vector<rVec<2>> pts;
         Vector<rVec<2>> pts2;
@@ -52,14 +53,18 @@ int main()
         pts.push_back({1, 0});
         pts2.push_back({cos(ang), sin(ang)});
 
-        Curve<2, 4> crv = fitCurve<4>(pts, true);
-        Curve<2, 4> crv2 = fitCurve<4>(pts2, true);
+        crvs[k] = fitCurve<4>(pts, true);
 
-        err[k] = xorArea(crv, crv2, 1e-9);
         n *= 2;
     }
 
-    std::cout << err[0] << " " << log(err[0]/err[1])/log(2) << " " << err[1] << " " << log(err[1]/err[2])/log(2) << " " << err[2] << std::endl;
+    auto result = richardsonError(crvs, 1e-10);
+
+    for(auto &i: result)
+    {
+        cout << i << " ";
+    }
+    cout << endl;
 
     /*Vector<Curve<2,4>> vcrv{crv};
 
