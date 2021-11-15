@@ -3,5 +3,6 @@ set(InterfaceTracking_Files
     InterfaceTracking/MARS.h
     InterfaceTracking/XorArea.h
     InterfaceTracking/ComputeError.h
+    InterfaceTracking/VelocityField.h
     PARENT_SCOPE
 )
