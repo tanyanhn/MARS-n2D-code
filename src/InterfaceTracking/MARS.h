@@ -12,6 +12,8 @@
 #include <cmath>
 #include <vector>
 #include <functional>
+#include <iomanip>
+#include <algorithm>
 
 Real tol = 1e-15;
 
@@ -56,26 +58,29 @@ void MARS<Dim, Order>::discreteFlowMap(const IT_VectorFunction<Dim> &v, Vector<P
 }
 
 template <int Dim>
-bool remove(Vector<unsigned int> &ids, const Vector<Vec<Real, Dim>> &pts, Real lowBound)
+bool remove(Vector<unsigned int> &ids, Vector<Vec<Real, Dim>> &pts, Real lowBound)
 {
-    size_t num = ids.size();
+    int num = ids.size();
     Vector<Real> dist(num - 1);
     //dist.resize(num - 1);
-    for (size_t i = 0; i < num - 1; i++)
+    for (int i = 0; i < num - 1; i++)
     {
-        dist[i] = norm(pts[ids[i + 1]] - pts[ids[i]]);
+        dist[i] = norm(pts[i + 1] - pts[i]);
     }
 
     //mark weather the pre-node is candidate to be erased.
     bool predelete = false;
     auto it = ids.begin();
+    auto pit = pts.begin();
     ++it;
+    ++pit;
 
-    size_t i = 1;
+    int i = 1;
     if (dist[0] < lowBound)
     {
         predelete = true;
         it = ids.erase(it);
+        pit = pts.erase(pit);
         i++;
     }
 
@@ -85,6 +90,7 @@ bool remove(Vector<unsigned int> &ids, const Vector<Vec<Real, Dim>> &pts, Real l
         {
             predelete = false;
             ++it;
+            ++pit;
             i++;
         }
         else
@@ -94,12 +100,14 @@ bool remove(Vector<unsigned int> &ids, const Vector<Vec<Real, Dim>> &pts, Real l
                 if (predelete == false)
                 {
                     it = ids.erase(it);
+                    pit = pts.erase(pit);
                     i++;
                     predelete = true;
                 }
                 else
                 {
                     ++it;
+                    ++pit;
                     i++;
                     predelete = false;
                 }
@@ -107,6 +115,7 @@ bool remove(Vector<unsigned int> &ids, const Vector<Vec<Real, Dim>> &pts, Real l
             else
             {
                 it = ids.erase(it + 1);
+                pit = pts.erase(pit + 1);
                 i += 2;
                 predelete = true;
             }
@@ -114,13 +123,14 @@ bool remove(Vector<unsigned int> &ids, const Vector<Vec<Real, Dim>> &pts, Real l
     }
     if (i == num - 1)
     {
-        return num != ids.size();
+        return num != (int)ids.size();
     }
     else
     {
         if (predelete == true || dist[i] >= lowBound)
-            return num != ids.size();
+            return num != (int)ids.size();
         it = ids.erase(it);
+        pit = pts.erase(pit);
         return true;
     }
 }
@@ -128,9 +138,9 @@ bool remove(Vector<unsigned int> &ids, const Vector<Vec<Real, Dim>> &pts, Real l
 template <int Dim, int Order>
 Vector<unsigned int> MARS<Dim, Order>::removeSmallEdges(Vector<Point> &pts)
 {
-    size_t Num = pts.size();
-    Vector<unsigned int> ids(Num);
-    for (size_t i = 0; i < Num; i++)
+    int num = pts.size();
+    Vector<unsigned int> ids(num);
+    for (int i = 0; i < num; i++)
     {
         ids[i] = i;
     }
@@ -140,31 +150,42 @@ Vector<unsigned int> MARS<Dim, Order>::removeSmallEdges(Vector<Point> &pts)
         if (!remove(ids, pts, (chdLenRange.lo())[0]))
             break;
     }
-    Vector<Point> npts;
-    npts.resize(ids.size());
-    for (size_t i = 0; i < ids.size(); i++)
+    Vector<unsigned int> rids(num - ids.size());
+    int idsid = 0;
+    unsigned int allid = 0;
+    int rid = 0;
+    while (rid < (int)rids.size() - 1)
     {
-        npts[i] = pts[ids[i]];
+        if (ids[idsid] != allid)
+        {
+            rids[rid] = allid;
+            rid++;
+            allid++;
+        }
+        else
+        {
+            idsid++;
+            allid++;
+        }
     }
-    pts = npts;
-    return ids;
+    return rids;
 }
 
 template <int Dim, int Order>
 Vector<unsigned int> MARS<Dim, Order>::splitLongEdges(const IT_VectorFunction<Dim> &v, Vector<Point> &pts, const Crv &crv, Real tn, Real dt)
 {
     assert(crv.isClosed(tol));
-    size_t Num = pts.size();
-    Vector<Point> oldpts(Num);
+    int num = pts.size();
+    Vector<Point> oldpts(num);
     Vector<unsigned int> ids;
     Vector<Polynomial<Order, Point>> poly = crv.getPolys();
     Vector<Real> knots = crv.getKnots();
 
-    for (size_t i = 0; i < Num - 1; i++)
+    for (int i = 0; i < num - 1; i++)
     {
         oldpts[i] = (poly[i])(0);
     }
-    oldpts[Num - 1] = (poly[0])(0);
+    oldpts[num - 1] = (poly[0])(0);
 
     std::function<void(Real, Real, Vector<Real> &)> split;
 
@@ -195,12 +216,12 @@ Vector<unsigned int> MARS<Dim, Order>::splitLongEdges(const IT_VectorFunction<Di
     auto oit = oldpts.begin();
     ++it;
     ++oit;
-    int count = 1;
+    int count = 0;
 
     Real dist;
-    for (size_t i = 0; i < Num - 1; i++)
+    for (int i = 0; i < num - 1; i++)
     {
-        dist = norm(pts[i + 1] - pts[i]);
+        dist = norm(pts[count + 1] - pts[count]);
         if (dist <= (chdLenRange.hi())[0])
         {
             ++it;
@@ -210,17 +231,15 @@ Vector<unsigned int> MARS<Dim, Order>::splitLongEdges(const IT_VectorFunction<Di
         }
         Vector<Real> chdt;
         split(knots[i], knots[i + 1], chdt);
-        size_t sz = ids.size();
-        ids.resize(sz + chdt.size());
-        for (size_t j = sz; j < ids.size(); j++)
+        for (int j = 0; j < (int)chdt.size(); j++)
         {
             count++;
-            ids[j] = count;
+            ids.push_back(count);
         }
         count++;
-        for (size_t j = chdt.size(); j >= 1; j--)
+        for (int j = chdt.size() - 1; j >= 0; j--)
         {
-            Point opt = crv(chdt[j-1]);
+            Point opt = crv(chdt[j]);
             oit = oldpts.emplace(oit, opt);
             it = pts.emplace(it, TI->timeStep(v, opt, tn, dt));
         }
@@ -235,15 +254,16 @@ template <int Dim, int Order>
 void MARS<Dim, Order>::timeStep(const IT_VectorFunction<Dim> &v, YS &ys, Real tn, Real dt)
 {
     Vector<Crv> vcrv = ys.getBoundaryCycles();
+    int id = 1;
     for (auto &crv : vcrv)
     {
         assert(crv.isClosed(tol));
 
         //pts: next time's points; oldpts: now time's points
         Vector<Point> oldpts;
-        Vector<Polynomial<Order,Point>> poly = crv.getPolys();
+        Vector<Polynomial<Order, Point>> poly = crv.getPolys();
         oldpts.resize(poly.size() + 1);
-        for (size_t i = 0; i < poly.size(); i++)
+        for (int i = 0; i < (int)poly.size(); i++)
         {
             oldpts[i] = (poly[i])[0];
         }
@@ -260,6 +280,20 @@ void MARS<Dim, Order>::timeStep(const IT_VectorFunction<Dim> &v, YS &ys, Real tn
         Vector<unsigned int> removeids = removeSmallEdges(pts);
 
         crv = fitCurve<Order>(pts, true);
+
+        int num = pts.size();
+        Vector<Real> dist(num - 1);
+        //dist.resize(num - 1);
+        for (int i = 0; i < num - 1; i++)
+        {
+            dist[i] = norm(pts[i + 1] - pts[i]);
+        }
+        auto maxp = std::max_element(dist.begin(), dist.end());
+        auto minp = std::min_element(dist.begin(), dist.end());
+
+        std::cout << "Curve " << id << ":  Add " << splitids.size() << " Points, remove " << removeids.size() << " Points. "
+                  << "Max chdlength: " << *maxp << "   Min chdlength: " << *minp << std::endl;
+        id++;
     }
     ys = YS(SegmentedRealizableSpadjor<Order>(vcrv), tol);
     return;
@@ -268,16 +302,22 @@ void MARS<Dim, Order>::timeStep(const IT_VectorFunction<Dim> &v, YS &ys, Real tn
 template <int Dim, int Order>
 void MARS<Dim, Order>::trackInterface(const IT_VectorFunction<Dim> &v, YS &ys, Real StartTime, Real dt, Real EndTime)
 {
+    std::cout << "chdLenRange: [" << (chdLenRange.lo())[0] << ", " << (chdLenRange.hi())[0] << "]" << std::endl
+              << std::endl;
     Real T = StartTime;
     Real t = dt;
+    int step = 1;
     while (T < EndTime)
     {
         if (EndTime - T < dt)
         {
             t = EndTime - T;
         }
+        std::cout << "Step: " << step << "     timestep: " << t << std::endl;
         timeStep(v, ys, T, t);
+        std::cout << std::endl;
         T += t;
+        step++;
     }
     return;
 }
