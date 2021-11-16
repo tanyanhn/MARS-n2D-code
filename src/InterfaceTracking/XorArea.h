@@ -29,7 +29,7 @@ std::tuple<bool, Real, Real> segIntSeg(Point lp1, Point hp1, Point lp2, Point hp
     using rVec = Vec<Real, 2>;
     rVec A[2], b;
     A[0] = hp1 - lp1;
-    A[1] = hp2 - lp2;
+    A[1] = lp2 - hp2;
     b = lp2 - lp1;
     Real det = cross(A[0], A[1]);
     //Real sc = norm(A[0]);
@@ -65,7 +65,11 @@ Real segIntCurve(Point pt, Point grad, const Crv &crv, Real tol)
         if (std::get<0>(ifint) == true)
             intersect.push_back(std::make_tuple(i, std::get<1>(ifint), std::get<2>(ifint) * 0.5 + 0.5));
     }
-    assert(intersect.size() != 0);
+    //assert(intersect.size() != 0);
+    if(intersect.size() == 0)
+    {
+        std::cout << "";
+    }
 
     //find the closest intersect point
     Real min = 1;

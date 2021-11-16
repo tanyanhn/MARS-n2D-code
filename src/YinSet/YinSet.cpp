@@ -264,3 +264,4 @@ void YinSet<2, Order>::dump(std::ostream &os) const
 
 //============================================================
 template class YinSet<2, 2>;
+template class YinSet<2, 4>;

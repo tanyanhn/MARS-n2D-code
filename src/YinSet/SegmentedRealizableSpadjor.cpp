@@ -306,3 +306,4 @@ auto SegmentedRealizableSpadjor<Order>::complement() const -> SRS
 
 //============================================================
 template class SegmentedRealizableSpadjor<2>;
+template class SegmentedRealizableSpadjor<4>;
