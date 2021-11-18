@@ -29,9 +29,10 @@ int main()
 
     //set the initial curve
     //Vortex 4-order: n = 32; dt = 0.01; tol = 1e-9;
-    int n = 64;
-    Real dt = 0.01;
+    int n = 32;
+    Real dt = 0.04;
     int opstride = 10;
+    Real radio = 0.15;
     Vector<Curve<2, 4>> crvs;
     Curve<2, 4> crv;
 
@@ -39,19 +40,19 @@ int main()
     {
         Vector<rVec<2>> pts;
         //Real ang = M_PI / n;
-        pts.push_back({1, 0});
+        pts.push_back({radio, 0});
         for (int i = 1; i < n; i++)
         {
-            pts.push_back({cos(2 * M_PI / n * i), sin(2 * M_PI / n * i)});
+            pts.push_back({radio * cos(2 * M_PI / n * i), radio * sin(2 * M_PI / n * i)});
         }
-        pts.push_back({1, 0});
+        pts.push_back({radio, 0});
         crv = fitCurve<4>(pts, true);
 
         //set the CubicMARS method
         Vector<Curve<2, 4>> vcrv{crv};
         YinSet<2, 4> YS(SegmentedRealizableSpadjor<4>(vcrv), tol);
         ExplicitRungeKutta<2, ClassicRK4> ERK;
-        MARS<2, 4> CM(&ERK, M_PI / 6 / pow(2, k), 0.1);
+        MARS<2, 4> CM(&ERK, 4 * M_PI * radio / n, 0.01);
 
         ostringstream tmps;
         tmps << k;
@@ -60,7 +61,7 @@ int main()
         //start tracking interface
         //CM.trackInterface(Rotation(-2, 0, 2 * M_PI), YS, 0, dt, 1);
         //CM.trackInterface(RevRotation(-2, 0, 2 * M_PI, 1), YS, 0, dt, 1);
-        CM.trackInterface(Vortex(1), YS, 0, dt, 1, true, fname, opstride);
+        CM.trackInterface(Vortex(8), YS, 0, dt, 8, true, fname, opstride);
         //CM.trackInterface(Deformation(1), YS, 0, dt, 1);
 
         
@@ -73,14 +74,14 @@ int main()
         dt /= 2;
     }
     //output the convergency rate
-    /*
+    
     auto result = richardsonError(crvs, tol);
     for (auto &i : result)
     {
         cout << i << "  ";
     }
     cout << endl;
-    */
+    
 
     //output the points
     /*
