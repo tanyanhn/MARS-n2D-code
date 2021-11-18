@@ -14,8 +14,9 @@
 #include <functional>
 #include <iomanip>
 #include <algorithm>
+#include <string>
 
-Real tol = 1e-15;
+//Real tol = 1e-15;
 
 template <class T>
 using Vector = std::vector<T>;
@@ -47,9 +48,9 @@ public:
 
     void timeStep(const IT_VectorFunction<Dim> &v, YS &ys, Real tn, Real dt);
 
-    void trackInterface(const IT_VectorFunction<Dim> &v, YS &ys, Real StartTime, Real dt, Real EndTime);
+    void trackInterface(const IT_VectorFunction<Dim> &v, YS &ys, Real StartTime, Real dt, Real EndTime, bool output = false, std::string fName = "", int opstride = 20);
 };
-
+/*
 template <int Dim, int Order>
 void MARS<Dim, Order>::discreteFlowMap(const IT_VectorFunction<Dim> &v, Vector<Point> &pts, Real tn, Real dt)
 {
@@ -300,7 +301,7 @@ void MARS<Dim, Order>::timeStep(const IT_VectorFunction<Dim> &v, YS &ys, Real tn
 }
 
 template <int Dim, int Order>
-void MARS<Dim, Order>::trackInterface(const IT_VectorFunction<Dim> &v, YS &ys, Real StartTime, Real dt, Real EndTime)
+void MARS<Dim, Order>::trackInterface(const IT_VectorFunction<Dim> &v, YS &ys, Real StartTime, Real dt, Real EndTime, bool output, std::string fName, int opstride)
 {
     std::cout << "chdLenRange: [" << (chdLenRange.lo())[0] << ", " << (chdLenRange.hi())[0] << "]" << std::endl
               << std::endl;
@@ -317,11 +318,13 @@ void MARS<Dim, Order>::trackInterface(const IT_VectorFunction<Dim> &v, YS &ys, R
         timeStep(v, ys, T, t);
         std::cout << std::endl;
         T += t;
+
         step++;
     }
     return;
 }
 
 template class MARS<2, 4>;
+*/
 
 #endif

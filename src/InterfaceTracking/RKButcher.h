@@ -1,6 +1,8 @@
 #ifndef _RKBUTCHER_
 #define _RKBUTCHER_
 
+#include "Core/Config.h"
+
 enum RK_Category1
 {
     ERK = 1,
@@ -29,11 +31,12 @@ struct ButcherTableau<ERK, ForwardEuler>
     static constexpr Real c[] =
         {0};
 };
-
+/*
 constexpr int ButcherTableau<ERK, ForwardEuler>::nStages;
 constexpr Real ButcherTableau<ERK, ForwardEuler>::a[][ButcherTableau<ERK, ForwardEuler>::nStages];
 constexpr Real ButcherTableau<ERK, ForwardEuler>::b[];
 constexpr Real ButcherTableau<ERK, ForwardEuler>::c[];
+*/
 
 template <>
 struct ButcherTableau<ERK, ClassicRK4>
@@ -49,10 +52,10 @@ struct ButcherTableau<ERK, ClassicRK4>
     static constexpr Real c[] =
         {0.0, 0.5, 0.5, 1.0};
 };
-
+/*
 constexpr int ButcherTableau<ERK, ClassicRK4>::nStages;
 constexpr Real ButcherTableau<ERK, ClassicRK4>::a[][ButcherTableau<ERK, ClassicRK4>::nStages];
 constexpr Real ButcherTableau<ERK, ClassicRK4>::b[];
 constexpr Real ButcherTableau<ERK, ClassicRK4>::c[];
-
+*/
 #endif

@@ -21,6 +21,27 @@ src/CMakeFiles/bays.dir/Core/numlib.cpp.o
  /home/ubuntu/codebase/YinSets2D-master/src/Core/Vec.h
  /home/ubuntu/codebase/YinSets2D-master/src/Core/numlib.cpp
  /home/ubuntu/codebase/YinSets2D-master/src/Core/numlib.h
+src/CMakeFiles/bays.dir/InterfaceTracking/MARS.cpp.o
+ ../src/Core/Config.h
+ ../src/Core/Curve.h
+ ../src/Core/Interval.h
+ ../src/Core/Polynomial.h
+ ../src/Core/Vec.h
+ ../src/Core/numlib.h
+ ../src/Core/static_for.h
+ ../src/InterfaceTracking/ExplicitRK.h
+ ../src/InterfaceTracking/RKButcher.h
+ ../src/InterfaceTracking/TimeIntegrator.h
+ ../src/InterfaceTracking/VectorFunction.h
+ ../src/YinSet/Segment.h
+ ../src/YinSet/SegmentedRealizableSpadjor.h
+ ../src/YinSet/YinSet.h
+ /home/ubuntu/codebase/YinSets2D-master/src/InterfaceTracking/MARS.cpp
+ /home/ubuntu/codebase/YinSets2D-master/src/InterfaceTracking/MARS.h
+src/CMakeFiles/bays.dir/InterfaceTracking/RKButcher.cpp.o
+ ../src/Core/Config.h
+ /home/ubuntu/codebase/YinSets2D-master/src/InterfaceTracking/RKButcher.cpp
+ /home/ubuntu/codebase/YinSets2D-master/src/InterfaceTracking/RKButcher.h
 src/CMakeFiles/bays.dir/YinSet/PastingMap.cpp.o
  ../src/Core/Config.h
  ../src/Core/Curve.h

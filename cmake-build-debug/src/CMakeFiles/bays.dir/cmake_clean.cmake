@@ -2,6 +2,8 @@ file(REMOVE_RECURSE
   "CMakeFiles/bays.dir/Core/Config.cpp.o"
   "CMakeFiles/bays.dir/Core/Curve.cpp.o"
   "CMakeFiles/bays.dir/Core/numlib.cpp.o"
+  "CMakeFiles/bays.dir/InterfaceTracking/MARS.cpp.o"
+  "CMakeFiles/bays.dir/InterfaceTracking/RKButcher.cpp.o"
   "CMakeFiles/bays.dir/YinSet/PastingMap.cpp.o"
   "CMakeFiles/bays.dir/YinSet/PointsLocater.cpp.o"
   "CMakeFiles/bays.dir/YinSet/SegmentedRealizableSpadjor.cpp.o"

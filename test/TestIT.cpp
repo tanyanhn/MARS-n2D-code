@@ -24,16 +24,18 @@ using Vector = std::vector<T>;
 
 int main()
 {
-    tol = 1e-9;
+    Real tol = 1e-9;
     cout << setiosflags(ios::scientific) << setprecision(4);
 
     //set the initial curve
-    int n = 16;
+    //Vortex 4-order: n = 32; dt = 0.01; tol = 1e-9;
+    int n = 64;
     Real dt = 0.01;
+    int opstride = 10;
     Vector<Curve<2, 4>> crvs;
     Curve<2, 4> crv;
 
-    for (int k = 0; k < 1; k++)
+    for (int k = 0; k < 3; k++)
     {
         Vector<rVec<2>> pts;
         //Real ang = M_PI / n;
@@ -51,21 +53,23 @@ int main()
         ExplicitRungeKutta<2, ClassicRK4> ERK;
         MARS<2, 4> CM(&ERK, M_PI / 6 / pow(2, k), 0.1);
 
+        ostringstream tmps;
+        tmps << k;
+        string fname = "resultsVortex/No" + tmps.str();
+
         //start tracking interface
         //CM.trackInterface(Rotation(-2, 0, 2 * M_PI), YS, 0, dt, 1);
         //CM.trackInterface(RevRotation(-2, 0, 2 * M_PI, 1), YS, 0, dt, 1);
-        //CM.trackInterface(Vortex(1), YS, 0, dt, 1);
-        CM.trackInterface(Deformation(1), YS, 0, dt, 1);
+        CM.trackInterface(Vortex(1), YS, 0, dt, 1, true, fname, opstride);
+        //CM.trackInterface(Deformation(1), YS, 0, dt, 1);
 
-        ostringstream tmps;
-        tmps << k;
-        ofstream of(string("results/resultYinSet" + tmps.str() + ".dat"), std::ios_base::binary);
-        YS.dump(of);
+        
 
         //get the curve after tracking
         crv = (YS.getBoundaryCycles())[0];
         crvs.push_back(crv);
         n *= 2;
+        opstride *= 2;
         dt /= 2;
     }
     //output the convergency rate

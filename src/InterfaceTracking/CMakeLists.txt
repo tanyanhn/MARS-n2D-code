@@ -1,6 +1,11 @@
 set(InterfaceTracking_Files
+    InterfaceTracking/TimeIntegrator.h
+    InterfaceTracking/RKButcher.h
+    InterfaceTracking/RKButcher.cpp
+    InterfaceTracking/VectorFunction.h
     InterfaceTracking/ExplicitRK.h
     InterfaceTracking/MARS.h
+    InterfaceTracking/MARS.cpp
     InterfaceTracking/XorArea.h
     InterfaceTracking/ComputeError.h
     InterfaceTracking/VelocityField.h
