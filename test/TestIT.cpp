@@ -33,6 +33,7 @@ int main()
     Real dt = 0.04;
     int opstride = 10;
     Real radio = 0.15;
+    Point center{0.5, 0.75};
     Vector<Curve<2, 4>> crvs;
     Curve<2, 4> crv;
 
@@ -40,12 +41,12 @@ int main()
     {
         Vector<rVec<2>> pts;
         //Real ang = M_PI / n;
-        pts.push_back({radio, 0});
+        pts.push_back({center[0] + radio, center[1]});
         for (int i = 1; i < n; i++)
         {
-            pts.push_back({radio * cos(2 * M_PI / n * i), radio * sin(2 * M_PI / n * i)});
+            pts.push_back({center[0] + radio * cos(2 * M_PI / n * i), center[1] + radio * sin(2 * M_PI / n * i)});
         }
-        pts.push_back({radio, 0});
+        pts.push_back({center[0] + radio, center[1]});
         crv = fitCurve<4>(pts, true);
 
         //set the CubicMARS method
