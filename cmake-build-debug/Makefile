@@ -48,10 +48,10 @@ RM = /usr/bin/cmake -E remove -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/ubuntu/codebase/YinSets2D-master
+CMAKE_SOURCE_DIR = /home/kyliang/YinSet2D_MARS
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/ubuntu/codebase/YinSets2D-master/cmake-build-debug
+CMAKE_BINARY_DIR = /home/kyliang/YinSet2D_MARS/cmake-build-debug
 
 #=============================================================================
 # Targets provided globally by CMake.
@@ -91,9 +91,9 @@ test/fast: test
 
 # The main all target
 all: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/ubuntu/codebase/YinSets2D-master/cmake-build-debug/CMakeFiles /home/ubuntu/codebase/YinSets2D-master/cmake-build-debug/CMakeFiles/progress.marks
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/kyliang/YinSet2D_MARS/cmake-build-debug/CMakeFiles /home/kyliang/YinSet2D_MARS/cmake-build-debug/CMakeFiles/progress.marks
 	$(MAKE) -f CMakeFiles/Makefile2 all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/ubuntu/codebase/YinSets2D-master/cmake-build-debug/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/kyliang/YinSet2D_MARS/cmake-build-debug/CMakeFiles 0
 .PHONY : all
 
 # The main clean target
