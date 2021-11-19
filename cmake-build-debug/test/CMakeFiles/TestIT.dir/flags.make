@@ -6,5 +6,5 @@ CXX_FLAGS =  -Wno-unknown-pragmas -DDIM=2 -g -Wall   -std=gnu++14
 
 CXX_DEFINES = 
 
-CXX_INCLUDES = -I/home/ubuntu/codebase/YinSets2D-master/src 
+CXX_INCLUDES = -I/home/kyliang/YinSet2D_MARS/src 
 

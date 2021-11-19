@@ -66,7 +66,7 @@ Core/Curve.h
 SegmentedRealizableSpadjor.h
 ../src/YinSet/SegmentedRealizableSpadjor.h
 
-/home/ubuntu/codebase/YinSets2D-master/test/TestBA.cpp
+/home/kyliang/YinSet2D_MARS/test/TestBA.cpp
 iostream
 -
 fstream
@@ -74,7 +74,7 @@ fstream
 cassert
 -
 YinSet/SegmentedRealizableSpadjor.h
-/home/ubuntu/codebase/YinSets2D-master/test/YinSet/SegmentedRealizableSpadjor.h
+/home/kyliang/YinSet2D_MARS/test/YinSet/SegmentedRealizableSpadjor.h
 YinSet/YinSet.h
-/home/ubuntu/codebase/YinSets2D-master/test/YinSet/YinSet.h
+/home/kyliang/YinSet2D_MARS/test/YinSet/YinSet.h
 

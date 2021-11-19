@@ -4,7 +4,7 @@ set(CMAKE_DEPENDS_LANGUAGES
   )
 # The set of files for implicit dependencies of each language:
 set(CMAKE_DEPENDS_CHECK_CXX
-  "/home/ubuntu/codebase/YinSets2D-master/test/TestIT.cpp" "/home/ubuntu/codebase/YinSets2D-master/cmake-build-debug/test/CMakeFiles/TestIT.dir/TestIT.cpp.o"
+  "/home/kyliang/YinSet2D_MARS/test/TestIT.cpp" "/home/kyliang/YinSet2D_MARS/cmake-build-debug/test/CMakeFiles/TestIT.dir/TestIT.cpp.o"
   )
 set(CMAKE_CXX_COMPILER_ID "GNU")
 
@@ -15,7 +15,7 @@ set(CMAKE_CXX_TARGET_INCLUDE_PATH
 
 # Targets to which this target links.
 set(CMAKE_TARGET_LINKED_INFO_FILES
-  "/home/ubuntu/codebase/YinSets2D-master/cmake-build-debug/src/CMakeFiles/bays.dir/DependInfo.cmake"
+  "/home/kyliang/YinSet2D_MARS/cmake-build-debug/src/CMakeFiles/bays.dir/DependInfo.cmake"
   )
 
 # Fortran module output directory.

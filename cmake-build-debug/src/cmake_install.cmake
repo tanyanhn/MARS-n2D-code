@@ -1,4 +1,4 @@
-# Install script for directory: /home/ubuntu/codebase/YinSets2D-master/src
+# Install script for directory: /home/kyliang/YinSet2D_MARS/src
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -39,9 +39,9 @@ endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for each subdirectory.
-  include("/home/ubuntu/codebase/YinSets2D-master/cmake-build-debug/src/Core/cmake_install.cmake")
-  include("/home/ubuntu/codebase/YinSets2D-master/cmake-build-debug/src/YinSet/cmake_install.cmake")
-  include("/home/ubuntu/codebase/YinSets2D-master/cmake-build-debug/src/InterfaceTracking/cmake_install.cmake")
+  include("/home/kyliang/YinSet2D_MARS/cmake-build-debug/src/Core/cmake_install.cmake")
+  include("/home/kyliang/YinSet2D_MARS/cmake-build-debug/src/YinSet/cmake_install.cmake")
+  include("/home/kyliang/YinSet2D_MARS/cmake-build-debug/src/InterfaceTracking/cmake_install.cmake")
 
 endif()
 

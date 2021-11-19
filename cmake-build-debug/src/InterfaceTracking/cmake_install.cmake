@@ -1,4 +1,4 @@
-# Install script for directory: /home/ubuntu/codebase/YinSets2D-master/src/InterfaceTracking
+# Install script for directory: /home/kyliang/YinSet2D_MARS/src/InterfaceTracking
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)

@@ -13,16 +13,16 @@ test/CMakeFiles/UnitTest.dir/TestLocater.cpp.o
  ../src/YinSet/PointsLocater.h
  ../src/YinSet/Segment.h
  ../src/YinSet/SegmentedRealizableSpadjor.h
- /home/ubuntu/codebase/YinSets2D-master/test/TestLocater.cpp
- /home/ubuntu/codebase/YinSets2D-master/test/TestLocater.h
+ /home/kyliang/YinSet2D_MARS/test/TestLocater.cpp
+ /home/kyliang/YinSet2D_MARS/test/TestLocater.h
 test/CMakeFiles/UnitTest.dir/TestSegmentsIntersector.cpp.o
  ../src/Core/Config.h
  ../src/Core/Vec.h
  ../src/Core/VecCompare.h
  ../src/YinSet/Segment.h
  ../src/YinSet/SegmentsIntersector.h
- /home/ubuntu/codebase/YinSets2D-master/test/TestSegmentsIntersector.H
- /home/ubuntu/codebase/YinSets2D-master/test/TestSegmentsIntersector.cpp
+ /home/kyliang/YinSet2D_MARS/test/TestSegmentsIntersector.H
+ /home/kyliang/YinSet2D_MARS/test/TestSegmentsIntersector.cpp
 test/CMakeFiles/UnitTest.dir/TestYinSetsBooleanOps.cpp.o
  ../src/Core/Config.h
  ../src/Core/Curve.h
@@ -34,15 +34,15 @@ test/CMakeFiles/UnitTest.dir/TestYinSetsBooleanOps.cpp.o
  ../src/YinSet/Segment.h
  ../src/YinSet/SegmentedRealizableSpadjor.h
  ../src/YinSet/YinSet.h
- /home/ubuntu/codebase/YinSets2D-master/test/TestYinSetsBooleanOps.H
- /home/ubuntu/codebase/YinSets2D-master/test/TestYinSetsBooleanOps.cpp
+ /home/kyliang/YinSet2D_MARS/test/TestYinSetsBooleanOps.H
+ /home/kyliang/YinSet2D_MARS/test/TestYinSetsBooleanOps.cpp
 test/CMakeFiles/UnitTest.dir/UnitTest.cpp.o
  ../src/Core/Config.h
  ../src/Core/Vec.h
  ../src/Core/VecCompare.h
  ../src/YinSet/Segment.h
  ../src/YinSet/SegmentsIntersector.h
- /home/ubuntu/codebase/YinSets2D-master/test/TestLocater.h
- /home/ubuntu/codebase/YinSets2D-master/test/TestSegmentsIntersector.H
- /home/ubuntu/codebase/YinSets2D-master/test/TestYinSetsBooleanOps.H
- /home/ubuntu/codebase/YinSets2D-master/test/UnitTest.cpp
+ /home/kyliang/YinSet2D_MARS/test/TestLocater.h
+ /home/kyliang/YinSet2D_MARS/test/TestSegmentsIntersector.H
+ /home/kyliang/YinSet2D_MARS/test/TestYinSetsBooleanOps.H
+ /home/kyliang/YinSet2D_MARS/test/UnitTest.cpp
