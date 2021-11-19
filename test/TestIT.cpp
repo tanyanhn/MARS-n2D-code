@@ -32,15 +32,15 @@ int main()
     //4.26e-5 4.16 2.38e-6 5.04 7.21e-8
     //Vortex: n = 64; dt = 0.1; tol = 1e-9; rtiny = 0.01
     //2.61e-4 4.77 9.57e-6 5.01 2.97e-7
-    int n = 64;
+    int n = 128;
     Real dt = 0.01;
-    int opstride = 20;
+    int opstride = 40;
     Real radio = 0.15;
     Point center{0.5, 0.5};
     Vector<Curve<2, 4>> crvs;
     Curve<2, 4> crv;
 
-    for (int k = 0; k < 3; k++)
+    for (int k = 0; k < 4; k++)
     {
         Vector<rVec<2>> pts;
         //Real ang = M_PI / n;
