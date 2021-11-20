@@ -9,5 +9,6 @@ set(InterfaceTracking_Files
     InterfaceTracking/XorArea.h
     InterfaceTracking/ComputeError.h
     InterfaceTracking/VelocityField.h
+    InterfaceTracking/TestExample.h
     PARENT_SCOPE
 )
