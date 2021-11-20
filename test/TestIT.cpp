@@ -13,6 +13,7 @@
 #include "InterfaceTracking/ComputeError.h"
 #include "InterfaceTracking/VelocityField.h"
 #include "YinSet/YinSet.h"
+#include "InterfaceTracking/TestExample.h"
 
 using namespace std;
 
@@ -27,16 +28,14 @@ int main()
     Real tol = 1e-9;
     cout << setiosflags(ios::scientific) << setprecision(4);
 
+    TestIT test = getTest(1);
+
     //set the initial curve
-    //Vortex: n = 64; dt = 0.04; tol = 1e-9; rtiny = 0.01
-    //4.26e-5 4.16 2.38e-6 5.04 7.21e-8
-    //Vortex: n = 64; dt = 0.1; tol = 1e-9; rtiny = 0.01
-    //2.61e-4 4.77 9.57e-6 5.01 2.97e-7
-    int n = 128;
-    Real dt = 0.01;
-    int opstride = 40;
-    Real radio = 0.15;
-    Point center{0.5, 0.5};
+    int n = test.n;
+    Real dt = test.dt;
+    int opstride = test.dt;
+    Real radio = test.radio;
+    Point center = test.cent;
     Vector<Curve<2, 4>> crvs;
     Curve<2, 4> crv;
 
@@ -67,8 +66,8 @@ int main()
         //CM.trackInterface(Rotation(-2, 0, 2 * M_PI), YS, 0, dt, 1);
         //CM.trackInterface(RevRotation(-2, 0, 2 * M_PI, 1), YS, 0, dt, 1);
         //CM.trackInterface(Vortex(8), YS, 0, dt, 8, true, fname, opstride);
-        CM.trackInterface(Deformation(2), YS, 0, dt, 2, true, fname, opstride);
-
+        //CM.trackInterface(Deformation(2), YS, 0, dt, 2, true, fname, opstride);
+        CM.trackInterface(*test.velocity, YS, 0, dt, test.T, true, fname, opstride);
         
 
         //get the curve after tracking
