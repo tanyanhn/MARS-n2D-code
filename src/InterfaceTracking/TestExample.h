@@ -40,6 +40,7 @@ TestIT getTest(int i)
     //Deformation(2, 4)
     //n = 128; dt = 0.01; rtiny = 0.01
     //2.44e-5 3.77 1.79e-6 5.23 4.76e-8(richardson)
+    //2.74e-5 3.81 1.95e-6 5.23 5.22e-8(exact)
     test.push_back(TestIT(Point{0.5, 0.5}, 0.15, 128, 0.01, 2, deformation, "Deformation", 40, 0.01));
 
     //test 1
