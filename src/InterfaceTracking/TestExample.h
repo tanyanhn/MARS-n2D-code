@@ -34,6 +34,7 @@ TestIT getTest(int i)
     //Vortex(8)
     //n = 64; dt = 0.04; rtiny = 0.01
     //4.26e-5 4.16 2.38e-6 5.04 7.21e-8(richardson)
+    //4.80e-5 4.25 2.52e-6 4.97 8.06e-8(exact)
     test.push_back(TestIT(Point{0.5, 0.75}, 0.15, 64, 0.04, 8, vortex, "Vortex", 100, 0.01));
 
     //test 1
