@@ -48,10 +48,10 @@ RM = /usr/bin/cmake -E remove -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/kyliang/YinSet2D_MARS
+CMAKE_SOURCE_DIR = /home/ubuntu/codebase/YinSets2D-master
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/kyliang/YinSet2D_MARS/cmake-build-debug
+CMAKE_BINARY_DIR = /home/ubuntu/codebase/YinSets2D-master/cmake-build-debug
 
 #=============================================================================
 # Targets provided globally by CMake.
@@ -91,14 +91,14 @@ test/fast: test
 
 # The main all target
 all: cmake_check_build_system
-	cd /home/kyliang/YinSet2D_MARS/cmake-build-debug && $(CMAKE_COMMAND) -E cmake_progress_start /home/kyliang/YinSet2D_MARS/cmake-build-debug/CMakeFiles /home/kyliang/YinSet2D_MARS/cmake-build-debug/test/CMakeFiles/progress.marks
-	cd /home/kyliang/YinSet2D_MARS/cmake-build-debug && $(MAKE) -f CMakeFiles/Makefile2 test/all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/kyliang/YinSet2D_MARS/cmake-build-debug/CMakeFiles 0
+	cd /home/ubuntu/codebase/YinSets2D-master/cmake-build-debug && $(CMAKE_COMMAND) -E cmake_progress_start /home/ubuntu/codebase/YinSets2D-master/cmake-build-debug/CMakeFiles /home/ubuntu/codebase/YinSets2D-master/cmake-build-debug/test/CMakeFiles/progress.marks
+	cd /home/ubuntu/codebase/YinSets2D-master/cmake-build-debug && $(MAKE) -f CMakeFiles/Makefile2 test/all
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/ubuntu/codebase/YinSets2D-master/cmake-build-debug/CMakeFiles 0
 .PHONY : all
 
 # The main clean target
 clean:
-	cd /home/kyliang/YinSet2D_MARS/cmake-build-debug && $(MAKE) -f CMakeFiles/Makefile2 test/clean
+	cd /home/ubuntu/codebase/YinSets2D-master/cmake-build-debug && $(MAKE) -f CMakeFiles/Makefile2 test/clean
 .PHONY : clean
 
 # The main clean target
@@ -108,22 +108,22 @@ clean/fast: clean
 
 # Prepare targets for installation.
 preinstall: all
-	cd /home/kyliang/YinSet2D_MARS/cmake-build-debug && $(MAKE) -f CMakeFiles/Makefile2 test/preinstall
+	cd /home/ubuntu/codebase/YinSets2D-master/cmake-build-debug && $(MAKE) -f CMakeFiles/Makefile2 test/preinstall
 .PHONY : preinstall
 
 # Prepare targets for installation.
 preinstall/fast:
-	cd /home/kyliang/YinSet2D_MARS/cmake-build-debug && $(MAKE) -f CMakeFiles/Makefile2 test/preinstall
+	cd /home/ubuntu/codebase/YinSets2D-master/cmake-build-debug && $(MAKE) -f CMakeFiles/Makefile2 test/preinstall
 .PHONY : preinstall/fast
 
 # clear depends
 depend:
-	cd /home/kyliang/YinSet2D_MARS/cmake-build-debug && $(CMAKE_COMMAND) -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 1
+	cd /home/ubuntu/codebase/YinSets2D-master/cmake-build-debug && $(CMAKE_COMMAND) -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 1
 .PHONY : depend
 
 # Convenience name for target.
 test/CMakeFiles/UnitTest.dir/rule:
-	cd /home/kyliang/YinSet2D_MARS/cmake-build-debug && $(MAKE) -f CMakeFiles/Makefile2 test/CMakeFiles/UnitTest.dir/rule
+	cd /home/ubuntu/codebase/YinSets2D-master/cmake-build-debug && $(MAKE) -f CMakeFiles/Makefile2 test/CMakeFiles/UnitTest.dir/rule
 .PHONY : test/CMakeFiles/UnitTest.dir/rule
 
 # Convenience name for target.
@@ -133,12 +133,12 @@ UnitTest: test/CMakeFiles/UnitTest.dir/rule
 
 # fast build rule for target.
 UnitTest/fast:
-	cd /home/kyliang/YinSet2D_MARS/cmake-build-debug && $(MAKE) -f test/CMakeFiles/UnitTest.dir/build.make test/CMakeFiles/UnitTest.dir/build
+	cd /home/ubuntu/codebase/YinSets2D-master/cmake-build-debug && $(MAKE) -f test/CMakeFiles/UnitTest.dir/build.make test/CMakeFiles/UnitTest.dir/build
 .PHONY : UnitTest/fast
 
 # Convenience name for target.
 test/CMakeFiles/TestIT.dir/rule:
-	cd /home/kyliang/YinSet2D_MARS/cmake-build-debug && $(MAKE) -f CMakeFiles/Makefile2 test/CMakeFiles/TestIT.dir/rule
+	cd /home/ubuntu/codebase/YinSets2D-master/cmake-build-debug && $(MAKE) -f CMakeFiles/Makefile2 test/CMakeFiles/TestIT.dir/rule
 .PHONY : test/CMakeFiles/TestIT.dir/rule
 
 # Convenience name for target.
@@ -148,12 +148,12 @@ TestIT: test/CMakeFiles/TestIT.dir/rule
 
 # fast build rule for target.
 TestIT/fast:
-	cd /home/kyliang/YinSet2D_MARS/cmake-build-debug && $(MAKE) -f test/CMakeFiles/TestIT.dir/build.make test/CMakeFiles/TestIT.dir/build
+	cd /home/ubuntu/codebase/YinSets2D-master/cmake-build-debug && $(MAKE) -f test/CMakeFiles/TestIT.dir/build.make test/CMakeFiles/TestIT.dir/build
 .PHONY : TestIT/fast
 
 # Convenience name for target.
 test/CMakeFiles/TestBA.dir/rule:
-	cd /home/kyliang/YinSet2D_MARS/cmake-build-debug && $(MAKE) -f CMakeFiles/Makefile2 test/CMakeFiles/TestBA.dir/rule
+	cd /home/ubuntu/codebase/YinSets2D-master/cmake-build-debug && $(MAKE) -f CMakeFiles/Makefile2 test/CMakeFiles/TestBA.dir/rule
 .PHONY : test/CMakeFiles/TestBA.dir/rule
 
 # Convenience name for target.
@@ -163,7 +163,7 @@ TestBA: test/CMakeFiles/TestBA.dir/rule
 
 # fast build rule for target.
 TestBA/fast:
-	cd /home/kyliang/YinSet2D_MARS/cmake-build-debug && $(MAKE) -f test/CMakeFiles/TestBA.dir/build.make test/CMakeFiles/TestBA.dir/build
+	cd /home/ubuntu/codebase/YinSets2D-master/cmake-build-debug && $(MAKE) -f test/CMakeFiles/TestBA.dir/build.make test/CMakeFiles/TestBA.dir/build
 .PHONY : TestBA/fast
 
 TestBA.o: TestBA.cpp.o
@@ -172,7 +172,7 @@ TestBA.o: TestBA.cpp.o
 
 # target to build an object file
 TestBA.cpp.o:
-	cd /home/kyliang/YinSet2D_MARS/cmake-build-debug && $(MAKE) -f test/CMakeFiles/TestBA.dir/build.make test/CMakeFiles/TestBA.dir/TestBA.cpp.o
+	cd /home/ubuntu/codebase/YinSets2D-master/cmake-build-debug && $(MAKE) -f test/CMakeFiles/TestBA.dir/build.make test/CMakeFiles/TestBA.dir/TestBA.cpp.o
 .PHONY : TestBA.cpp.o
 
 TestBA.i: TestBA.cpp.i
@@ -181,7 +181,7 @@ TestBA.i: TestBA.cpp.i
 
 # target to preprocess a source file
 TestBA.cpp.i:
-	cd /home/kyliang/YinSet2D_MARS/cmake-build-debug && $(MAKE) -f test/CMakeFiles/TestBA.dir/build.make test/CMakeFiles/TestBA.dir/TestBA.cpp.i
+	cd /home/ubuntu/codebase/YinSets2D-master/cmake-build-debug && $(MAKE) -f test/CMakeFiles/TestBA.dir/build.make test/CMakeFiles/TestBA.dir/TestBA.cpp.i
 .PHONY : TestBA.cpp.i
 
 TestBA.s: TestBA.cpp.s
@@ -190,7 +190,7 @@ TestBA.s: TestBA.cpp.s
 
 # target to generate assembly for a file
 TestBA.cpp.s:
-	cd /home/kyliang/YinSet2D_MARS/cmake-build-debug && $(MAKE) -f test/CMakeFiles/TestBA.dir/build.make test/CMakeFiles/TestBA.dir/TestBA.cpp.s
+	cd /home/ubuntu/codebase/YinSets2D-master/cmake-build-debug && $(MAKE) -f test/CMakeFiles/TestBA.dir/build.make test/CMakeFiles/TestBA.dir/TestBA.cpp.s
 .PHONY : TestBA.cpp.s
 
 TestIT.o: TestIT.cpp.o
@@ -199,7 +199,7 @@ TestIT.o: TestIT.cpp.o
 
 # target to build an object file
 TestIT.cpp.o:
-	cd /home/kyliang/YinSet2D_MARS/cmake-build-debug && $(MAKE) -f test/CMakeFiles/TestIT.dir/build.make test/CMakeFiles/TestIT.dir/TestIT.cpp.o
+	cd /home/ubuntu/codebase/YinSets2D-master/cmake-build-debug && $(MAKE) -f test/CMakeFiles/TestIT.dir/build.make test/CMakeFiles/TestIT.dir/TestIT.cpp.o
 .PHONY : TestIT.cpp.o
 
 TestIT.i: TestIT.cpp.i
@@ -208,7 +208,7 @@ TestIT.i: TestIT.cpp.i
 
 # target to preprocess a source file
 TestIT.cpp.i:
-	cd /home/kyliang/YinSet2D_MARS/cmake-build-debug && $(MAKE) -f test/CMakeFiles/TestIT.dir/build.make test/CMakeFiles/TestIT.dir/TestIT.cpp.i
+	cd /home/ubuntu/codebase/YinSets2D-master/cmake-build-debug && $(MAKE) -f test/CMakeFiles/TestIT.dir/build.make test/CMakeFiles/TestIT.dir/TestIT.cpp.i
 .PHONY : TestIT.cpp.i
 
 TestIT.s: TestIT.cpp.s
@@ -217,7 +217,7 @@ TestIT.s: TestIT.cpp.s
 
 # target to generate assembly for a file
 TestIT.cpp.s:
-	cd /home/kyliang/YinSet2D_MARS/cmake-build-debug && $(MAKE) -f test/CMakeFiles/TestIT.dir/build.make test/CMakeFiles/TestIT.dir/TestIT.cpp.s
+	cd /home/ubuntu/codebase/YinSets2D-master/cmake-build-debug && $(MAKE) -f test/CMakeFiles/TestIT.dir/build.make test/CMakeFiles/TestIT.dir/TestIT.cpp.s
 .PHONY : TestIT.cpp.s
 
 TestLocater.o: TestLocater.cpp.o
@@ -226,7 +226,7 @@ TestLocater.o: TestLocater.cpp.o
 
 # target to build an object file
 TestLocater.cpp.o:
-	cd /home/kyliang/YinSet2D_MARS/cmake-build-debug && $(MAKE) -f test/CMakeFiles/UnitTest.dir/build.make test/CMakeFiles/UnitTest.dir/TestLocater.cpp.o
+	cd /home/ubuntu/codebase/YinSets2D-master/cmake-build-debug && $(MAKE) -f test/CMakeFiles/UnitTest.dir/build.make test/CMakeFiles/UnitTest.dir/TestLocater.cpp.o
 .PHONY : TestLocater.cpp.o
 
 TestLocater.i: TestLocater.cpp.i
@@ -235,7 +235,7 @@ TestLocater.i: TestLocater.cpp.i
 
 # target to preprocess a source file
 TestLocater.cpp.i:
-	cd /home/kyliang/YinSet2D_MARS/cmake-build-debug && $(MAKE) -f test/CMakeFiles/UnitTest.dir/build.make test/CMakeFiles/UnitTest.dir/TestLocater.cpp.i
+	cd /home/ubuntu/codebase/YinSets2D-master/cmake-build-debug && $(MAKE) -f test/CMakeFiles/UnitTest.dir/build.make test/CMakeFiles/UnitTest.dir/TestLocater.cpp.i
 .PHONY : TestLocater.cpp.i
 
 TestLocater.s: TestLocater.cpp.s
@@ -244,7 +244,7 @@ TestLocater.s: TestLocater.cpp.s
 
 # target to generate assembly for a file
 TestLocater.cpp.s:
-	cd /home/kyliang/YinSet2D_MARS/cmake-build-debug && $(MAKE) -f test/CMakeFiles/UnitTest.dir/build.make test/CMakeFiles/UnitTest.dir/TestLocater.cpp.s
+	cd /home/ubuntu/codebase/YinSets2D-master/cmake-build-debug && $(MAKE) -f test/CMakeFiles/UnitTest.dir/build.make test/CMakeFiles/UnitTest.dir/TestLocater.cpp.s
 .PHONY : TestLocater.cpp.s
 
 TestSegmentsIntersector.o: TestSegmentsIntersector.cpp.o
@@ -253,7 +253,7 @@ TestSegmentsIntersector.o: TestSegmentsIntersector.cpp.o
 
 # target to build an object file
 TestSegmentsIntersector.cpp.o:
-	cd /home/kyliang/YinSet2D_MARS/cmake-build-debug && $(MAKE) -f test/CMakeFiles/UnitTest.dir/build.make test/CMakeFiles/UnitTest.dir/TestSegmentsIntersector.cpp.o
+	cd /home/ubuntu/codebase/YinSets2D-master/cmake-build-debug && $(MAKE) -f test/CMakeFiles/UnitTest.dir/build.make test/CMakeFiles/UnitTest.dir/TestSegmentsIntersector.cpp.o
 .PHONY : TestSegmentsIntersector.cpp.o
 
 TestSegmentsIntersector.i: TestSegmentsIntersector.cpp.i
@@ -262,7 +262,7 @@ TestSegmentsIntersector.i: TestSegmentsIntersector.cpp.i
 
 # target to preprocess a source file
 TestSegmentsIntersector.cpp.i:
-	cd /home/kyliang/YinSet2D_MARS/cmake-build-debug && $(MAKE) -f test/CMakeFiles/UnitTest.dir/build.make test/CMakeFiles/UnitTest.dir/TestSegmentsIntersector.cpp.i
+	cd /home/ubuntu/codebase/YinSets2D-master/cmake-build-debug && $(MAKE) -f test/CMakeFiles/UnitTest.dir/build.make test/CMakeFiles/UnitTest.dir/TestSegmentsIntersector.cpp.i
 .PHONY : TestSegmentsIntersector.cpp.i
 
 TestSegmentsIntersector.s: TestSegmentsIntersector.cpp.s
@@ -271,7 +271,7 @@ TestSegmentsIntersector.s: TestSegmentsIntersector.cpp.s
 
 # target to generate assembly for a file
 TestSegmentsIntersector.cpp.s:
-	cd /home/kyliang/YinSet2D_MARS/cmake-build-debug && $(MAKE) -f test/CMakeFiles/UnitTest.dir/build.make test/CMakeFiles/UnitTest.dir/TestSegmentsIntersector.cpp.s
+	cd /home/ubuntu/codebase/YinSets2D-master/cmake-build-debug && $(MAKE) -f test/CMakeFiles/UnitTest.dir/build.make test/CMakeFiles/UnitTest.dir/TestSegmentsIntersector.cpp.s
 .PHONY : TestSegmentsIntersector.cpp.s
 
 TestYinSetsBooleanOps.o: TestYinSetsBooleanOps.cpp.o
@@ -280,7 +280,7 @@ TestYinSetsBooleanOps.o: TestYinSetsBooleanOps.cpp.o
 
 # target to build an object file
 TestYinSetsBooleanOps.cpp.o:
-	cd /home/kyliang/YinSet2D_MARS/cmake-build-debug && $(MAKE) -f test/CMakeFiles/UnitTest.dir/build.make test/CMakeFiles/UnitTest.dir/TestYinSetsBooleanOps.cpp.o
+	cd /home/ubuntu/codebase/YinSets2D-master/cmake-build-debug && $(MAKE) -f test/CMakeFiles/UnitTest.dir/build.make test/CMakeFiles/UnitTest.dir/TestYinSetsBooleanOps.cpp.o
 .PHONY : TestYinSetsBooleanOps.cpp.o
 
 TestYinSetsBooleanOps.i: TestYinSetsBooleanOps.cpp.i
@@ -289,7 +289,7 @@ TestYinSetsBooleanOps.i: TestYinSetsBooleanOps.cpp.i
 
 # target to preprocess a source file
 TestYinSetsBooleanOps.cpp.i:
-	cd /home/kyliang/YinSet2D_MARS/cmake-build-debug && $(MAKE) -f test/CMakeFiles/UnitTest.dir/build.make test/CMakeFiles/UnitTest.dir/TestYinSetsBooleanOps.cpp.i
+	cd /home/ubuntu/codebase/YinSets2D-master/cmake-build-debug && $(MAKE) -f test/CMakeFiles/UnitTest.dir/build.make test/CMakeFiles/UnitTest.dir/TestYinSetsBooleanOps.cpp.i
 .PHONY : TestYinSetsBooleanOps.cpp.i
 
 TestYinSetsBooleanOps.s: TestYinSetsBooleanOps.cpp.s
@@ -298,7 +298,7 @@ TestYinSetsBooleanOps.s: TestYinSetsBooleanOps.cpp.s
 
 # target to generate assembly for a file
 TestYinSetsBooleanOps.cpp.s:
-	cd /home/kyliang/YinSet2D_MARS/cmake-build-debug && $(MAKE) -f test/CMakeFiles/UnitTest.dir/build.make test/CMakeFiles/UnitTest.dir/TestYinSetsBooleanOps.cpp.s
+	cd /home/ubuntu/codebase/YinSets2D-master/cmake-build-debug && $(MAKE) -f test/CMakeFiles/UnitTest.dir/build.make test/CMakeFiles/UnitTest.dir/TestYinSetsBooleanOps.cpp.s
 .PHONY : TestYinSetsBooleanOps.cpp.s
 
 UnitTest.o: UnitTest.cpp.o
@@ -307,7 +307,7 @@ UnitTest.o: UnitTest.cpp.o
 
 # target to build an object file
 UnitTest.cpp.o:
-	cd /home/kyliang/YinSet2D_MARS/cmake-build-debug && $(MAKE) -f test/CMakeFiles/UnitTest.dir/build.make test/CMakeFiles/UnitTest.dir/UnitTest.cpp.o
+	cd /home/ubuntu/codebase/YinSets2D-master/cmake-build-debug && $(MAKE) -f test/CMakeFiles/UnitTest.dir/build.make test/CMakeFiles/UnitTest.dir/UnitTest.cpp.o
 .PHONY : UnitTest.cpp.o
 
 UnitTest.i: UnitTest.cpp.i
@@ -316,7 +316,7 @@ UnitTest.i: UnitTest.cpp.i
 
 # target to preprocess a source file
 UnitTest.cpp.i:
-	cd /home/kyliang/YinSet2D_MARS/cmake-build-debug && $(MAKE) -f test/CMakeFiles/UnitTest.dir/build.make test/CMakeFiles/UnitTest.dir/UnitTest.cpp.i
+	cd /home/ubuntu/codebase/YinSets2D-master/cmake-build-debug && $(MAKE) -f test/CMakeFiles/UnitTest.dir/build.make test/CMakeFiles/UnitTest.dir/UnitTest.cpp.i
 .PHONY : UnitTest.cpp.i
 
 UnitTest.s: UnitTest.cpp.s
@@ -325,7 +325,7 @@ UnitTest.s: UnitTest.cpp.s
 
 # target to generate assembly for a file
 UnitTest.cpp.s:
-	cd /home/kyliang/YinSet2D_MARS/cmake-build-debug && $(MAKE) -f test/CMakeFiles/UnitTest.dir/build.make test/CMakeFiles/UnitTest.dir/UnitTest.cpp.s
+	cd /home/ubuntu/codebase/YinSets2D-master/cmake-build-debug && $(MAKE) -f test/CMakeFiles/UnitTest.dir/build.make test/CMakeFiles/UnitTest.dir/UnitTest.cpp.s
 .PHONY : UnitTest.cpp.s
 
 # Help Target
@@ -369,6 +369,6 @@ help:
 # No rule that depends on this can have commands that come from listfiles
 # because they might be regenerated.
 cmake_check_build_system:
-	cd /home/kyliang/YinSet2D_MARS/cmake-build-debug && $(CMAKE_COMMAND) -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 0
+	cd /home/ubuntu/codebase/YinSets2D-master/cmake-build-debug && $(CMAKE_COMMAND) -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 0
 .PHONY : cmake_check_build_system
 

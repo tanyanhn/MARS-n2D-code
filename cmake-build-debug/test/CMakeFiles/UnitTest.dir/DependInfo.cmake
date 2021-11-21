@@ -4,10 +4,10 @@ set(CMAKE_DEPENDS_LANGUAGES
   )
 # The set of files for implicit dependencies of each language:
 set(CMAKE_DEPENDS_CHECK_CXX
-  "/home/kyliang/YinSet2D_MARS/test/TestLocater.cpp" "/home/kyliang/YinSet2D_MARS/cmake-build-debug/test/CMakeFiles/UnitTest.dir/TestLocater.cpp.o"
-  "/home/kyliang/YinSet2D_MARS/test/TestSegmentsIntersector.cpp" "/home/kyliang/YinSet2D_MARS/cmake-build-debug/test/CMakeFiles/UnitTest.dir/TestSegmentsIntersector.cpp.o"
-  "/home/kyliang/YinSet2D_MARS/test/TestYinSetsBooleanOps.cpp" "/home/kyliang/YinSet2D_MARS/cmake-build-debug/test/CMakeFiles/UnitTest.dir/TestYinSetsBooleanOps.cpp.o"
-  "/home/kyliang/YinSet2D_MARS/test/UnitTest.cpp" "/home/kyliang/YinSet2D_MARS/cmake-build-debug/test/CMakeFiles/UnitTest.dir/UnitTest.cpp.o"
+  "/home/ubuntu/codebase/YinSets2D-master/test/TestLocater.cpp" "/home/ubuntu/codebase/YinSets2D-master/cmake-build-debug/test/CMakeFiles/UnitTest.dir/TestLocater.cpp.o"
+  "/home/ubuntu/codebase/YinSets2D-master/test/TestSegmentsIntersector.cpp" "/home/ubuntu/codebase/YinSets2D-master/cmake-build-debug/test/CMakeFiles/UnitTest.dir/TestSegmentsIntersector.cpp.o"
+  "/home/ubuntu/codebase/YinSets2D-master/test/TestYinSetsBooleanOps.cpp" "/home/ubuntu/codebase/YinSets2D-master/cmake-build-debug/test/CMakeFiles/UnitTest.dir/TestYinSetsBooleanOps.cpp.o"
+  "/home/ubuntu/codebase/YinSets2D-master/test/UnitTest.cpp" "/home/ubuntu/codebase/YinSets2D-master/cmake-build-debug/test/CMakeFiles/UnitTest.dir/UnitTest.cpp.o"
   )
 set(CMAKE_CXX_COMPILER_ID "GNU")
 
@@ -18,7 +18,7 @@ set(CMAKE_CXX_TARGET_INCLUDE_PATH
 
 # Targets to which this target links.
 set(CMAKE_TARGET_LINKED_INFO_FILES
-  "/home/kyliang/YinSet2D_MARS/cmake-build-debug/src/CMakeFiles/bays.dir/DependInfo.cmake"
+  "/home/ubuntu/codebase/YinSets2D-master/cmake-build-debug/src/CMakeFiles/bays.dir/DependInfo.cmake"
   )
 
 # Fortran module output directory.

@@ -51,6 +51,8 @@ type_traits
 ../src/InterfaceTracking/ComputeError.h
 XorArea.h
 ../src/InterfaceTracking/XorArea.h
+cmath
+-
 
 ../src/InterfaceTracking/ExplicitRK.h
 vector
@@ -97,6 +99,16 @@ string
 ../src/InterfaceTracking/RKButcher.h
 Core/Config.h
 ../src/InterfaceTracking/Core/Config.h
+
+../src/InterfaceTracking/TestExample.h
+Core/Config.h
+../src/InterfaceTracking/Core/Config.h
+Core/Vec.h
+../src/InterfaceTracking/Core/Vec.h
+VectorFunction.h
+../src/InterfaceTracking/VectorFunction.h
+VelocityField.h
+../src/InterfaceTracking/VelocityField.h
 
 ../src/InterfaceTracking/TimeIntegrator.h
 vector
@@ -146,7 +158,7 @@ Core/Curve.h
 SegmentedRealizableSpadjor.h
 ../src/YinSet/SegmentedRealizableSpadjor.h
 
-/home/kyliang/YinSet2D_MARS/test/TestIT.cpp
+/home/ubuntu/codebase/YinSets2D-master/test/TestIT.cpp
 iostream
 -
 vector
@@ -162,19 +174,21 @@ fstream
 sstream
 -
 InterfaceTracking/MARS.h
-/home/kyliang/YinSet2D_MARS/test/InterfaceTracking/MARS.h
+/home/ubuntu/codebase/YinSets2D-master/test/InterfaceTracking/MARS.h
 InterfaceTracking/ExplicitRK.h
-/home/kyliang/YinSet2D_MARS/test/InterfaceTracking/ExplicitRK.h
+/home/ubuntu/codebase/YinSets2D-master/test/InterfaceTracking/ExplicitRK.h
 InterfaceTracking/TimeIntegrator.h
-/home/kyliang/YinSet2D_MARS/test/InterfaceTracking/TimeIntegrator.h
+/home/ubuntu/codebase/YinSets2D-master/test/InterfaceTracking/TimeIntegrator.h
 InterfaceTracking/VectorFunction.h
-/home/kyliang/YinSet2D_MARS/test/InterfaceTracking/VectorFunction.h
+/home/ubuntu/codebase/YinSets2D-master/test/InterfaceTracking/VectorFunction.h
 InterfaceTracking/XorArea.h
-/home/kyliang/YinSet2D_MARS/test/InterfaceTracking/XorArea.h
+/home/ubuntu/codebase/YinSets2D-master/test/InterfaceTracking/XorArea.h
 InterfaceTracking/ComputeError.h
-/home/kyliang/YinSet2D_MARS/test/InterfaceTracking/ComputeError.h
+/home/ubuntu/codebase/YinSets2D-master/test/InterfaceTracking/ComputeError.h
 InterfaceTracking/VelocityField.h
-/home/kyliang/YinSet2D_MARS/test/InterfaceTracking/VelocityField.h
+/home/ubuntu/codebase/YinSets2D-master/test/InterfaceTracking/VelocityField.h
 YinSet/YinSet.h
-/home/kyliang/YinSet2D_MARS/test/YinSet/YinSet.h
+/home/ubuntu/codebase/YinSets2D-master/test/YinSet/YinSet.h
+InterfaceTracking/TestExample.h
+/home/ubuntu/codebase/YinSets2D-master/test/InterfaceTracking/TestExample.h
 

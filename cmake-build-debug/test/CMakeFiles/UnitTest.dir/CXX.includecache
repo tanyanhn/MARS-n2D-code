@@ -94,27 +94,27 @@ Core/VecCompare.h
 SegmentedRealizableSpadjor.h
 ../src/YinSet/SegmentedRealizableSpadjor.h
 
-/home/kyliang/YinSet2D_MARS/test/TestLocater.cpp
+/home/ubuntu/codebase/YinSets2D-master/test/TestLocater.cpp
 string
 -
 fstream
 -
 TestLocater.h
-/home/kyliang/YinSet2D_MARS/test/TestLocater.h
+/home/ubuntu/codebase/YinSets2D-master/test/TestLocater.h
 YinSet/PointsLocater.h
-/home/kyliang/YinSet2D_MARS/test/YinSet/PointsLocater.h
+/home/ubuntu/codebase/YinSets2D-master/test/YinSet/PointsLocater.h
 YinSet/SegmentedRealizableSpadjor.h
-/home/kyliang/YinSet2D_MARS/test/YinSet/SegmentedRealizableSpadjor.h
+/home/ubuntu/codebase/YinSets2D-master/test/YinSet/SegmentedRealizableSpadjor.h
 
-/home/kyliang/YinSet2D_MARS/test/TestLocater.h
+/home/ubuntu/codebase/YinSets2D-master/test/TestLocater.h
 cppunit/TestCase.h
 -
 cppunit/extensions/HelperMacros.h
 -
 
-/home/kyliang/YinSet2D_MARS/test/TestSegmentsIntersector.H
+/home/ubuntu/codebase/YinSets2D-master/test/TestSegmentsIntersector.H
 YinSet/SegmentsIntersector.h
-/home/kyliang/YinSet2D_MARS/test/YinSet/SegmentsIntersector.h
+/home/ubuntu/codebase/YinSets2D-master/test/YinSet/SegmentsIntersector.h
 string
 -
 cppunit/TestCase.h
@@ -122,7 +122,7 @@ cppunit/TestCase.h
 cppunit/extensions/HelperMacros.h
 -
 
-/home/kyliang/YinSet2D_MARS/test/TestSegmentsIntersector.cpp
+/home/ubuntu/codebase/YinSets2D-master/test/TestSegmentsIntersector.cpp
 fstream
 -
 sstream
@@ -132,9 +132,9 @@ iomanip
 cctype
 -
 TestSegmentsIntersector.H
-/home/kyliang/YinSet2D_MARS/test/TestSegmentsIntersector.H
+/home/ubuntu/codebase/YinSets2D-master/test/TestSegmentsIntersector.H
 
-/home/kyliang/YinSet2D_MARS/test/TestYinSetsBooleanOps.H
+/home/ubuntu/codebase/YinSets2D-master/test/TestYinSetsBooleanOps.H
 string
 -
 cppunit/TestCase.h
@@ -142,19 +142,19 @@ cppunit/TestCase.h
 cppunit/extensions/HelperMacros.h
 -
 Core/Vec.h
-/home/kyliang/YinSet2D_MARS/test/Core/Vec.h
+/home/ubuntu/codebase/YinSets2D-master/test/Core/Vec.h
 
-/home/kyliang/YinSet2D_MARS/test/TestYinSetsBooleanOps.cpp
+/home/ubuntu/codebase/YinSets2D-master/test/TestYinSetsBooleanOps.cpp
 fstream
 -
 TestYinSetsBooleanOps.H
-/home/kyliang/YinSet2D_MARS/test/TestYinSetsBooleanOps.H
+/home/ubuntu/codebase/YinSets2D-master/test/TestYinSetsBooleanOps.H
 YinSet/SegmentedRealizableSpadjor.h
-/home/kyliang/YinSet2D_MARS/test/YinSet/SegmentedRealizableSpadjor.h
+/home/ubuntu/codebase/YinSets2D-master/test/YinSet/SegmentedRealizableSpadjor.h
 YinSet/YinSet.h
-/home/kyliang/YinSet2D_MARS/test/YinSet/YinSet.h
+/home/ubuntu/codebase/YinSets2D-master/test/YinSet/YinSet.h
 
-/home/kyliang/YinSet2D_MARS/test/UnitTest.cpp
+/home/ubuntu/codebase/YinSets2D-master/test/UnitTest.cpp
 iostream
 -
 cppunit/ui/text/TestRunner.h
@@ -162,9 +162,9 @@ cppunit/ui/text/TestRunner.h
 cppunit/TestCaller.h
 -
 TestSegmentsIntersector.H
-/home/kyliang/YinSet2D_MARS/test/TestSegmentsIntersector.H
+/home/ubuntu/codebase/YinSets2D-master/test/TestSegmentsIntersector.H
 TestLocater.h
-/home/kyliang/YinSet2D_MARS/test/TestLocater.h
+/home/ubuntu/codebase/YinSets2D-master/test/TestLocater.h
 TestYinSetsBooleanOps.H
-/home/kyliang/YinSet2D_MARS/test/TestYinSetsBooleanOps.H
+/home/ubuntu/codebase/YinSets2D-master/test/TestYinSetsBooleanOps.H
 

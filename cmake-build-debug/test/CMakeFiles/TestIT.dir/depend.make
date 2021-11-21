@@ -12,6 +12,7 @@ test/CMakeFiles/TestIT.dir/TestIT.cpp.o: ../src/InterfaceTracking/ComputeError.h
 test/CMakeFiles/TestIT.dir/TestIT.cpp.o: ../src/InterfaceTracking/ExplicitRK.h
 test/CMakeFiles/TestIT.dir/TestIT.cpp.o: ../src/InterfaceTracking/MARS.h
 test/CMakeFiles/TestIT.dir/TestIT.cpp.o: ../src/InterfaceTracking/RKButcher.h
+test/CMakeFiles/TestIT.dir/TestIT.cpp.o: ../src/InterfaceTracking/TestExample.h
 test/CMakeFiles/TestIT.dir/TestIT.cpp.o: ../src/InterfaceTracking/TimeIntegrator.h
 test/CMakeFiles/TestIT.dir/TestIT.cpp.o: ../src/InterfaceTracking/VectorFunction.h
 test/CMakeFiles/TestIT.dir/TestIT.cpp.o: ../src/InterfaceTracking/VelocityField.h
