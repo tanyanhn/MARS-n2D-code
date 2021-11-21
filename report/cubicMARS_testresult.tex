@@ -1,0 +1,92 @@
+\documentclass[a4paper,twoside]{ctexart}
+\usepackage{geometry}
+\geometry{margin=1cm,vmargin={0pt,1cm}}
+\setlength{\topmargin}{-2cm}
+\setlength{\paperheight}{23cm}
+\setlength{\paperwidth}{18cm}
+\setlength{\textheight}{19.6cm}
+\setlength{\textwidth}{15cm}
+\usepackage{makecell}
+\usepackage{fancyhdr}
+\usepackage{siunitx}
+\usepackage{amssymb}
+\usepackage{indentfirst}
+\setlength{\parindent}{0.5em}
+
+\pagenumbering{arabic}
+
+% useful packages.
+\usepackage{multirow}
+\usepackage{caption}
+\usepackage{mathrsfs}
+\usepackage{amsfonts}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{enumerate}
+\usepackage{xcolor,graphicx,float}
+\usepackage{epstopdf}
+\usepackage{multicol}
+\usepackage{fancyhdr}
+\usepackage{layout}
+\usepackage{listings}
+\lstset{language=Matlab}
+\lstset{breaklines}
+\lstset{extendedchars=false}
+\usepackage[colorlinks,linkcolor=blue]{hyperref}
+\usepackage{xcolor}
+\usepackage{cite}
+\usepackage[numbers,sort&compress]{natbib} 
+\setcitestyle{open={},close={}}
+%\usepackage{natbibspacing}
+%\renewcommand{\refname}{}
+\usepackage{anyfontsize}
+
+
+% some common command
+\newcommand{\dif}{\mathrm{d}}
+\newcommand{\avg}[1]{\left\langle #1 \right\rangle}
+\newcommand{\pdfrac}[2]{\frac{\partial #1}{\partial #2}}
+\newcommand{\op}{\odot}
+\newcommand{\Eabs}{E_{\mathrm{abs}}}
+\newcommand{\Erel}{E_{\mathrm{rel}}}
+\newcommand{\Ediv}{\mathrm{div}}%\div是除号
+\newcommand{\lrq}[1]{\left( #1 \right)}
+\newcommand{\avint}[1]{\frac{1}{\left|#1\right|}\int_{#1}}
+
+\newcommand{\upcite}[1]{\textsuperscript{\textsuperscript{\cite{#1}}}} 
+
+\makeatletter
+\newcommand\sixteen{\@setfontsize\sixteen{17pt}{6}}
+\renewcommand{\maketitle}{\bgroup\setlength{\parindent}{0pt}
+\begin{flushleft}
+\sixteen\bfseries \@title
+\medskip
+\end{flushleft}
+\textit{\@author}
+\egroup}
+\makeatother
+
+\CTEXsetup[format={\Large\bfseries}]{section}
+
+\title{MARS2D 测试文档}
+
+
+\begin{document}
+\maketitle
+
+\section{Vortex shear of a circular disk}
+\begin{table}[htbp]
+    \centering\begin{tabular}{c|c}
+        \hline\\
+        参数&值\\
+        \hline\\
+        周期&$T=8$\\
+        中心点&$C=(0.5,0.75)$\\
+        半径&$R=0.15$\\
+    \end{tabular}
+    \caption{<caption>}
+    \label{<label>}
+\end{table}
+
+
+\end{document}
