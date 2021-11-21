@@ -16,9 +16,10 @@ public:
 Point cent;
 Real radio, dt, rtiny, T;
 IT_VectorFunction<2> *velocity;
-
 int n, opstride;
-TestIT(Point _cent, Real _radio, int _n, Real _dt, Real _T, IT_VectorFunction<2> *_v, int _opstride, Real _rtiny = 0.1):cent(_cent), radio(_radio), n(_n), dt(_dt), velocity(_v), rtiny(_rtiny), opstride(_opstride), T(_T){};
+std::string name;
+
+TestIT(Point _cent, Real _radio, int _n, Real _dt, Real _T, IT_VectorFunction<2> *_v, std::string _name, int _opstride, Real _rtiny = 0.1):cent(_cent), radio(_radio), n(_n), dt(_dt), velocity(_v), rtiny(_rtiny), opstride(_opstride), T(_T), name(_name){};
 };
 
 IT_VectorFunction<2> *vortex = new Vortex(8);
@@ -32,13 +33,19 @@ TestIT getTest(int i)
     //Vortex(8) 
     //n = 64; dt = 0.04; rtiny = 0.01
     //4.26e-5 4.16 2.38e-6 5.04 7.21e-8
-    test.push_back(TestIT(Point{0.5, 0.75}, 0.15, 64, 0.04, 8, vortex, 100, 0.01));
+    test.push_back(TestIT(Point{0.5, 0.75}, 0.15, 64, 0.04, 8, vortex, "Vortex", 100, 0.01));
 
     //test 1
     //Deformation(2, 4)
     //n = 128; dt = 0.01; rtiny = 0.01
-    //2.44e-5 3.77 1.79e-6 5.23 4.76e-8
-    test.push_back(TestIT(Point{0.5, 0.5}, 0.15, 128, 0.01, 2, deformation, 40, 0.01));
+    //2.44e-5 3.77 1.79e-6 5.23 4.76e-8(richardson)
+    test.push_back(TestIT(Point{0.5, 0.5}, 0.15, 128, 0.01, 2, deformation, "Deformation", 40, 0.01));
+
+    //test 1
+    //Deformation(2, 4)
+    //n = 128; dt = 0.01; rtiny = 0.1
+    //
+    test.push_back(TestIT(Point{0.5, 0.5}, 0.15, 128, 0.01, 2, deformation, "Deformation", 40));
 
     return test[i];
 }  

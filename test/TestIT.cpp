@@ -25,7 +25,7 @@ using Vector = std::vector<T>;
 
 int main()
 {
-    Real tol = 1e-9;
+    Real tol = 1e-19;
     cout << setiosflags(ios::scientific) << setprecision(4);
 
     TestIT test = getTest(1);
@@ -60,7 +60,7 @@ int main()
         ostringstream tmps;
         tmps << k;
         //string fname = "resultsVortex/No" + tmps.str();
-        string fname = "resultsDeformation/No" + tmps.str();
+        string fname = "results" + test.name + "/No" + tmps.str();
 
         //start tracking interface
         //CM.trackInterface(Rotation(-2, 0, 2 * M_PI), YS, 0, dt, 1);
