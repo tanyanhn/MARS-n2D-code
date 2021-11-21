@@ -39,7 +39,7 @@ int main()
     Vector<Curve<2, 4>> crvs;
     Curve<2, 4> crv;
 
-    for (int k = 0; k < 4; k++)
+    for (int k = 0; k < 3; k++)
     {
         Vector<rVec<2>> pts;
         //Real ang = M_PI / n;
@@ -55,7 +55,7 @@ int main()
         Vector<Curve<2, 4>> vcrv{crv};
         YinSet<2, 4> YS(SegmentedRealizableSpadjor<4>(vcrv), tol);
         ExplicitRungeKutta<2, ClassicRK4> ERK;
-        MARS<2, 4> CM(&ERK, 4 * M_PI * radio / n, 0.01);
+        MARS<2, 4> CM(&ERK, 4 * M_PI * radio / n, test.rtiny);
 
         ostringstream tmps;
         tmps << k;
@@ -67,8 +67,9 @@ int main()
         //CM.trackInterface(RevRotation(-2, 0, 2 * M_PI, 1), YS, 0, dt, 1);
         //CM.trackInterface(Vortex(8), YS, 0, dt, 8, true, fname, opstride);
         //CM.trackInterface(Deformation(2), YS, 0, dt, 2, true, fname, opstride);
-        CM.trackInterface(*test.velocity, YS, 0, dt, test.T, true, fname, opstride);
-        
+
+        //CM.trackInterface(*test.velocity, YS, 0, dt, test.T, true, fname, opstride);
+        CM.trackInterface(*test.velocity, YS, 0, dt, test.T);
 
         //get the curve after tracking
         crv = (YS.getBoundaryCycles())[0];
@@ -78,14 +79,25 @@ int main()
         dt /= 2;
     }
     //output the convergency rate
-    
-    auto result = richardsonError(crvs, tol);
+
+    n *= 8;
+    Vector<rVec<2>> rpts;
+    //Real ang = M_PI / n;
+    rpts.push_back({center[0] + radio, center[1]});
+    for (int i = 1; i < n; i++)
+    {
+        rpts.push_back({center[0] + radio * cos(2 * M_PI / n * i), center[1] + radio * sin(2 * M_PI / n * i)});
+    }
+    rpts.push_back({center[0] + radio, center[1]});
+    auto rcrv = fitCurve<4>(rpts, true);
+
+    //auto result = richardsonError(crvs, tol);
+    auto result = exactError(crvs, rcrv, tol);
     for (auto &i : result)
     {
         cout << i << "  ";
     }
     cout << endl;
-    
 
     //output the points
     /*

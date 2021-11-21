@@ -27,14 +27,17 @@ IT_VectorFunction<2> *deformation = new Deformation(2);
 TestIT getTest(int i)
 {
     Vector<TestIT> test;
+
+    //test 0
     //Vortex(8) 
     //n = 64; dt = 0.04; rtiny = 0.01
     //4.26e-5 4.16 2.38e-6 5.04 7.21e-8
     test.push_back(TestIT(Point{0.5, 0.75}, 0.15, 64, 0.04, 8, vortex, 100, 0.01));
 
+    //test 1
     //Deformation(2, 4)
     //n = 128; dt = 0.01; rtiny = 0.01
-
+    //2.44e-5 3.77 1.79e-6 5.23 4.76e-8
     test.push_back(TestIT(Point{0.5, 0.5}, 0.15, 128, 0.01, 2, deformation, 40, 0.01));
 
     return test[i];
