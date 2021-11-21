@@ -33,7 +33,7 @@ TestIT getTest(int i)
     //test 0
     //Vortex(8)
     //n = 64; dt = 0.04; rtiny = 0.01
-    //4.26e-5 4.16 2.38e-6 5.04 7.21e-8
+    //4.26e-5 4.16 2.38e-6 5.04 7.21e-8(richardson)
     test.push_back(TestIT(Point{0.5, 0.75}, 0.15, 64, 0.04, 8, vortex, "Vortex", 100, 0.01));
 
     //test 1
@@ -43,10 +43,10 @@ TestIT getTest(int i)
     //2.74e-5 3.81 1.95e-6 5.23 5.22e-8(exact)
     test.push_back(TestIT(Point{0.5, 0.5}, 0.15, 128, 0.01, 2, deformation, "Deformation", 40, 0.01));
 
-    //test 1
+    //test 2
     //Deformation(2, 4)
     //n = 128; dt = 0.01; rtiny = 0.1
-    //
+    //3.60e-5 4.61 1.47e-6 5.40 3.49e-8(exact)
     test.push_back(TestIT(Point{0.5, 0.5}, 0.15, 128, 0.01, 2, deformation, "Deformation", 40));
 
     return test[i];

@@ -28,7 +28,7 @@ int main()
     Real tol = 1e-15;
     cout << setiosflags(ios::scientific) << setprecision(4);
 
-    TestIT test = getTest(2);
+    TestIT test = getTest(0);
 
     //set the initial curve
     int n = test.n;
