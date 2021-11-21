@@ -50,6 +50,15 @@ TestIT getTest(int i)
     //3.60e-5 4.61 1.47e-6 5.40 3.49e-8(exact)
     test.push_back(TestIT(Point{0.5, 0.5}, 0.15, 128, 0.01, 2, deformation, "Deformation", 40));
 
+    //test 3
+    //Deformation(2, 4) plot use
+    test.push_back(TestIT(Point{0.5, 0.5}, 0.15, 256, 0.005, 2, deformation, "Deformation", 50));
+
+    //test 4
+    //Vortex(8) plot use
+    test.push_back(TestIT(Point{0.5, 0.75}, 0.15, 128, 0.01, 8, vortex, "Vortex", 100, 0.01));
+
+
     return test[i];
 }
 
