@@ -25,7 +25,7 @@ using Vector = std::vector<T>;
 
 int main()
 {
-    Real tol = 1e-19;
+    Real tol = 1e-15;
     cout << setiosflags(ios::scientific) << setprecision(4);
 
     TestIT test = getTest(1);

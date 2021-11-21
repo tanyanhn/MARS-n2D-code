@@ -8,18 +8,19 @@
 
 using Point = Vec<Real, 2>;
 
-template<class T>
+template <class T>
 using Vector = std::vector<T>;
 
-class TestIT{
+class TestIT
+{
 public:
-Point cent;
-Real radio, dt, rtiny, T;
-IT_VectorFunction<2> *velocity;
-int n, opstride;
-std::string name;
+    Point cent;
+    Real radio, dt, rtiny, T;
+    IT_VectorFunction<2> *velocity;
+    int n, opstride;
+    std::string name;
 
-TestIT(Point _cent, Real _radio, int _n, Real _dt, Real _T, IT_VectorFunction<2> *_v, std::string _name, int _opstride, Real _rtiny = 0.1):cent(_cent), radio(_radio), n(_n), dt(_dt), velocity(_v), rtiny(_rtiny), opstride(_opstride), T(_T), name(_name){};
+    TestIT(Point _cent, Real _radio, int _n, Real _dt, Real _T, IT_VectorFunction<2> *_v, std::string _name, int _opstride, Real _rtiny = 0.1) : cent(_cent), radio(_radio), dt(_dt), rtiny(_rtiny), T(_T), velocity(_v), n(_n), opstride(_opstride), name(_name){};
 };
 
 IT_VectorFunction<2> *vortex = new Vortex(8);
@@ -30,7 +31,7 @@ TestIT getTest(int i)
     Vector<TestIT> test;
 
     //test 0
-    //Vortex(8) 
+    //Vortex(8)
     //n = 64; dt = 0.04; rtiny = 0.01
     //4.26e-5 4.16 2.38e-6 5.04 7.21e-8
     test.push_back(TestIT(Point{0.5, 0.75}, 0.15, 64, 0.04, 8, vortex, "Vortex", 100, 0.01));
@@ -48,6 +49,6 @@ TestIT getTest(int i)
     test.push_back(TestIT(Point{0.5, 0.5}, 0.15, 128, 0.01, 2, deformation, "Deformation", 40));
 
     return test[i];
-}  
+}
 
 #endif
