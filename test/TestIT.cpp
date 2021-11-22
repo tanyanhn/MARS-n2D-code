@@ -28,12 +28,12 @@ int main()
     Real tol = 1e-15;
     cout << setiosflags(ios::scientific) << setprecision(4);
 
-    TestIT test = getTest(0);
+    TestIT test = getTest(5);
 
     //set the initial curve
     int n = test.n;
     Real dt = test.dt;
-    int opstride = test.dt;
+    int opstride = test.opstride;
     Real radio = test.radio;
     Point center = test.cent;
     Vector<Curve<2, 4>> crvs;

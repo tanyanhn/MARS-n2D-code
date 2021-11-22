@@ -58,6 +58,13 @@ TestIT getTest(int i)
     //Vortex(8) plot use
     test.push_back(TestIT(Point{0.5, 0.75}, 0.15, 128, 0.01, 8, vortex, "Vortex", 100, 0.01));
 
+    //test 5
+    //Deformation(2, 4)
+    //n = 128; dt = 0.04; rtiny = 0.01
+    //2.44e-5 3.77 1.79e-6 5.23 4.76e-8(richardson)
+    //2.74e-5 3.81 1.95e-6 5.23 5.22e-8(exact)
+    test.push_back(TestIT(Point{0.5, 0.5}, 0.15, 128, 0.04, 2, deformation, "Deformation", 40, 0.01));
+
 
     return test[i];
 }
