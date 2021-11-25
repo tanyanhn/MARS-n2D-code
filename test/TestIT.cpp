@@ -1,11 +1,13 @@
 #include <iostream>
 #include <vector>
+#include <list>
 #include <cmath>
 #include <cstdlib>
 #include <iomanip>
 #include <fstream>
 #include <sstream>
 #include "InterfaceTracking/MARS.h"
+#include "InterfaceTracking/MARS2D.h"
 #include "InterfaceTracking/ExplicitRK.h"
 #include "InterfaceTracking/TimeIntegrator.h"
 #include "InterfaceTracking/VectorFunction.h"
@@ -28,7 +30,7 @@ int main()
     Real tol = 1e-15;
     cout << setiosflags(ios::scientific) << setprecision(4);
 
-    TestIT test = getTest(5);
+    TestIT test = getTest(0);
 
     //set the initial curve
     int n = test.n;
@@ -39,7 +41,7 @@ int main()
     Vector<Curve<2, 4>> crvs;
     Curve<2, 4> crv;
 
-    for (int k = 0; k < 3; k++)
+    for (int k = 0; k < 2; k++)
     {
         Vector<rVec<2>> pts;
         //Real ang = M_PI / n;
@@ -55,7 +57,7 @@ int main()
         Vector<Curve<2, 4>> vcrv{crv};
         YinSet<2, 4> YS(SegmentedRealizableSpadjor<4>(vcrv), tol);
         ExplicitRungeKutta<2, ClassicRK4> ERK;
-        MARS<2, 4> CM(&ERK, 4 * M_PI * radio / n, test.rtiny);
+        MARS2D<4, std::list> CM(&ERK, 4 * M_PI * radio / n, test.rtiny);
 
         ostringstream tmps;
         tmps << k;

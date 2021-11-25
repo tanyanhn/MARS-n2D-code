@@ -1,6 +1,7 @@
 #ifndef _IT_TIMEINTEGRATOR_
 #define _IT_TIMEINTEGRATOR_
 #include <vector>
+#include <list>
 #include "Core/Config.h"
 #include "Core/Vec.h"
 #include "VectorFunction.h"
@@ -41,7 +42,27 @@ public:
         }
         return;
     }*/
+    /*
     virtual void timeStep(const IT_VectorFunction<Dim> &v, Vector<Point> &pts, Real tn, Real dt)
+    {
+        for (auto &i : pts)
+        {
+            i = timeStep(v, i, tn, dt);
+        }
+        return;
+    }
+
+    virtual void timeStep(const IT_VectorFunction<Dim> &v, std::list<Point> &pts, Real tn, Real dt)
+    {
+        for(auto &i : pts)
+        {
+            i = timeStep(v, i, tn, dt);
+        }
+        return;
+    }
+    */
+    template <template <typename...> class Container>
+    void timeStep(const IT_VectorFunction<Dim> &v, Container<Point> &pts, Real tn, Real dt)
     {
         for (auto &i : pts)
         {

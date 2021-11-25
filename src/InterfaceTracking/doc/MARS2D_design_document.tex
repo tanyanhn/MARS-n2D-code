@@ -73,7 +73,19 @@
 
 \begin{document}
 \maketitle
-\noindent 下文中 \texttt{Vector} 表示 \texttt{std::vector}， \texttt{Point} 表示 \texttt{Vec<Real, Dim>}。
+\noindent 下文中 \texttt{Vector} 表示 \texttt{std::vector}，\texttt{List} 表示 \texttt{std::list}，\texttt{Point} 表示 \texttt{Vec<Real, Dim>}。{\color{blue}蓝色的文字表示是为了能够同时实现 \texttt{Vector} 和 \texttt{List} 而改变的。}
+
+\section{\texttt{Vector} 和 \texttt{List} 的区别}
+\subsection{\texttt{Vector}}
+在内存中分配一块连续的内存空间进行存储，相对于\texttt{List}更节省空间。支持随机访问，能通过\texttt{operator[]}进行对数据成员的访问，随机访问的时间复杂度为$\mathrm{O}(1)$，并且其\texttt{iterator}支持\texttt{operator+}操作。但在进行插入和删除操作时会造成内存块的拷贝，效率较低，时间复杂度为$\mathrm{O}(n)$。
+
+\subsection{\texttt{List}}
+每个数据节点包括一个信息块、一个前驱指针和一个后驱指针，便于进行序列内部的插入和删除操作，时间复杂度为$\mathrm{O}(1)$。但不支持随机访问，访问指定数据的时间复杂度为$\mathrm{O}(n)$，其\texttt{iterator}也只支持\texttt{operator++}。在创建大体量的数据时， \texttt{List} 比 \texttt{Vector} 要慢很多，因为其内存不是连续的。
+
+\subsection{将\texttt{Vector}替换为\texttt{List}对程序性能的影响}
+首先由于加减点时会调用容器的 \texttt{emplace}（插入成员函数）和 \texttt{erase}（删除成员函数），所以使用\texttt{List}在这方面可以降低时间复杂度。在随机访问方面，程序中仅在计算相邻点间弦长时调用了点列中的点坐标信息，而能否随机访问并不影响其时间复杂度。而对于\texttt{iterator}是否重载了\texttt{operator+}，程序中在进行加点时确实调用了\texttt{Vector}迭代器的\texttt{operaotr+}，但可以通过循环调用\texttt{operator++}解决，时间复杂度应和加点个数同阶。在创建临时变量方面，\texttt{List} 会更慢一些，具体影响程度还需验证。
+
+在实现上，程序中统一使用 \texttt{iterator} 来进行点列的遍历；\texttt{Vector} 和 \texttt{List} 的 \texttt{emplace}、\texttt{erase} 接口是一样的，不需要改变；在进行 \texttt{iterator} 移位时，统一用循环调用 \texttt{operator++} 来实现。这样一套程序就可以同时实现 \texttt{Vector} 和 \texttt{List} 两个版本。
 
 \section{class VectorFunction}
 \begin{itemize}
@@ -93,14 +105,14 @@
     \item \textbf{模板：}\texttt{template<int Dim>}：\\\texttt{Dim} 表示空间维数。
     \item \textbf{成员函数：}
             \begin{enumerate}[(1)]
-                \item \texttt{virtual const Point timeStep(const VectorFunction<Dim> \&v, const Point \&pt, Real tn, Real dt) = 0：}\\
-                \textbf{输入：}\texttt{v} 为速度场，\texttt{pt} 为当前点坐标，\texttt{tn} 为当前时间，\texttt{dt} 为时间步长。\\
+                \item \texttt{virtual const Point timeStep(const VectorFunction<Dim> \&v, const Point \&pt, Real tn, Real k) = 0：}\\
+                \textbf{输入：}\texttt{v} 为速度场，\texttt{pt} 为当前点坐标，\texttt{tn} 为当前时间，\texttt{k} 为时间步长。\\
                 \textbf{输出：}新的点坐标。\\
-                \textbf{作用：}使得 \texttt{pt} 在速度场 \texttt{v} 的作用下运动 \texttt{dt} 时间。
-                \item \texttt{virtual void timeStep(const VectorFunction<Dim> \&v, Vector<Point> \&pts, Real tn, Real dt)：}\\
-                \textbf{输入：}\texttt{v} 为速度场，\texttt{pts} 表示一列 Point ，\text{tn} 为当前时间，\texttt{dt} 为时间步长。\\
+                \textbf{作用：}使得 \texttt{pt} 在速度场 \texttt{v} 的作用下运动 \texttt{k} 时间。
+                \item \texttt{template<template<typename...>class Container>\\void timeStep(const VectorFunction<Dim> \&v, Container<Point> \&pts, Real tn, Real k)：}\\
+                \textbf{输入：}\texttt{v} 为速度场，\texttt{pts} 表示一列 Point ，\text{tn} 为当前时间，\texttt{k} 为时间步长。\\
                 \textbf{输出：}\texttt{void}，原址更改 pts。\\
-                \textbf{作用：}函数使得 pts 中的一列点在速度场 \texttt{v} 的作用下运动 \texttt{dt} 时间，调用单点版本的 \texttt{timeStep} 成员函数进行实现。
+                \textbf{作用：}函数使得 pts 中的一列点在速度场 \texttt{v} 的作用下运动 \texttt{k} 时间，调用单点版本的 \texttt{timeStep} 成员函数进行实现。
             \end{enumerate}
 \end{itemize}
 
@@ -143,7 +155,7 @@
     \item \texttt{using ButcherTab = ButcherTableau<ERK, Type>;}
     \item \textbf{成员函数：}
             \begin{enumerate}[(1)]
-                \item \texttt{const Point timeStep(const VectorFunction \&v, const Point \&pt, Real tn, Real dt)：}\\
+                \item \texttt{const Point timeStep(const VectorFunction<Dim> \&v, const Point \&pt, Real tn, Real k)：}\\
                 \textbf{输入：}同时间积分方法中的纯虚函数 \texttt{timeStep} 一致。\\
                 \textbf{输出：}同时间积分方法中的纯虚函数 \texttt{timeStep} 一致。\\
                 \textbf{作用：}调用 \texttt{ButcherTab} 中的成员常量实现对应的 ERK 方法，进一步实现 \texttt{TimeInteg-\\rator<Dim>} 中的纯虚函数 \texttt{timeStep}。
@@ -152,42 +164,62 @@
 
 \section{class MARS}
 \begin{itemize}
-    \item 殷集的界面追踪方法。
-    \item \textbf{模板：}\texttt{template<int Dim, int Order>}:\\
-    其中 \texttt{Dim} 表示维数， \texttt{Order} 表示殷集边界所用样条曲线的阶数。
+    \item 殷集界面追踪方法的基类。
+    \item \textbf{模板：}\texttt{template<int Dim, int Order>}：\\
+    其中 \texttt{Dim} 表示维数，\texttt{Order} 表示殷集边界表示的阶数。
+    \item \textbf{成员变量：}
+        \begin{enumerate}[(1)]
+            \item \texttt{TimeIntegrator<Dim> *TI：}\textbf{\texttt{Protected}  成员变量}，时间积分方法基类指针。
+        \end{enumerate}
+    \item \textbf{成员函数：}
+        \begin{enumerate}[(1)]
+            \item \texttt{MARS(TimeIntegrator<Dim> *\_TI):TI(\_TI)\{\}：}\\构造函数。
+            \item \texttt{virtual void timeStep(const VectorFunction<Dim> \&v, YinSet<Dim, Order> \&ys, Real tn, Real k) = 0：}\\
+            \textbf{输入：}\texttt{v} 为速度场，\texttt{ys} 为殷集，\texttt{tn} 和 \texttt{k} 的定义同时间积分方法中一致\\
+            \textbf{输出：}\texttt{void}，原址更改 \texttt{ys}。\\
+            \textbf{作用：}纯虚函数，作为二维和三维 MARS 方法 \texttt{timeStep} 的公共接口，在继承类中进行实现。函数将 \texttt{tn} 时刻的殷集映射到 \texttt{k} 时间后的殷集并赋值给 \texttt{ys}。
+            \item \texttt{void trackInterface(const VectorFunction<Dim> \&v, YinSet<Dim,Order> \&ys, Real startTime, Real k, Real endTime)：}\\
+            \textbf{输入：}\texttt{v} 为速度场，\texttt{ys} 为殷集，\texttt{startTime} 和 \texttt{endTime} 表示 MARS 方法作用的起止时间，\texttt{k} 为时间步长。\\
+            \textbf{输出：}\texttt{void}，原址更改 \texttt{ys}。\\
+            \textbf{作用：}在速度场 \texttt{v} 的作用下，将 \texttt{startTime} 时刻的殷集 \texttt{ys} 通过时间步长为 \texttt{k} 的 MARS 方法映射到 \texttt{endTime} 时刻的殷集并赋值给 \texttt{ys}。调用 \texttt{timeStep} 在此基类中进行实现。
+        \end{enumerate}
+\end{itemize}
+
+
+\section{class MARS2D}
+\begin{itemize}
+    \item 二维殷集的界面追踪方法。
+    \item \textbf{模板：}\texttt{template<int Order, {\color{blue}template<typename...> class Container}>}:\\
+    其中 \texttt{Order} 表示二维殷集边界所用样条曲线的阶数，{\color{blue}\texttt{Container} 表示某种 STL 容器，用于存储示踪点列，目前考虑 \texttt{Vector} 和 \texttt{List} 两种。}
+    \item \textbf{继承：}\texttt{class MARS2D: public MARS<2, Order>}。\\
+    \texttt{using Base = MARS<2, Order>。}
     \item \textbf{成员变量：}
             \begin{enumerate}[(1)]
-                \item \texttt{TimeIntegrator<Dim> *TI：}时间积分方法基类指针。
                 \item \texttt{Interval<1> chdLenRange：}殷集边界上相邻节点间弦长取值范围。
             \end{enumerate}
     \item \textbf{成员函数：}
             \begin{enumerate}[(1)]
-                \item \texttt{MARS()=delete}。
-                \item \texttt{MARS(TimeIntegrator *\_TI, Real hL, Real rtiny=0.1)：}\\
+                \item \texttt{MARS2D(TimeIntegrator<2> *\_TI, Real hL, Real rtiny=0.1):Base(\_TI)\{...\}：}\\
                 构造函数，使 \texttt{chdLenRange} 为\texttt{[rtiny*hL,hL]}，\texttt{rtiny} 默认值为 0.1。
-                \item \texttt{void discreteFlowMap(const VectorFunction \&v, Vector<Point> \&pts, Real tn, Real dt)：}\\
+                \item \texttt{void discreteFlowMap(const VectorFunction<2> \&v, {\color{blue}Container<Point> \&pts}, \\Real tn, Real k)：}\\
                 \textbf{Private 成员函数}\\
-                \textbf{输入：}\texttt{v} 为速度场，\texttt{pts} 为示踪点列，\texttt{tn} 和 \texttt{dt} 的定义同时间积分方法中的一致。\\
+                \textbf{输入：}\texttt{v} 为速度场，\texttt{pts} 为示踪点列，\texttt{tn} 和 \texttt{k} 的定义同时间积分方法中的一致。\\
                 \textbf{输出：}\texttt{void}，原址更改 \texttt{pts}。\\
-                \textbf{作用：}函数调用 \texttt{TI->timeStep} 的 \texttt{Vector} 版本将 \texttt{pts} 映射到 \texttt{dt} 时间后的示踪点列。
-                \item \texttt{Vector<unsigned int> removeSmallEdges(Vector<Point> \&pts)：}\\
+                \textbf{作用：}函数调用 \texttt{Base::TI->timeStep} 的 \texttt{Container} 版本将 \texttt{pts} 映射到 \texttt{k} 时间后的示踪点列。
+                \item \texttt{Vector<unsigned int> splitLongEdges(const VectorFunction<2> \&v, \\{\color{blue}Container<Point> \&pts}, const Curve<2, Order> \&crvtn, Real tn, Real k)：}\\
                 \textbf{Private 成员函数}\\
-                \textbf{输入：}\texttt{pts} 为下一时刻的示踪点列。\\
-                \textbf{输出：}删除的节点在原 pts 中的序号。\\
-                \textbf{作用：}函数将 \texttt{pts} 中相邻点间弦长过小的点在原址进行删除，满足不删除首尾两点、不连续删点的条件。
-                \item \texttt{Vector<unsigned int> splitLongEdges(const VectorFunction \&v, Vector<Point> \\\&pts, const Curve<Dim, Order> \&crvtn, Real tn, Real dt)：}\\
-                \textbf{Private 成员函数}\\
-                \textbf{输入：}\texttt{v} 为速度场，\texttt{pts} 为下一时刻的示踪点列，\texttt{crvtn} 为当前时刻对应的样条曲线，\texttt{tn} 和 \texttt{dt} 的定义同时间积分方法中的一致。\\
+                \textbf{输入：}\texttt{v} 为速度场，\texttt{pts} 为下一时刻的示踪点列，\texttt{crvtn} 为当前时刻对应的样条曲线，\texttt{tn} 和 \texttt{k} 的定义同时间积分方法中的一致。\\
                 \textbf{输出：}\texttt{pts} 中新加入点的序号。\\
-                \textbf{作用：}函数在 \texttt{pts} 中寻找相邻点间距离过长的弦，并在 \texttt{crv} 中对应的曲线段上加点，利用 \texttt{TI->timeStep} 将新加入的点映射到下一时刻并添加到 \texttt{pts} 中(注意这里调用的是 timeStep 的单点映射版本，避免对本身就存在于 pts 中的点进行重复操作)。
-                \item \texttt{void timeStep(const VectorFunction \&v, YinSet<Dim,Order> \&ys, Real tn, Real dt)：}\\
-                \textbf{输入：}\texttt{v} 为速度场，\texttt{ys} 为殷集，\texttt{tn} 和 \texttt{dt} 的定义同时间积分方法中一致。\\
-                \textbf{输出：}\texttt{void}，原址更改 \texttt{ys}。\\
-                \textbf{作用：}函数调用 discreteFlowMap, splitLongEdges， removeSmallEdges 和 fitCurve 实现 MARS 方法中的一个时间步，即预处理、流映射、后处理的复合，将当前时刻的殷集映射到 \texttt{dt} 时间后的殷集并赋值给 \texttt{ys}。
-                \item \texttt{void trackInterface(const VectorFunction \&v, YinSet<Dim,Order> \&ys, Real startTime, Real dt, Real endTime)：}\\
-                \textbf{输入：}\texttt{v} 为速度场，\texttt{ys} 为殷集，\texttt{startTime} 和 \texttt{endTime} 表示 MARS 方法作用的起止时间，\texttt{dt} 为时间步长。\\
-                \textbf{输出：}\texttt{void}，原址更改 \texttt{ys}。\\
-                \textbf{作用：}在速度场 \texttt{v} 的作用下，将 \texttt{startTime} 时刻的殷集 \texttt{ys} 通过时间步长为 \texttt{dt} 的 MARS 方法映射到 \texttt{endTime} 时刻的殷集并赋值给 \texttt{ys}。调用 \texttt{timeStep} 进行实现。
+                \textbf{作用：}函数在 \texttt{pts} 中寻找相邻点间距离过长的弦，并在 \texttt{crvtn} 中对应的曲线段上加点，利用 \texttt{Base::TI->timeStep} 将新加入的点映射到下一时刻并添加到 \texttt{pts} 中(注意这里调用的是 \texttt{timeStep} 的单点映射版本，避免对本身就存在于 \texttt{pts} 中的点进行重复操作)。
+                \item \texttt{Vector<unsigned int> removeSmallEdges({\color{blue}Container<Point> \&pts})：}\\
+                \textbf{Private 成员函数}\\
+                \textbf{输入：}\texttt{pts} 为下一时刻的示踪点列。\\%，{\color{red}\texttt{debug} 表示是否处于调试模式。加入 \texttt{debug} 是因为目前的 \texttt{removeSmallEdges} 中建立了一个临时的 \texttt{List<int> ids} ，其元素对应节点序号，在删点的同时删除 \texttt{ids} 中的元素以标记剩余点的序号，进一步得到删除点的序号。而删除节点的序号只会在调试阶段使用，所以这里希望在非调试阶段只输出删除点的个数，避免临时 \texttt{List} 变量的创建。}\\
+                \textbf{输出：}删除的节点在原 pts 中的序号。\\%{\color{red}或仅包含一个元素的 \texttt{Vector}，该元素为删除点的个数}。\\
+                \textbf{作用：}函数将 \texttt{pts} 中相邻点间弦长过小的点在原址进行删除，满足不删除首尾两点、不连续删点的条件。
+                \item \texttt{void timeStep(const VectorFunction<2> \&v, YinSet<2,Order> \&ys, Real tn, Real k)：}\\
+                \textbf{输入：}同基类一致。\\
+                \textbf{输出：}同基类一致。\\
+                \textbf{作用：}实现基类中的纯虚函数，函数依次调用 discreteFlowMap, splitLongEdges， removeSmallEdges 和 fitCurve 实现二维 MARS 方法中的一个时间步，即预处理、流映射、后处理的复合，将当前时刻的殷集映射到 \texttt{k} 时间后的殷集并赋值给 \texttt{ys}。
             \end{enumerate}
           \end{itemize}
 
@@ -196,7 +228,7 @@
 
 %\begin{figure}[!htbp]
 %  \centering
-%  \includegraphics[angle=90,width = 0.6\textwidth]{2DMARS}
+%  \includegraphics[angle=90,wikh = 0.6\textwikh]{2DMARS}
 %  \caption{2DMARS框架}
 %\end{figure}
 

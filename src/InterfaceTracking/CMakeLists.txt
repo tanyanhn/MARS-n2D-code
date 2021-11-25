@@ -6,6 +6,8 @@ set(InterfaceTracking_Files
     InterfaceTracking/ExplicitRK.h
     InterfaceTracking/MARS.h
     InterfaceTracking/MARS.cpp
+    InterfaceTracking/MARS2D.h
+    InterfaceTracking/MARS2D.cpp
     InterfaceTracking/XorArea.h
     InterfaceTracking/ComputeError.h
     InterfaceTracking/VelocityField.h
