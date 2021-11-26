@@ -1,10 +1,10 @@
-#ifndef _IT_TIMEINTEGRATOR_
-#define _IT_TIMEINTEGRATOR_
-#include <vector>
-#include <list>
+#ifndef _TIMEINTEGRATOR_H_
+#define _TIMEINTEGRATOR_H_
+
 #include "Core/Config.h"
 #include "Core/Vec.h"
 #include "VectorFunction.h"
+#include <vector>
 
 /*template<class T>
 struct identity
@@ -13,7 +13,7 @@ struct identity
 };*/
 
 template <int Dim>
-class IT_TimeIntegrator
+class TimeIntegrator
 {
     template <class T>
     using Vector = std::vector<T>;
@@ -21,9 +21,19 @@ class IT_TimeIntegrator
     using Point = Vec<Real, Dim>;
 
 public:
-    virtual ~IT_TimeIntegrator() {}
+    virtual ~TimeIntegrator() {}
 
-    virtual const Point timeStep(const IT_VectorFunction<Dim> &v, const Point &pt, Real tn, Real dt) = 0;
+    virtual const Point timeStep(const VectorFunction<Dim> &v, const Point &pt, Real tn, Real dt) = 0;
+
+    template <template <typename...> class Container>
+    void timeStep(const VectorFunction<Dim> &v, Container<Point> &pts, Real tn, Real dt)
+    {
+        for (auto &i : pts)
+        {
+            i = timeStep(v, i, tn, dt);
+        }
+        return;
+    }
 
     /*template <class Container>
     void timeStep(const IT_VectorFunction<Dim> &v, Container &pts, Real tn, Real dt)
@@ -42,34 +52,6 @@ public:
         }
         return;
     }*/
-    /*
-    virtual void timeStep(const IT_VectorFunction<Dim> &v, Vector<Point> &pts, Real tn, Real dt)
-    {
-        for (auto &i : pts)
-        {
-            i = timeStep(v, i, tn, dt);
-        }
-        return;
-    }
-
-    virtual void timeStep(const IT_VectorFunction<Dim> &v, std::list<Point> &pts, Real tn, Real dt)
-    {
-        for(auto &i : pts)
-        {
-            i = timeStep(v, i, tn, dt);
-        }
-        return;
-    }
-    */
-    template <template <typename...> class Container>
-    void timeStep(const IT_VectorFunction<Dim> &v, Container<Point> &pts, Real tn, Real dt)
-    {
-        for (auto &i : pts)
-        {
-            i = timeStep(v, i, tn, dt);
-        }
-        return;
-    }
 };
 
 #endif

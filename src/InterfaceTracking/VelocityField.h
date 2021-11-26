@@ -1,9 +1,10 @@
-#ifndef _VELOCITYFIELD_
-#define _VELOCITYFIELD_
+#ifndef _VELOCITYFIELD_H_
+#define _VELOCITYFIELD_H_
 
 #include "TimeIntegrator.h"
+#include <cmath>
 
-class Translation : public IT_VectorFunction<2>
+class Translation : public VectorFunction<2>
 {
 public:
     Translation(Real u1, Real u2) : v1(u1), v2(u2){};
@@ -19,7 +20,7 @@ private:
     Real v1, v2;
 };
 
-class Rotation : public IT_VectorFunction<2>
+class Rotation : public VectorFunction<2>
 {
 public:
     Rotation(Real c1, Real c2, Real _om) : rc1(c1), rc2(c2), om(_om){};
@@ -35,7 +36,7 @@ private:
     Real rc1, rc2, om;
 };
 
-class RevRotation : public IT_VectorFunction<2>
+class RevRotation : public VectorFunction<2>
 {
 public:
     RevRotation(Real c1, Real c2, Real _om, Real _T) : rc1(c1), rc2(c2), om(_om), T(_T){};
@@ -51,7 +52,7 @@ private:
     Real rc1, rc2, om, T;
 };
 
-class Vortex : public IT_VectorFunction<2>
+class Vortex : public VectorFunction<2>
 {
 public:
     Vortex(Real _T) : T(_T){};
@@ -67,7 +68,7 @@ private:
     Real T;
 };
 
-class Deformation : public IT_VectorFunction<2>
+class Deformation : public VectorFunction<2>
 {
 public:
     Deformation(Real _T, int _n = 4) : T(_T), n(_n){};

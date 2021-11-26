@@ -1,15 +1,16 @@
-#ifndef _IT_VECTORFUNCTION_
-#define _IT_VECTORFUNCTION_
+#ifndef _VECTORFUNCTION_H_
+#define _VECTORFUNCTION_H_
 
+#include "Core/Config.h"
 #include "Core/Vec.h"
 
 template <int Dim>
-class IT_VectorFunction
+class VectorFunction
 {
     using Point = Vec<Real, Dim>;
 
 public:
-    virtual ~IT_VectorFunction(){};
+    virtual ~VectorFunction(){};
 
     virtual const Point operator()(const Point &pt, Real t) const =0 ;
 };

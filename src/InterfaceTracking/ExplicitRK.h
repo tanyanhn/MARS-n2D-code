@@ -1,16 +1,14 @@
-#ifndef _IT_RUNGEKUTTABASE_
-#define _IT_RUNGEKUTTABASE_
+#ifndef _EXPLICIT_RK_H_
+#define _EXPLICIT_RK_H_
 
 #include <vector>
-#include "Core/Config.h"
-#include "Core/Vec.h"
 #include "TimeIntegrator.h"
 #include "RKButcher.h"
 
 /// The compile time constants of numbers of stages
 
 template <int Dim, RK_Category2 Type>
-class ExplicitRungeKutta : public IT_TimeIntegrator<Dim>
+class ExplicitRungeKutta : public TimeIntegrator<Dim>
 {
 
     template <class T>
@@ -20,34 +18,9 @@ class ExplicitRungeKutta : public IT_TimeIntegrator<Dim>
 
     using ButcherTab = ButcherTableau<ERK, Type>;
 
-private:
-    //static constexpr int nStages = RKC::nS;
-    //Vector<Vector<Real>> a;
-    //Vector<Real> b, c;
-
 public:
-    /*ExplicitRungeKutta()
-    {
-        a.resize(nStages);
-        for (int i = 0; i < nStages; i++)
-        {
-            a[i].resize(nStages);
-        }
-        b.resize(nStages);
-        c.resize(nStages);
-        for (int i = 0; i < nStages; i++)
-        {
-            for (int j = 0; j < nStages; j++)
-                a[i][j] = static_cast<Real>(RKC::a[i][j]) / RKC::a[i][nStages];
-            c[i] = static_cast<Real>(RKC::c[i]) / RKC::c[nStages];
-        }
-        for (int j = 0; j < nStages; j++)
-        {
-            b[j] = static_cast<Real>(RKC::a[nStages][j]) / RKC::a[nStages][nStages];
-        }
-    }*/
 
-    virtual const Point timeStep(const IT_VectorFunction<Dim> &v, const Point &pt, Real tn, Real dt)
+    virtual const Point timeStep(const VectorFunction<Dim> &v, const Point &pt, Real tn, Real dt)
     {
         Vector<Point> step;
         step.resize(ButcherTab::nStages);

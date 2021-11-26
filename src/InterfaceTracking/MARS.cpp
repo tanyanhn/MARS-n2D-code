@@ -6,7 +6,7 @@
 using namespace std;
 
 template <int Dim, int Order>
-void MARS<Dim, Order>::trackInterface(const IT_VectorFunction<Dim> &v, YS &ys, Real StartTime, Real dt, Real EndTime, bool output, string fName, int opstride)
+void MARS<Dim, Order>::trackInterface(const VectorFunction<Dim> &v, YS &ys, Real StartTime, Real dt, Real EndTime, bool output, string fName, int opstride)
 {
     Real T = StartTime;
     Real t = dt;
@@ -24,12 +24,15 @@ void MARS<Dim, Order>::trackInterface(const IT_VectorFunction<Dim> &v, YS &ys, R
             t = EndTime - T;
         }
         cout << "Step: " << step << "     timestep: " << t << endl;
+
         timeStep(v, ys, T, t);
+
         cout << endl;
         T += t;
+
         if (output == true && T == EndTime)
         {
-            ofstream of(string(fName + "_End" + ".dat"), ios_base::binary);
+            ofstream of(string(fName + "_End.dat"), ios_base::binary);
             ys.dump(of);
             break;
         }

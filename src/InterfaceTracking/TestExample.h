@@ -1,30 +1,33 @@
-#ifndef _TESTEXAMPLE_
-#define _TESTEXAMPLE_
+#ifndef _TESTEXAMPLE_H_
+#define _TESTEXAMPLE_H_
 
-#include "Core/Config.h"
-#include "Core/Vec.h"
 #include "VectorFunction.h"
 #include "VelocityField.h"
 
-using Point = Vec<Real, 2>;
-
-template <class T>
-using Vector = std::vector<T>;
-
 class TestIT
 {
-public:
-    Point cent;
-    Real radio, dt, rtiny, T;
-    IT_VectorFunction<2> *velocity;
-    int n, opstride;
-    std::string name;
+    using Point = Vec<Real, 2>;
 
-    TestIT(Point _cent, Real _radio, int _n, Real _dt, Real _T, IT_VectorFunction<2> *_v, std::string _name, int _opstride, Real _rtiny = 0.1) : cent(_cent), radio(_radio), dt(_dt), rtiny(_rtiny), T(_T), velocity(_v), n(_n), opstride(_opstride), name(_name){};
+    template <class T>
+    using Vector = std::vector<T>;
+
+public:
+    Point center;//center of initial circle
+    Real radio;//radio of initial circle
+    Real dt;//time step
+    Real rtiny;//rtiny of MARS
+    Real T;//total time
+    VectorFunction<2> *velocity;//velocity fiel
+    int n;//cut the initial circle to n equal parts to generate the initial YinSet
+    int opstride;//out put stride, for plot
+    std::string name;//file name of the out put target, for plot
+
+    TestIT(Point _center, Real _radio, int _n, Real _dt, Real _T, VectorFunction<2> *_v, std::string _name, int _opstride, Real _rtiny = 0.1) : center(_center), radio(_radio), dt(_dt), rtiny(_rtiny), T(_T), velocity(_v), n(_n), opstride(_opstride), name(_name){};
 };
 
-IT_VectorFunction<2> *vortex = new Vortex(8);
-IT_VectorFunction<2> *deformation = new Deformation(2);
+//two velocity fields
+VectorFunction<2> *vortex = new Vortex(8);
+VectorFunction<2> *deformation = new Deformation(2);
 
 TestIT getTest(int i)
 {
@@ -63,7 +66,6 @@ TestIT getTest(int i)
     //n = 128; dt = 0.04; rtiny = 0.01
     //5.65e-5 4.61 2.31e-6 5.10 6.75e-8(exact)
     test.push_back(TestIT(Point{0.5, 0.5}, 0.15, 128, 0.04, 2, deformation, "Deformation", 40, 0.01));
-
 
     return test[i];
 }
