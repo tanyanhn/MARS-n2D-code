@@ -6,6 +6,7 @@
 #include <iomanip>
 #include <fstream>
 #include <sstream>
+#include <ctime>
 #include "InterfaceTracking/MARS2D.h"
 #include "InterfaceTracking/ExplicitRK.h"
 #include "InterfaceTracking/ComputeError.h"
@@ -25,7 +26,7 @@ int main()
     int stages = 3;
     cout << setiosflags(ios::scientific) << setprecision(4);
 
-    TestIT test = getTest(0);
+    TestIT test = getTest(1);
 
     //set the initial curve
     int n = test.n;
@@ -37,6 +38,10 @@ int main()
     Curve<2, 4> crv;
 
     ExplicitRungeKutta<2, ClassicRK4> ERK;
+
+    double time1[3];
+    double time2[3];
+    clock_t begin, end;
 
     for (int k = 0; k < stages; k++)
     {
@@ -59,11 +64,53 @@ int main()
         tmps << k;
         string fname = "results" + test.name + "/No" + tmps.str();
 
+        begin = clock();
         if (plot == true)
             CM.trackInterface(*test.velocity, YS, 0, dt, test.T, true, fname, opstride);
         else
             CM.trackInterface(*test.velocity, YS, 0, dt, test.T);
+        end = clock();
+        time1[k] = (double)(end - begin) / CLOCKS_PER_SEC;
+        //get the curve after tracking
+        crv = (YS.getBoundaryCycles())[0];
+        crvs.push_back(crv);
+        n *= 2;
+        opstride *= 2;
+        dt /= 2;
+    }
 
+    n = test.n;
+    dt = test.dt;
+    opstride = test.opstride;
+
+    for (int k = 0; k < stages; k++)
+    {
+        //get the initial curve
+        Vector<Point> pts;
+        pts.push_back({center[0] + radio, center[1]});
+        for (int i = 1; i < n; i++)
+        {
+            pts.push_back({center[0] + radio * cos(2 * M_PI / n * i), center[1] + radio * sin(2 * M_PI / n * i)});
+        }
+        pts.push_back({center[0] + radio, center[1]});
+        crv = fitCurve<4>(pts, true);
+        Vector<Curve<2, 4>> vcrv{crv};
+        YinSet<2, 4> YS(SegmentedRealizableSpadjor<4>(vcrv), tol);
+
+        //set the CubicMARS method
+        MARS2D<4, vector> CM(&ERK, 4 * M_PI * radio / n, test.rtiny);
+
+        ostringstream tmps;
+        tmps << k;
+        string fname = "results" + test.name + "/No" + tmps.str();
+
+        begin = clock();
+        if (plot == true)
+            CM.trackInterface(*test.velocity, YS, 0, dt, test.T, true, fname, opstride);
+        else
+            CM.trackInterface(*test.velocity, YS, 0, dt, test.T);
+        end = clock();
+        time2[k] = (double)(end - begin) / CLOCKS_PER_SEC;
         //get the curve after tracking
         crv = (YS.getBoundaryCycles())[0];
         crvs.push_back(crv);
@@ -73,6 +120,7 @@ int main()
     }
     
     //get the approx solution
+    /*
     n *= 8;//ensure that the chdlength is smaller than computational solutions'
     Vector<Point> rpts;
     rpts.push_back({center[0] + radio, center[1]});
@@ -83,7 +131,6 @@ int main()
     rpts.push_back({center[0] + radio, center[1]});
     auto rcrv = fitCurve<4>(rpts, true);
 
-    
     //output the convergency rate
     auto result = exactError(crvs, rcrv, tol);
     //auto result = richardsonError(crvs, tol);
@@ -92,6 +139,9 @@ int main()
         cout << i << "  ";
     }
     cout << endl;
+    */
 
+    cout << time1[0] << " " << time1[1] << " " << time1[2] << endl;
+    cout << time2[0] << " " << time2[1] << " " << time2[2] << endl;
     return 0;
 }
