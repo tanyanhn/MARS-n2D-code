@@ -1,4 +1,4 @@
-#include "MARS2D.h"
+#include "MARS2DLIST.h"
 #include "Core/Polynomial.h"
 #include <fstream>
 #include <sstream>
@@ -8,8 +8,6 @@
 #include <functional>
 #include <type_traits>
 
-Real tol = 1e-15;
-
 using namespace std;
 
 using Point = Vec<Real, 2>;
@@ -17,8 +15,11 @@ using Point = Vec<Real, 2>;
 template <class T>
 using Vector = vector<T>;
 
-template <int Order, template <typename...> class Container>
-void MARS2D<Order, Container>::discreteFlowMap(const VectorFunction<2> &v, Container<Point> &pts, Real tn, Real dt)
+template <class T>
+using List = list<T>;
+
+template <int Order>
+void MARS2DLIST<Order>::discreteFlowMap(const VectorFunction<2> &v, List<Point> &pts, Real tn, Real dt)
 {
     Base::TI->timeStep(v, pts, tn, dt);
     return;
@@ -32,11 +33,10 @@ void MARS2D<Order, Container>::discreteFlowMap(const VectorFunction<2> &v, Conta
  * @param  lowBound         
  * @return has removed points or not
  */
-template <template <typename...> class Container>
-bool remove(Container<unsigned int> &ids, Container<Vec<Real, 2>> &pts, Real lowBound)
+bool removeList(int &count, List<Point> &pts, Real lowBound)
 {
     //set distances
-    int num = ids.size();
+    int num = pts.size();
     Vector<Real> dist(num - 1);
     auto pit = pts.begin();
     Point prept = *pit;
@@ -48,16 +48,14 @@ bool remove(Container<unsigned int> &ids, Container<Vec<Real, 2>> &pts, Real low
     }
 
     bool predelete = false; //mark whether the pre-point has been erased
-    auto it = ids.begin();
     pit = pts.begin();
-    ++it;
     ++pit;
 
     int i = 1;
     if (dist[0] < lowBound)
     {
         predelete = true;
-        it = ids.erase(it);
+        count++;
         pit = pts.erase(pit);
         i++;
     }
@@ -67,7 +65,6 @@ bool remove(Container<unsigned int> &ids, Container<Vec<Real, 2>> &pts, Real low
         if (dist[i] >= lowBound)
         {
             predelete = false;
-            ++it;
             ++pit;
             i++;
         }
@@ -77,14 +74,13 @@ bool remove(Container<unsigned int> &ids, Container<Vec<Real, 2>> &pts, Real low
             {
                 if (predelete == false)
                 {
-                    it = ids.erase(it);
+                    count++;
                     pit = pts.erase(pit);
                     i++;
                     predelete = true;
                 }
                 else
                 {
-                    ++it;
                     ++pit;
                     i++;
                     predelete = false;
@@ -92,7 +88,7 @@ bool remove(Container<unsigned int> &ids, Container<Vec<Real, 2>> &pts, Real low
             }
             else
             {
-                it = ids.erase(++it);
+                count++;
                 pit = pts.erase(++pit);
                 i += 2;
                 predelete = true;
@@ -101,64 +97,38 @@ bool remove(Container<unsigned int> &ids, Container<Vec<Real, 2>> &pts, Real low
     }
     if (i == num - 1)
     {
-        return num != (int)ids.size();
+        return num != (int)pts.size();
     }
     else
     {
         if (predelete == true || dist[i] >= lowBound)
-            return num != (int)ids.size();
-        it = ids.erase(it);
+            return num != (int)pts.size();
+        count++;
         pit = pts.erase(pit);
         return true;
     }
 }
 
-template <int Order, template <typename...> class Container>
-Vector<unsigned int> MARS2D<Order, Container>::removeSmallEdges(Container<Point> &pts)
+template <int Order>
+int MARS2DLIST<Order>::removeSmallEdges(List<Point> &pts)
 {
-    int num = pts.size();
-    Container<unsigned int> ids(num);
-    auto it = ids.begin();
-    for (int i = 0; i < num; i++)
-    {
-        *it = i;
-        ++it;
-    }
+    int count = 0;
 
     while (true)
     {
-        if (!remove(ids, pts, (chdLenRange.lo())[0]))
+        if (!removeList(count, pts, (chdLenRange.lo())[0]))
             break;
     }
 
-    Vector<unsigned int> rids(num - ids.size());
-    it = ids.begin();
-    unsigned int allid = 0;
-    int count = 0;
-    while (count < (int)rids.size() - 1)
-    {
-        if (*it != allid)
-        {
-            rids[count] = allid;
-            count++;
-            allid++;
-        }
-        else
-        {
-            ++it;
-            allid++;
-        }
-    }
-    return rids;
+    return count;
 }
 
-template <int Order, template <typename...> class Container>
-Vector<unsigned int> MARS2D<Order, Container>::splitLongEdges(const VectorFunction<2> &v, Container<Point> &pts, const Crv &crv, Real tn, Real dt)
+template <int Order>
+int MARS2DLIST<Order>::splitLongEdges(const VectorFunction<2> &v, List<Point> &pts, const Crv &crv, Real tn, Real dt)
 {
-    assert(crv.isClosed(tol));
+    assert(crv.isClosed(1e-15));
 
     int num = pts.size();
-    Vector<unsigned int> ids;
     Vector<Polynomial<Order, Point>> poly = crv.getPolys();
     Vector<Real> knots = crv.getKnots();
     function<void(Real, Real, Vector<Real> &)> split;
@@ -188,7 +158,7 @@ Vector<unsigned int> MARS2D<Order, Container>::splitLongEdges(const VectorFuncti
     };
 
     auto it = pts.begin();
-    unsigned int count = 0;
+    int count = 0;
     Point prept = *it;
     ++it;
     Real dist;
@@ -200,7 +170,6 @@ Vector<unsigned int> MARS2D<Order, Container>::splitLongEdges(const VectorFuncti
         {
             prept = *it;
             ++it;
-            count++;
             continue;
         }
 
@@ -211,29 +180,73 @@ Vector<unsigned int> MARS2D<Order, Container>::splitLongEdges(const VectorFuncti
         for (int j = chdt.size() - 1; j >= 0; j--)
         {
             count++;
-            ids.push_back(count);
             Point opt = crv(chdt[j]);
             it = pts.emplace(it, Base::TI->timeStep(v, opt, tn, dt));
         }
-        count++;
         for (int j = 0; j < (int)chdt.size() + 1; j++)
             ++it;
     }
-    return ids;
+    return count;
 }
 
-template <int Order, template <typename...> class Container>
-void MARS2D<Order, Container>::timeStep(const VectorFunction<2> &v, YS &ys, Real tn, Real dt)
+template <int Order>
+void MARS2DLIST<Order>::timeStep(const VectorFunction<2> &v, YS &ys, Vector<List<Point>> &vpts, Real tn, Real dt)
 {
     Vector<Crv> vcrv = ys.getBoundaryCycles();
-    int id = 1;
+    for (int id = 1; id < (int)vcrv.size() + 1; id++)
+    {
+        assert(vcrv[id-1].isClosed(1e-15));
+
+        //get the points after discrete flow map
+        discreteFlowMap(v, vpts[id-1], tn, dt);
+
+        //split long edges
+        int splitids = splitLongEdges(v, vpts[id-1], vcrv[id-1], tn, dt);
+
+        //remove small edges
+        int removeids = removeSmallEdges(vpts[id-1]);
+
+        //
+        int num = vpts[id-1].size();
+        Vector<Real> dist(num - 1);
+
+        //use Container<Point> pts to generate the Vector<Point> pts
+        //fitCurve only support Vector<Point> version
+        Vector<Point> ptsv(num);
+        auto it = vpts[id-1].begin();
+        Point prept = *it;
+        for (int i = 0; i < num - 1; i++)
+        {
+            ptsv[i] = prept;
+            ++it;
+            dist[i] = norm(*it - prept);
+            prept = *it;
+        }
+        ptsv[num - 1] = prept;
+        vcrv[id-1] = fitCurve<Order>(ptsv, true);
+
+        auto maxp = max_element(dist.begin(), dist.end());
+        auto minp = min_element(dist.begin(), dist.end());
+
+        cout << "Curve " << id
+             << ":  Add " << splitids << " Points,"
+             << " remove " << removeids << " Points."
+             << " Max chdlength: " << *maxp
+             << " Min chdlength: " << *minp << endl;
+    }
+    ys = YS(SegmentedRealizableSpadjor<Order>(vcrv), 1e-15);
+    return;
+}
+
+template <int Order>
+void MARS2DLIST<Order>::trackInterface(const VectorFunction<2> &v, YS &ys, Real StartTime, Real dt, Real EndTime, bool output, string fName, int opstride)
+{
+    Vector<List<Point>> vpts;
+    Vector<Crv> vcrv = ys.getBoundaryCycles();
     for (auto &crv : vcrv)
     {
-        assert(crv.isClosed(tol));
-
-        //pts: now's points
         Vector<Polynomial<Order, Point>> polys = crv.getPolys();
-        Container<Point> pts(polys.size() + 1);
+        List<Point> pts(polys.size() + 1);
         auto it = pts.begin();
         for (int i = 0; i < (int)polys.size(); i++)
         {
@@ -241,48 +254,47 @@ void MARS2D<Order, Container>::timeStep(const VectorFunction<2> &v, YS &ys, Real
             ++it;
         }
         *it = polys[0][0];
-
-        //get the points after discrete flow map
-        discreteFlowMap(v, pts, tn, dt);
-
-        //split long edges
-        Vector<unsigned int> splitids = splitLongEdges(v, pts, crv, tn, dt);
-
-        //remove small edges
-        Vector<unsigned int> removeids = removeSmallEdges(pts);
-
-        //
-        int num = pts.size();
-        Vector<Real> dist(num - 1);
-
-        //use Container<Point> pts to generate the Vector<Point> pts
-        //fitCurve only support Vector<Point> version
-        Vector<Point> vpts(num);
-        it = pts.begin();
-        Point prept = *it;
-        for (int i = 0; i < num - 1; i++)
-        {
-            vpts[i] = prept;
-            ++it;
-            dist[i] = norm(*it - prept);
-            prept = *it;
-        }
-        vpts[num - 1] = prept;
-        crv = fitCurve<Order>(vpts, true);
-
-        auto maxp = max_element(dist.begin(), dist.end());
-        auto minp = min_element(dist.begin(), dist.end());
-
-        cout << "Curve " << id
-             << ":  Add " << splitids.size() << " Points,"
-             << " remove " << removeids.size() << " Points."
-             << " Max chdlength: " << *maxp
-             << " Min chdlength: " << *minp << endl;
-        id++;
+        vpts.push_back(pts);
     }
-    ys = YS(SegmentedRealizableSpadjor<Order>(vcrv), tol);
+
+    Real T = StartTime;
+    Real t = dt;
+    int step = 1;
+    if (output == true)
+    {
+        ofstream of(string(fName + "_Start.dat"), ios_base::binary);
+        ys.dump(of);
+    }
+
+    while (T < EndTime)
+    {
+        if (EndTime - T < dt)
+        {
+            t = EndTime - T;
+        }
+        cout << "Step: " << step << "     timestep: " << t << endl;
+
+        timeStep(v, ys, vpts, T, t);
+
+        cout << endl;
+        T += t;
+
+        if (output == true && T == EndTime)
+        {
+            ofstream of(string(fName + "_End.dat"), ios_base::binary);
+            ys.dump(of);
+            break;
+        }
+        if (output == true && step % opstride == 0)
+        {
+            ostringstream tmps;
+            tmps << step;
+            ofstream of(string(fName + "_Step" + tmps.str() + ".dat"), ios_base::binary);
+            ys.dump(of);
+        }
+        step++;
+    }
     return;
 }
 
-template class MARS2D<4, vector>;
-template class MARS2D<4, list>;
+template class MARS2DLIST<4>;

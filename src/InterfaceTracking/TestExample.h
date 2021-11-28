@@ -38,6 +38,8 @@ TestIT getTest(int i)
     //n = 64; dt = 0.04; rtiny = 0.01
     //4.26e-5 4.16 2.38e-6 5.04 7.21e-8(richardson)
     //4.80e-5 4.25 2.52e-6 4.97 8.06e-8(exact)
+    //time_list 2.18 2.16e+1 3.14e+2
+    //time_vect 2.21 2.30e+1 3.06e+2
     test.push_back(TestIT(Point{0.5, 0.75}, 0.15, 64, 0.04, 8, vortex, "Vortex", 100, 0.01));
 
     //test 1
@@ -45,12 +47,16 @@ TestIT getTest(int i)
     //n = 128; dt = 0.01; rtiny = 0.01
     //2.44e-5 3.77 1.79e-6 5.23 4.76e-8(richardson)
     //2.74e-5 3.81 1.95e-6 5.23 5.22e-8(exact)
+    //time_list 1.73e+1 2.36e+2 3.58e+3
+    //time_vect 1.75e+1 2.43e+2 3.77e+3
     test.push_back(TestIT(Point{0.5, 0.5}, 0.15, 128, 0.01, 2, deformation, "Deformation", 40, 0.01));
 
     //test 2
     //Deformation(2, 4)
     //n = 128; dt = 0.01; rtiny = 0.1
     //3.60e-5 4.61 1.47e-6 5.40 3.49e-8(exact)
+    //time_list 1.43e+1 1.93e+2 3.99e+3
+    //time_vect 1.43e+1 2.01e+2 4.05e+3
     test.push_back(TestIT(Point{0.5, 0.5}, 0.15, 128, 0.01, 2, deformation, "Deformation", 40));
 
     //test 3
@@ -65,6 +71,8 @@ TestIT getTest(int i)
     //Deformation(2, 4)
     //n = 128; dt = 0.04; rtiny = 0.01
     //5.65e-5 4.61 2.31e-6 5.10 6.75e-8(exact)
+    //time_list 4.29 6.00e+1 9.28e+2
+    //time_vect 4.45 6.12e+1 9.25e+2
     test.push_back(TestIT(Point{0.5, 0.5}, 0.15, 128, 0.04, 2, deformation, "Deformation", 40, 0.01));
 
     return test[i];

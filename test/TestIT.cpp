@@ -8,6 +8,7 @@
 #include <sstream>
 #include <ctime>
 #include "InterfaceTracking/MARS2D.h"
+#include "InterfaceTracking/MARS2DLIST.h"
 #include "InterfaceTracking/ExplicitRK.h"
 #include "InterfaceTracking/ComputeError.h"
 #include "InterfaceTracking/TestExample.h"
@@ -23,10 +24,10 @@ int main()
 {
     bool plot = false;
     Real tol = 1e-15;
-    int stages = 3;
+    int stages = 5;
     cout << setiosflags(ios::scientific) << setprecision(4);
 
-    TestIT test = getTest(1);
+    TestIT test = getTest(0);
 
     //set the initial curve
     int n = test.n;
@@ -39,10 +40,11 @@ int main()
 
     ExplicitRungeKutta<2, ClassicRK4> ERK;
 
-    double time1[3];
-    double time2[3];
+    Vector<Real> time1(stages);
+    Vector<Real> time2(stages);
     clock_t begin, end;
 
+    
     for (int k = 0; k < stages; k++)
     {
         //get the initial curve
@@ -82,6 +84,7 @@ int main()
     n = test.n;
     dt = test.dt;
     opstride = test.opstride;
+    
 
     for (int k = 0; k < stages; k++)
     {
@@ -120,7 +123,7 @@ int main()
     }
     
     //get the approx solution
-    /*
+    
     n *= 8;//ensure that the chdlength is smaller than computational solutions'
     Vector<Point> rpts;
     rpts.push_back({center[0] + radio, center[1]});
@@ -132,16 +135,36 @@ int main()
     auto rcrv = fitCurve<4>(rpts, true);
 
     //output the convergency rate
-    auto result = exactError(crvs, rcrv, tol);
+    auto it1 = crvs.begin();
+    auto it2 = crvs.begin() + stages;
+    auto it3 = crvs.end();
+    auto result1 = exactError(Vector<Crv>(it1, it2), rcrv, tol);
+    auto result2 = exactError(Vector<Crv>(it2, it3), rcrv, tol);
     //auto result = richardsonError(crvs, tol);
-    for (auto &i : result)
+    for (auto &i : result1)
     {
         cout << i << "  ";
     }
     cout << endl;
-    */
 
-    cout << time1[0] << " " << time1[1] << " " << time1[2] << endl;
-    cout << time2[0] << " " << time2[1] << " " << time2[2] << endl;
+    for (auto &i : result2)
+    {
+        cout << i << "  ";
+    }
+    cout << endl;
+
+    cout << "  list time: ";
+    for (auto &i:time1)
+    {
+        cout << i << "  ";
+    }
+    cout << endl;
+
+    cout << "vector time: ";
+    for (auto &i:time2)
+    {
+        cout << i << "  ";
+    }
+    cout << endl;
     return 0;
 }
