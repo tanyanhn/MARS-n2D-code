@@ -187,6 +187,45 @@ src/CMakeFiles/bays.dir/InterfaceTracking/MARS.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/bays.dir/InterfaceTracking/MARS.cpp.s"
 	cd /home/ubuntu/codebase/YinSets2D-master/cmake-build-debug/src && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/ubuntu/codebase/YinSets2D-master/src/InterfaceTracking/MARS.cpp -o CMakeFiles/bays.dir/InterfaceTracking/MARS.cpp.s
 
+src/CMakeFiles/bays.dir/InterfaceTracking/MARS2D.cpp.o: src/CMakeFiles/bays.dir/flags.make
+src/CMakeFiles/bays.dir/InterfaceTracking/MARS2D.cpp.o: ../src/InterfaceTracking/MARS2D.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/ubuntu/codebase/YinSets2D-master/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_11) "Building CXX object src/CMakeFiles/bays.dir/InterfaceTracking/MARS2D.cpp.o"
+	cd /home/ubuntu/codebase/YinSets2D-master/cmake-build-debug/src && /usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/bays.dir/InterfaceTracking/MARS2D.cpp.o -c /home/ubuntu/codebase/YinSets2D-master/src/InterfaceTracking/MARS2D.cpp
+
+src/CMakeFiles/bays.dir/InterfaceTracking/MARS2D.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/bays.dir/InterfaceTracking/MARS2D.cpp.i"
+	cd /home/ubuntu/codebase/YinSets2D-master/cmake-build-debug/src && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/ubuntu/codebase/YinSets2D-master/src/InterfaceTracking/MARS2D.cpp > CMakeFiles/bays.dir/InterfaceTracking/MARS2D.cpp.i
+
+src/CMakeFiles/bays.dir/InterfaceTracking/MARS2D.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/bays.dir/InterfaceTracking/MARS2D.cpp.s"
+	cd /home/ubuntu/codebase/YinSets2D-master/cmake-build-debug/src && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/ubuntu/codebase/YinSets2D-master/src/InterfaceTracking/MARS2D.cpp -o CMakeFiles/bays.dir/InterfaceTracking/MARS2D.cpp.s
+
+src/CMakeFiles/bays.dir/InterfaceTracking/MARS2DLIST.cpp.o: src/CMakeFiles/bays.dir/flags.make
+src/CMakeFiles/bays.dir/InterfaceTracking/MARS2DLIST.cpp.o: ../src/InterfaceTracking/MARS2DLIST.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/ubuntu/codebase/YinSets2D-master/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_12) "Building CXX object src/CMakeFiles/bays.dir/InterfaceTracking/MARS2DLIST.cpp.o"
+	cd /home/ubuntu/codebase/YinSets2D-master/cmake-build-debug/src && /usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/bays.dir/InterfaceTracking/MARS2DLIST.cpp.o -c /home/ubuntu/codebase/YinSets2D-master/src/InterfaceTracking/MARS2DLIST.cpp
+
+src/CMakeFiles/bays.dir/InterfaceTracking/MARS2DLIST.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/bays.dir/InterfaceTracking/MARS2DLIST.cpp.i"
+	cd /home/ubuntu/codebase/YinSets2D-master/cmake-build-debug/src && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/ubuntu/codebase/YinSets2D-master/src/InterfaceTracking/MARS2DLIST.cpp > CMakeFiles/bays.dir/InterfaceTracking/MARS2DLIST.cpp.i
+
+src/CMakeFiles/bays.dir/InterfaceTracking/MARS2DLIST.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/bays.dir/InterfaceTracking/MARS2DLIST.cpp.s"
+	cd /home/ubuntu/codebase/YinSets2D-master/cmake-build-debug/src && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/ubuntu/codebase/YinSets2D-master/src/InterfaceTracking/MARS2DLIST.cpp -o CMakeFiles/bays.dir/InterfaceTracking/MARS2DLIST.cpp.s
+
+src/CMakeFiles/bays.dir/InterfaceTracking/XorArea.cpp.o: src/CMakeFiles/bays.dir/flags.make
+src/CMakeFiles/bays.dir/InterfaceTracking/XorArea.cpp.o: ../src/InterfaceTracking/XorArea.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/ubuntu/codebase/YinSets2D-master/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_13) "Building CXX object src/CMakeFiles/bays.dir/InterfaceTracking/XorArea.cpp.o"
+	cd /home/ubuntu/codebase/YinSets2D-master/cmake-build-debug/src && /usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/bays.dir/InterfaceTracking/XorArea.cpp.o -c /home/ubuntu/codebase/YinSets2D-master/src/InterfaceTracking/XorArea.cpp
+
+src/CMakeFiles/bays.dir/InterfaceTracking/XorArea.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/bays.dir/InterfaceTracking/XorArea.cpp.i"
+	cd /home/ubuntu/codebase/YinSets2D-master/cmake-build-debug/src && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/ubuntu/codebase/YinSets2D-master/src/InterfaceTracking/XorArea.cpp > CMakeFiles/bays.dir/InterfaceTracking/XorArea.cpp.i
+
+src/CMakeFiles/bays.dir/InterfaceTracking/XorArea.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/bays.dir/InterfaceTracking/XorArea.cpp.s"
+	cd /home/ubuntu/codebase/YinSets2D-master/cmake-build-debug/src && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/ubuntu/codebase/YinSets2D-master/src/InterfaceTracking/XorArea.cpp -o CMakeFiles/bays.dir/InterfaceTracking/XorArea.cpp.s
+
 # Object files for target bays
 bays_OBJECTS = \
 "CMakeFiles/bays.dir/Core/Config.cpp.o" \
@@ -198,7 +237,10 @@ bays_OBJECTS = \
 "CMakeFiles/bays.dir/YinSet/PastingMap.cpp.o" \
 "CMakeFiles/bays.dir/YinSet/YinSet.cpp.o" \
 "CMakeFiles/bays.dir/InterfaceTracking/RKButcher.cpp.o" \
-"CMakeFiles/bays.dir/InterfaceTracking/MARS.cpp.o"
+"CMakeFiles/bays.dir/InterfaceTracking/MARS.cpp.o" \
+"CMakeFiles/bays.dir/InterfaceTracking/MARS2D.cpp.o" \
+"CMakeFiles/bays.dir/InterfaceTracking/MARS2DLIST.cpp.o" \
+"CMakeFiles/bays.dir/InterfaceTracking/XorArea.cpp.o"
 
 # External object files for target bays
 bays_EXTERNAL_OBJECTS =
@@ -213,9 +255,12 @@ src/libbays.a: src/CMakeFiles/bays.dir/YinSet/PastingMap.cpp.o
 src/libbays.a: src/CMakeFiles/bays.dir/YinSet/YinSet.cpp.o
 src/libbays.a: src/CMakeFiles/bays.dir/InterfaceTracking/RKButcher.cpp.o
 src/libbays.a: src/CMakeFiles/bays.dir/InterfaceTracking/MARS.cpp.o
+src/libbays.a: src/CMakeFiles/bays.dir/InterfaceTracking/MARS2D.cpp.o
+src/libbays.a: src/CMakeFiles/bays.dir/InterfaceTracking/MARS2DLIST.cpp.o
+src/libbays.a: src/CMakeFiles/bays.dir/InterfaceTracking/XorArea.cpp.o
 src/libbays.a: src/CMakeFiles/bays.dir/build.make
 src/libbays.a: src/CMakeFiles/bays.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/ubuntu/codebase/YinSets2D-master/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_11) "Linking CXX static library libbays.a"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/ubuntu/codebase/YinSets2D-master/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_14) "Linking CXX static library libbays.a"
 	cd /home/ubuntu/codebase/YinSets2D-master/cmake-build-debug/src && $(CMAKE_COMMAND) -P CMakeFiles/bays.dir/cmake_clean_target.cmake
 	cd /home/ubuntu/codebase/YinSets2D-master/cmake-build-debug/src && $(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/bays.dir/link.txt --verbose=$(VERBOSE)
 

@@ -29,19 +29,59 @@ src/CMakeFiles/bays.dir/InterfaceTracking/MARS.cpp.o
  ../src/Core/Vec.h
  ../src/Core/numlib.h
  ../src/Core/static_for.h
- ../src/InterfaceTracking/ExplicitRK.h
- ../src/InterfaceTracking/RKButcher.h
- ../src/InterfaceTracking/TimeIntegrator.h
- ../src/InterfaceTracking/VectorFunction.h
  ../src/YinSet/Segment.h
  ../src/YinSet/SegmentedRealizableSpadjor.h
  ../src/YinSet/YinSet.h
  /home/ubuntu/codebase/YinSets2D-master/src/InterfaceTracking/MARS.cpp
  /home/ubuntu/codebase/YinSets2D-master/src/InterfaceTracking/MARS.h
+ /home/ubuntu/codebase/YinSets2D-master/src/InterfaceTracking/TimeIntegrator.h
+ /home/ubuntu/codebase/YinSets2D-master/src/InterfaceTracking/VectorFunction.h
+src/CMakeFiles/bays.dir/InterfaceTracking/MARS2D.cpp.o
+ ../src/Core/Config.h
+ ../src/Core/Curve.h
+ ../src/Core/Interval.h
+ ../src/Core/Polynomial.h
+ ../src/Core/Vec.h
+ ../src/Core/numlib.h
+ ../src/Core/static_for.h
+ ../src/YinSet/Segment.h
+ ../src/YinSet/SegmentedRealizableSpadjor.h
+ ../src/YinSet/YinSet.h
+ /home/ubuntu/codebase/YinSets2D-master/src/InterfaceTracking/MARS.h
+ /home/ubuntu/codebase/YinSets2D-master/src/InterfaceTracking/MARS2D.cpp
+ /home/ubuntu/codebase/YinSets2D-master/src/InterfaceTracking/MARS2D.h
+ /home/ubuntu/codebase/YinSets2D-master/src/InterfaceTracking/TimeIntegrator.h
+ /home/ubuntu/codebase/YinSets2D-master/src/InterfaceTracking/VectorFunction.h
+src/CMakeFiles/bays.dir/InterfaceTracking/MARS2DLIST.cpp.o
+ ../src/Core/Config.h
+ ../src/Core/Curve.h
+ ../src/Core/Interval.h
+ ../src/Core/Polynomial.h
+ ../src/Core/Vec.h
+ ../src/Core/numlib.h
+ ../src/Core/static_for.h
+ ../src/YinSet/Segment.h
+ ../src/YinSet/SegmentedRealizableSpadjor.h
+ ../src/YinSet/YinSet.h
+ /home/ubuntu/codebase/YinSets2D-master/src/InterfaceTracking/MARS.h
+ /home/ubuntu/codebase/YinSets2D-master/src/InterfaceTracking/MARS2DLIST.cpp
+ /home/ubuntu/codebase/YinSets2D-master/src/InterfaceTracking/MARS2DLIST.h
+ /home/ubuntu/codebase/YinSets2D-master/src/InterfaceTracking/TimeIntegrator.h
+ /home/ubuntu/codebase/YinSets2D-master/src/InterfaceTracking/VectorFunction.h
 src/CMakeFiles/bays.dir/InterfaceTracking/RKButcher.cpp.o
  ../src/Core/Config.h
  /home/ubuntu/codebase/YinSets2D-master/src/InterfaceTracking/RKButcher.cpp
  /home/ubuntu/codebase/YinSets2D-master/src/InterfaceTracking/RKButcher.h
+src/CMakeFiles/bays.dir/InterfaceTracking/XorArea.cpp.o
+ ../src/Core/Config.h
+ ../src/Core/Curve.h
+ ../src/Core/Interval.h
+ ../src/Core/Polynomial.h
+ ../src/Core/Vec.h
+ ../src/Core/numlib.h
+ ../src/Core/static_for.h
+ /home/ubuntu/codebase/YinSets2D-master/src/InterfaceTracking/XorArea.cpp
+ /home/ubuntu/codebase/YinSets2D-master/src/InterfaceTracking/XorArea.h
 src/CMakeFiles/bays.dir/YinSet/PastingMap.cpp.o
  ../src/Core/Config.h
  ../src/Core/Curve.h

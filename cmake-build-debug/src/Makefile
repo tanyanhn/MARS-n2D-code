@@ -244,6 +244,60 @@ InterfaceTracking/MARS.cpp.s:
 	cd /home/ubuntu/codebase/YinSets2D-master/cmake-build-debug && $(MAKE) -f src/CMakeFiles/bays.dir/build.make src/CMakeFiles/bays.dir/InterfaceTracking/MARS.cpp.s
 .PHONY : InterfaceTracking/MARS.cpp.s
 
+InterfaceTracking/MARS2D.o: InterfaceTracking/MARS2D.cpp.o
+
+.PHONY : InterfaceTracking/MARS2D.o
+
+# target to build an object file
+InterfaceTracking/MARS2D.cpp.o:
+	cd /home/ubuntu/codebase/YinSets2D-master/cmake-build-debug && $(MAKE) -f src/CMakeFiles/bays.dir/build.make src/CMakeFiles/bays.dir/InterfaceTracking/MARS2D.cpp.o
+.PHONY : InterfaceTracking/MARS2D.cpp.o
+
+InterfaceTracking/MARS2D.i: InterfaceTracking/MARS2D.cpp.i
+
+.PHONY : InterfaceTracking/MARS2D.i
+
+# target to preprocess a source file
+InterfaceTracking/MARS2D.cpp.i:
+	cd /home/ubuntu/codebase/YinSets2D-master/cmake-build-debug && $(MAKE) -f src/CMakeFiles/bays.dir/build.make src/CMakeFiles/bays.dir/InterfaceTracking/MARS2D.cpp.i
+.PHONY : InterfaceTracking/MARS2D.cpp.i
+
+InterfaceTracking/MARS2D.s: InterfaceTracking/MARS2D.cpp.s
+
+.PHONY : InterfaceTracking/MARS2D.s
+
+# target to generate assembly for a file
+InterfaceTracking/MARS2D.cpp.s:
+	cd /home/ubuntu/codebase/YinSets2D-master/cmake-build-debug && $(MAKE) -f src/CMakeFiles/bays.dir/build.make src/CMakeFiles/bays.dir/InterfaceTracking/MARS2D.cpp.s
+.PHONY : InterfaceTracking/MARS2D.cpp.s
+
+InterfaceTracking/MARS2DLIST.o: InterfaceTracking/MARS2DLIST.cpp.o
+
+.PHONY : InterfaceTracking/MARS2DLIST.o
+
+# target to build an object file
+InterfaceTracking/MARS2DLIST.cpp.o:
+	cd /home/ubuntu/codebase/YinSets2D-master/cmake-build-debug && $(MAKE) -f src/CMakeFiles/bays.dir/build.make src/CMakeFiles/bays.dir/InterfaceTracking/MARS2DLIST.cpp.o
+.PHONY : InterfaceTracking/MARS2DLIST.cpp.o
+
+InterfaceTracking/MARS2DLIST.i: InterfaceTracking/MARS2DLIST.cpp.i
+
+.PHONY : InterfaceTracking/MARS2DLIST.i
+
+# target to preprocess a source file
+InterfaceTracking/MARS2DLIST.cpp.i:
+	cd /home/ubuntu/codebase/YinSets2D-master/cmake-build-debug && $(MAKE) -f src/CMakeFiles/bays.dir/build.make src/CMakeFiles/bays.dir/InterfaceTracking/MARS2DLIST.cpp.i
+.PHONY : InterfaceTracking/MARS2DLIST.cpp.i
+
+InterfaceTracking/MARS2DLIST.s: InterfaceTracking/MARS2DLIST.cpp.s
+
+.PHONY : InterfaceTracking/MARS2DLIST.s
+
+# target to generate assembly for a file
+InterfaceTracking/MARS2DLIST.cpp.s:
+	cd /home/ubuntu/codebase/YinSets2D-master/cmake-build-debug && $(MAKE) -f src/CMakeFiles/bays.dir/build.make src/CMakeFiles/bays.dir/InterfaceTracking/MARS2DLIST.cpp.s
+.PHONY : InterfaceTracking/MARS2DLIST.cpp.s
+
 InterfaceTracking/RKButcher.o: InterfaceTracking/RKButcher.cpp.o
 
 .PHONY : InterfaceTracking/RKButcher.o
@@ -270,6 +324,33 @@ InterfaceTracking/RKButcher.s: InterfaceTracking/RKButcher.cpp.s
 InterfaceTracking/RKButcher.cpp.s:
 	cd /home/ubuntu/codebase/YinSets2D-master/cmake-build-debug && $(MAKE) -f src/CMakeFiles/bays.dir/build.make src/CMakeFiles/bays.dir/InterfaceTracking/RKButcher.cpp.s
 .PHONY : InterfaceTracking/RKButcher.cpp.s
+
+InterfaceTracking/XorArea.o: InterfaceTracking/XorArea.cpp.o
+
+.PHONY : InterfaceTracking/XorArea.o
+
+# target to build an object file
+InterfaceTracking/XorArea.cpp.o:
+	cd /home/ubuntu/codebase/YinSets2D-master/cmake-build-debug && $(MAKE) -f src/CMakeFiles/bays.dir/build.make src/CMakeFiles/bays.dir/InterfaceTracking/XorArea.cpp.o
+.PHONY : InterfaceTracking/XorArea.cpp.o
+
+InterfaceTracking/XorArea.i: InterfaceTracking/XorArea.cpp.i
+
+.PHONY : InterfaceTracking/XorArea.i
+
+# target to preprocess a source file
+InterfaceTracking/XorArea.cpp.i:
+	cd /home/ubuntu/codebase/YinSets2D-master/cmake-build-debug && $(MAKE) -f src/CMakeFiles/bays.dir/build.make src/CMakeFiles/bays.dir/InterfaceTracking/XorArea.cpp.i
+.PHONY : InterfaceTracking/XorArea.cpp.i
+
+InterfaceTracking/XorArea.s: InterfaceTracking/XorArea.cpp.s
+
+.PHONY : InterfaceTracking/XorArea.s
+
+# target to generate assembly for a file
+InterfaceTracking/XorArea.cpp.s:
+	cd /home/ubuntu/codebase/YinSets2D-master/cmake-build-debug && $(MAKE) -f src/CMakeFiles/bays.dir/build.make src/CMakeFiles/bays.dir/InterfaceTracking/XorArea.cpp.s
+.PHONY : InterfaceTracking/XorArea.cpp.s
 
 YinSet/PastingMap.o: YinSet/PastingMap.cpp.o
 
@@ -428,9 +509,18 @@ help:
 	@echo "... InterfaceTracking/MARS.o"
 	@echo "... InterfaceTracking/MARS.i"
 	@echo "... InterfaceTracking/MARS.s"
+	@echo "... InterfaceTracking/MARS2D.o"
+	@echo "... InterfaceTracking/MARS2D.i"
+	@echo "... InterfaceTracking/MARS2D.s"
+	@echo "... InterfaceTracking/MARS2DLIST.o"
+	@echo "... InterfaceTracking/MARS2DLIST.i"
+	@echo "... InterfaceTracking/MARS2DLIST.s"
 	@echo "... InterfaceTracking/RKButcher.o"
 	@echo "... InterfaceTracking/RKButcher.i"
 	@echo "... InterfaceTracking/RKButcher.s"
+	@echo "... InterfaceTracking/XorArea.o"
+	@echo "... InterfaceTracking/XorArea.i"
+	@echo "... InterfaceTracking/XorArea.s"
 	@echo "... YinSet/PastingMap.o"
 	@echo "... YinSet/PastingMap.i"
 	@echo "... YinSet/PastingMap.s"

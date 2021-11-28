@@ -12,6 +12,8 @@ test/CMakeFiles/TestIT.dir/TestIT.cpp.o
  ../src/InterfaceTracking/ComputeError.h
  ../src/InterfaceTracking/ExplicitRK.h
  ../src/InterfaceTracking/MARS.h
+ ../src/InterfaceTracking/MARS2D.h
+ ../src/InterfaceTracking/MARS2DLIST.h
  ../src/InterfaceTracking/RKButcher.h
  ../src/InterfaceTracking/TestExample.h
  ../src/InterfaceTracking/TimeIntegrator.h
