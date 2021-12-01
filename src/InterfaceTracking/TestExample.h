@@ -37,9 +37,11 @@ TestIT getTest(int i)
     //Vortex(8)
     //n = 64; dt = 0.04; rtiny = 0.01
     //4.26e-5 4.16 2.38e-6 5.04 7.21e-8(richardson)
-    //4.80e-5 4.25 2.52e-6 4.97 8.06e-8(exact)
-    //time_list 2.18 2.16e+1 3.14e+2
-    //time_vect 2.21 2.30e+1 3.06e+2
+    //
+    //4.80e-5 4.25 2.52e-6 4.96 8.08e-8 7.41 4.77e-10 4.09 2.80e-11(exact)
+    //time_list 1.6421e+0  1.8692e+1  2.5773e+2  3.9849e+3  6.1222e+4
+    //time_vect 1.6226e+0  1.8707e+1  2.6253e+2  4.0658e+3  6.2756e+4
+    //
     test.push_back(TestIT(Point{0.5, 0.75}, 0.15, 64, 0.04, 8, vortex, "Vortex", 100, 0.01));
 
     //test 1

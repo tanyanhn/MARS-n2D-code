@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <functional>
 #include <type_traits>
+#include <iterator>
 
 Real tol = 1e-15;
 
@@ -216,8 +217,9 @@ Vector<unsigned int> MARS2D<Order, Container>::splitLongEdges(const VectorFuncti
             it = pts.emplace(it, Base::TI->timeStep(v, opt, tn, dt));
         }
         count++;
-        for (int j = 0; j < (int)chdt.size() + 1; j++)
-            ++it;
+        std::advance(it, (int)chdt.size() + 1);
+        //for (int j = 0; j < (int)chdt.size() + 1; j++)
+        //    ++it;
     }
     return ids;
 }
