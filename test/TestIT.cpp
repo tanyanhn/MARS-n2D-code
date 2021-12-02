@@ -24,10 +24,10 @@ int main()
 {
     bool plot = false;
     Real tol = 1e-15;
-    int stages = 4;
+    int stages = 5;
     cout << setiosflags(ios::scientific) << setprecision(4);
 
-    TestIT test = getTest(5);
+    TestIT test = getTest(0);
 
     //set the initial curve
     int n = test.n;
