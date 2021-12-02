@@ -146,12 +146,13 @@ int main()
         cout << i << "  ";
     }
     cout << endl;
-
+    
     for (auto &i : result2)
     {
         cout << i << "  ";
     }
     cout << endl;
+    
 
     cout << "  list time: ";
     for (auto &i:time1)

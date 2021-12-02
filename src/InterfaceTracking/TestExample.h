@@ -72,9 +72,9 @@ TestIT getTest(int i)
     //test 5
     //Deformation(2, 4)
     //n = 128; dt = 0.04; rtiny = 0.01
-    //5.65e-5 4.61 2.31e-6 5.10 6.75e-8(exact)
-    //time_list 4.29 6.00e+1 9.28e+2
-    //time_vect 4.45 6.12e+1 9.25e+2
+    //4.93e-5  4.41  2.31e-6  5.10  6.77e-8  6.21  9.12e-10 
+    //time_list 3.72  5.44e+1  8.48e+2  1.29e+4
+    //time_vect 3.64  5.24e+1  8.53e+2  1.40e+4 
     test.push_back(TestIT(Point{0.5, 0.5}, 0.15, 128, 0.04, 2, deformation, "Deformation", 40, 0.01));
 
     return test[i];
