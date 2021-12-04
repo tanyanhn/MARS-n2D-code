@@ -16,8 +16,8 @@ Vector<Real> exactError(const Vector<Crv> &crvs, const Crv &exact, Real tol)
     Vector<Real> result(2 * n - 1);
     for (int i = 0; i < n; i++)
     {
-        //result[2 * i] = xorArea(exact, crvs[i], tol);
-        result[2 * i] = xorArea(crvs[i], exact, tol);
+        result[2 * i] = xorArea(exact, crvs[i], tol);
+        //result[2 * i] = xorArea(crvs[i], exact, tol);
     }
     for (int i = 0; i < n - 1; i++)
     {

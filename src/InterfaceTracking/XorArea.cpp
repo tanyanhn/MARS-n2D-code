@@ -148,6 +148,15 @@ Real xorArea(const Curve<2, 4> &fCrv, const Curve<2, 4> &cCrv, Real tol)
         normaldist[i] = segIntCurve(pt1, grad, cCrv, tol);
     }
 
+    //debug use
+    /*
+    for(auto &dist:normaldist)
+    {
+        std::cout << dist << " ";
+    }
+    std::cout << std::endl;
+    */
+
     Real area = 0;
     for (int i = 0; i < num - 1; i++)
     {

@@ -24,10 +24,10 @@ int main()
 {
     bool plot = false;
     Real tol = 1e-15;
-    int stages = 5;
-    cout << setiosflags(ios::scientific) << setprecision(4);
+    int stages = 1;
+    cout << setiosflags(ios::scientific) << setprecision(2);
 
-    TestIT test = getTest(0);
+    TestIT test = getTest(5);
 
     //set the initial curve
     int n = test.n;
@@ -81,6 +81,7 @@ int main()
         dt /= 2;
     }
 
+    /*
     n = test.n;
     dt = test.dt;
     opstride = test.opstride;
@@ -121,10 +122,11 @@ int main()
         opstride *= 2;
         dt /= 2;
     }
+    */
     
     //get the approx solution
     
-    n *= 8;//ensure that the chdlength is smaller than computational solutions'
+    n *= 64;//ensure that the chdlength is smaller than computational solutions'
     Vector<Point> rpts;
     rpts.push_back({center[0] + radio, center[1]});
     for (int i = 1; i < n; i++)
@@ -134,12 +136,23 @@ int main()
     rpts.push_back({center[0] + radio, center[1]});
     auto rcrv = fitCurve<4>(rpts, true);
 
+    n *= 2;//ensure that the chdlength is smaller than computational solutions'
+    Vector<Point> r2pts;
+    r2pts.push_back({center[0] + radio, center[1]});
+    for (int i = 1; i < n; i++)
+    {
+        r2pts.push_back({center[0] + radio * cos(2 * M_PI / n * i), center[1] + radio * sin(2 * M_PI / n * i)});
+    }
+    r2pts.push_back({center[0] + radio, center[1]});
+    auto r2crv = fitCurve<4>(r2pts, true);
+
     //output the convergency rate
     auto it1 = crvs.begin();
     auto it2 = crvs.begin() + stages;
     auto it3 = crvs.end();
     auto result1 = exactError(Vector<Crv>(it1, it2), rcrv, tol);
-    auto result2 = exactError(Vector<Crv>(it2, it3), rcrv, tol);
+    auto result2 = exactError(Vector<Crv>(it1, it2), r2crv, tol);
+    //auto result2 = exactError(Vector<Crv>(it2, it3), rcrv, tol);
     //auto result = richardsonError(crvs, tol);
     for (auto &i : result1)
     {
@@ -154,6 +167,7 @@ int main()
     cout << endl;
     
 
+    /*
     cout << "  list time: ";
     for (auto &i:time1)
     {
@@ -167,5 +181,6 @@ int main()
         cout << i << "  ";
     }
     cout << endl;
+    */
     return 0;
 }
