@@ -32,7 +32,8 @@ Vector<Real> richardsonError(const Vector<Crv> &crvs, Real tol)
     Vector<Real> result(2 * n - 3);
     for (int i = 0; i < n - 1; i++)
     {
-        result[2 * i] = xorArea(crvs[i + 1], crvs[i], tol);
+        //result[2 * i] = xorArea(crvs[i + 1], crvs[i], tol);
+        result[2 * i] = xorArea(crvs[i], crvs[i+1], tol);
     }
     for (int i = 0; i < n - 2; i++)
     {

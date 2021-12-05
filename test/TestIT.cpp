@@ -20,14 +20,33 @@ using Point = Vec<Real, 2>;
 template <class T>
 using Vector = std::vector<T>;
 
+Crv output(const Crv &crv, Point center, Real radio)
+{
+    Vector<Point> npts;
+    auto polys = crv.getPolys();
+    auto knots = crv.getKnots();
+    int m = 32;
+    for (int i = 0; i < (int)polys.size(); i++)
+    {
+        for (int j = 0; j < m; j++)
+        {
+            Real dt = j * (knots[i + 1] - knots[i]) / m;
+            auto pt = polys[i](dt);
+            npts.push_back(pt);
+        }
+    }
+    npts.push_back(polys[0][0]);
+    return fitCurve<4>(npts, true);
+}
+
 int main()
 {
     bool plot = false;
     Real tol = 1e-15;
-    int stages = 1;
-    cout << setiosflags(ios::scientific) << setprecision(2);
+    int stages = 4;
+    cout << setiosflags(ios::scientific) << setprecision(4);
 
-    TestIT test = getTest(5);
+    TestIT test = getTest(6);
 
     //set the initial curve
     int n = test.n;
@@ -44,7 +63,6 @@ int main()
     Vector<Real> time2(stages);
     clock_t begin, end;
 
-    
     for (int k = 0; k < stages; k++)
     {
         //get the initial curve
@@ -81,7 +99,9 @@ int main()
         dt /= 2;
     }
 
-    /*
+    //crvs[0] = output(crv, center, radio);
+
+    
     n = test.n;
     dt = test.dt;
     opstride = test.opstride;
@@ -122,11 +142,11 @@ int main()
         opstride *= 2;
         dt /= 2;
     }
-    */
     
+
     //get the approx solution
-    
-    n *= 64;//ensure that the chdlength is smaller than computational solutions'
+
+    n *= 8; //ensure that the chdlength is smaller than computational solutions'
     Vector<Point> rpts;
     rpts.push_back({center[0] + radio, center[1]});
     for (int i = 1; i < n; i++)
@@ -135,8 +155,8 @@ int main()
     }
     rpts.push_back({center[0] + radio, center[1]});
     auto rcrv = fitCurve<4>(rpts, true);
-
-    n *= 2;//ensure that the chdlength is smaller than computational solutions'
+    /*
+    n *= 2; //ensure that the chdlength is smaller than computational solutions'
     Vector<Point> r2pts;
     r2pts.push_back({center[0] + radio, center[1]});
     for (int i = 1; i < n; i++)
@@ -145,15 +165,16 @@ int main()
     }
     r2pts.push_back({center[0] + radio, center[1]});
     auto r2crv = fitCurve<4>(r2pts, true);
-
+    */
     //output the convergency rate
     auto it1 = crvs.begin();
     auto it2 = crvs.begin() + stages;
     auto it3 = crvs.end();
     auto result1 = exactError(Vector<Crv>(it1, it2), rcrv, tol);
-    auto result2 = exactError(Vector<Crv>(it1, it2), r2crv, tol);
-    //auto result2 = exactError(Vector<Crv>(it2, it3), rcrv, tol);
-    //auto result = richardsonError(crvs, tol);
+    //auto result2 = exactError(Vector<Crv>(it1, it2), r2crv, tol);
+    auto result2 = exactError(Vector<Crv>(it2, it3), rcrv, tol);
+
+    //auto result1 = richardsonError(crvs, tol);
     for (auto &i : result1)
     {
         cout << i << "  ";
@@ -166,8 +187,7 @@ int main()
     }
     cout << endl;
     
-
-    /*
+    
     cout << "  list time: ";
     for (auto &i:time1)
     {
@@ -181,6 +201,6 @@ int main()
         cout << i << "  ";
     }
     cout << endl;
-    */
+    
     return 0;
 }

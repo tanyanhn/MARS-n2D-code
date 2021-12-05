@@ -40,8 +40,8 @@ TestIT getTest(int i)
     //
     //4.80e-5 4.25 2.52e-6 4.96 8.08e-8 7.41 4.77e-10 4.09 2.80e-11(exact)
     //2.47e-5 3.89 1.66e-6 5.02 5.10e-8 6.80 4.56e-10 4.07 2.72e-11(coarse to fine)
-    //time_list 1.6421e+0  1.8027e+00  2.0995e+01  2.9412e+02  4.1306e+03  5.9673e+04
-    //time_vect 1.6226e+0  1.7009e+00  1.9866e+01  2.7399e+02  4.0398e+03  6.2574e+04
+    //time_list 1.8027e+00  2.0995e+01  2.9412e+02  4.1306e+03  5.9673e+04
+    //time_vect 1.7009e+00  1.9866e+01  2.7399e+02  4.0398e+03  6.2574e+04
     //
     test.push_back(TestIT(Point{0.5, 0.75}, 0.15, 64, 0.04, 8, vortex, "Vortex", 100, 0.01));
 
@@ -78,6 +78,12 @@ TestIT getTest(int i)
     //time_list 3.7478e+00  5.4055e+01  7.8974e+02  1.2461e+04
     //time_vect 3.9465e+00  5.6405e+01  8.6824e+02  1.2688e+04 
     test.push_back(TestIT(Point{0.5, 0.5}, 0.15, 128, 0.04, 2, deformation, "Deformation", 40, 0.01));
+
+    //test 6
+    //Deformation(2, 4)
+    //n = 128; dt = 0.01; rtiny = 0.01
+    
+    test.push_back(TestIT(Point{0.5, 0.5}, 0.15, 128, 0.02, 2, deformation, "Deformation", 40, 0.01));
 
     return test[i];
 }
