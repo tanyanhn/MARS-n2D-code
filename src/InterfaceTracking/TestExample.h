@@ -81,9 +81,17 @@ TestIT getTest(int i)
 
     //test 6
     //Deformation(2, 4)
-    //n = 128; dt = 0.01; rtiny = 0.01
-    
+    //n = 128; dt = 0.02; rtiny = 0.01
+    //2.42e-05  3.66  1.91e-06  5.20  5.19e-08  6.56  5.49e-10  
+    //time_list 8.99e+00  1.23e+02  1.86e+03  2.86e+04
+    //time_vect 8.72e+00  1.19e+02  1.82e+03  2.72e+04
     test.push_back(TestIT(Point{0.5, 0.5}, 0.15, 128, 0.02, 2, deformation, "Deformation", 40, 0.01));
+
+    //test 7
+    //Vortex(8)
+    //n = 64; dt = 0.02; rtiny = 0.01
+    
+    test.push_back(TestIT(Point{0.5, 0.75}, 0.15, 64, 0.02, 8, vortex, "Vortex", 100, 0.01));
 
     return test[i];
 }

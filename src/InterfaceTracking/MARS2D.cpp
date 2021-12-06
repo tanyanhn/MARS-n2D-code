@@ -1,5 +1,6 @@
 #include "MARS2D.h"
 #include "Core/Polynomial.h"
+#include "Core/Tensor.h"
 #include <fstream>
 #include <sstream>
 #include <list>
@@ -17,6 +18,7 @@ using Point = Vec<Real, 2>;
 
 template <class T>
 using Vector = vector<T>;
+
 
 template <int Order, template <typename...> class Container>
 void MARS2D<Order, Container>::discreteFlowMap(const VectorFunction<2> &v, Container<Point> &pts, Real tn, Real dt)

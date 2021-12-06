@@ -12,6 +12,7 @@
 #include "InterfaceTracking/ExplicitRK.h"
 #include "InterfaceTracking/ComputeError.h"
 #include "InterfaceTracking/TestExample.h"
+#include "InterfaceTracking/SolvePeriodicTri.h"
 
 using namespace std;
 
@@ -39,7 +40,7 @@ Crv output(const Crv &crv, Point center, Real radio)
     return fitCurve<4>(npts, true);
 }
 
-int main()
+void testIT()
 {
     bool plot = false;
     Real tol = 1e-15;
@@ -201,6 +202,22 @@ int main()
         cout << i << "  ";
     }
     cout << endl;
-    
+}
+
+int main()
+{
+    //testIT();
+    Vector<Real> a{1,2,3,4};
+    Vector<Real> b{11,12,13,14};
+    Vector<Real> c{21,22,23,24};
+    Vector<Real> rhs{1,4,7,10};
+
+    Vector<Real> res = solvePeriodicTri(a,b,c,rhs);
+    cout << b[0]*res[0] + c[0]*res[1] + a[0]*res[3] << endl;
+    cout << a[1]*res[0] + b[1]*res[1] + c[1]*res[2] << endl;
+    cout << a[2]*res[1] + b[2]*res[2] + c[2]*res[3] << endl;
+    cout << a[3]*res[2] + b[3]*res[3] + c[3]*res[0] << endl;
+
+
     return 0;
 }
