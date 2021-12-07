@@ -16,8 +16,11 @@ using namespace std;
 
 using Point = Vec<Real, 2>;
 
+using Crv = Curve<2, 4>;
+
 template <class T>
 using Vector = vector<T>;
+
 
 
 template <int Order, template <typename...> class Container>

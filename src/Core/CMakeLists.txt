@@ -17,5 +17,6 @@ set(Core_Files
     Core/RowSparse.h
     Core/Wrapper_OpenMP.h
     Core/Wrapper_LAPACKE.h
+    Core/SolvePeriodicTri.h
     PARENT_SCOPE
 )

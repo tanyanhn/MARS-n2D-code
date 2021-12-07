@@ -15,6 +15,5 @@ set(InterfaceTracking_Files
     InterfaceTracking/ComputeError.h
     InterfaceTracking/VelocityField.h
     InterfaceTracking/TestExample.h
-    InterfaceTracking/SolvePeriodicTri.h
     PARENT_SCOPE
 )
