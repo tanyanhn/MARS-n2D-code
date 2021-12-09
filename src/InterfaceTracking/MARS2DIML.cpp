@@ -1,6 +1,5 @@
-#include "MARS2D.h"
+#include "MARS2DIML.h"
 #include "Core/Polynomial.h"
-#include "Core/Tensor.h"
 #include <fstream>
 #include <sstream>
 #include <list>
@@ -8,21 +7,18 @@
 #include <algorithm>
 #include <functional>
 #include <type_traits>
-#include <iterator>
-
-Real tol = 1e-15;
 
 using namespace std;
 
 using Point = Vec<Real, 2>;
 
-using Crv = Curve<2, 4>;
-
 template <class T>
 using Vector = vector<T>;
 
-template <int Order, template <typename...> class Container>
-void MARS2D<Order, Container>::discreteFlowMap(const VectorFunction<2> &v, Container<Point> &pts, Real tn, Real dt)
+static Real tol = 1e-15;
+
+template <int Order>
+void MARS2DIML<Order>::discreteFlowMap(const VectorFunction<2> &v, Vector<Point> &pts, Real tn, Real dt)
 {
     Base::TI->timeStep(v, pts, tn, dt);
     return;
@@ -36,33 +32,41 @@ void MARS2D<Order, Container>::discreteFlowMap(const VectorFunction<2> &v, Conta
  * @param  lowBound         
  * @return has removed points or not
  */
-template <template <typename...> class Container>
-bool remove(Container<unsigned int> &ids, Container<Vec<Real, 2>> &pts, Real lowBound)
+bool removeIML(Vector<unsigned int> &ids, Vector<Point> &pts, Real lowBound)
 {
     //set distances
-    int num = ids.size();
+    int num = pts.size();
+    Vector<Point> res(num);
+    Vector<unsigned int> resid(num);
+
+    //function<void(int&, int&)> addpi;
+
+    //lambda: split between two points
+    auto addpi = [&](int &count, int &i) -> void
+    {
+        res[count] = pts[i];
+        resid[count] = ids[i];
+        count++;
+        i++;
+        return;
+    };
+
     Vector<Real> dist(num - 1);
-    auto pit = pts.begin();
-    Point prept = *pit;
     for (int i = 0; i < num - 1; i++)
     {
-        ++pit;
-        dist[i] = norm(*pit - prept);
-        prept = *pit;
+        dist[i] = norm(pts[i + 1] - pts[i], 2);
     }
 
     bool predelete = false; //mark whether the pre-point has been erased
-    auto it = ids.begin();
-    pit = pts.begin();
-    ++it;
-    ++pit;
+    int count = 0;
+    res[count] = pts[0];
+    resid[count] = ids[0];
+    count++;
 
     int i = 1;
     if (dist[0] < lowBound)
     {
         predelete = true;
-        it = ids.erase(it);
-        pit = pts.erase(pit);
         i++;
     }
 
@@ -71,9 +75,7 @@ bool remove(Container<unsigned int> &ids, Container<Vec<Real, 2>> &pts, Real low
         if (dist[i] >= lowBound)
         {
             predelete = false;
-            ++it;
-            ++pit;
-            i++;
+            addpi(count, i);
         }
         else
         {
@@ -81,67 +83,73 @@ bool remove(Container<unsigned int> &ids, Container<Vec<Real, 2>> &pts, Real low
             {
                 if (predelete == false)
                 {
-                    it = ids.erase(it);
-                    pit = pts.erase(pit);
                     i++;
                     predelete = true;
                 }
                 else
                 {
-                    ++it;
-                    ++pit;
-                    i++;
+                    addpi(count, i);
                     predelete = false;
                 }
             }
             else
             {
-                it = ids.erase(++it);
-                pit = pts.erase(++pit);
-                i += 2;
+                addpi(count, i);
+                i++;
                 predelete = true;
             }
         }
     }
     if (i == num - 1)
     {
-        return num != (int)ids.size();
+        addpi(count, i);
+        res.resize(count);
+        pts = res;
+        resid.resize(count);
+        ids = resid;
+        return num != count;
     }
     else
     {
         if (predelete == true || dist[i] >= lowBound)
-            return num != (int)ids.size();
-        it = ids.erase(it);
-        pit = pts.erase(pit);
+        {
+            addpi(count, i);
+            addpi(count, i);
+            res.resize(count);
+            pts = res;
+            resid.resize(count);
+            ids = resid;
+            return num != count;
+        }
+        i++;
+        addpi(count, i);
         return true;
     }
 }
 
-template <int Order, template <typename...> class Container>
-Vector<unsigned int> MARS2D<Order, Container>::removeSmallEdges(Container<Point> &pts)
+template <int Order>
+Vector<unsigned int> MARS2DIML<Order>::removeSmallEdges(Vector<Point> &pts)
 {
     int num = pts.size();
-    Container<unsigned int> ids(num);
-    auto it = ids.begin();
+    Vector<unsigned int> ids(num);
     for (int i = 0; i < num; i++)
     {
-        *it = i;
-        ++it;
+        ids[i] = i;
     }
 
     while (true)
     {
-        if (!remove(ids, pts, (chdLenRange.lo())[0]))
+        if (!removeIML(ids, pts, (chdLenRange.lo())[0]))
             break;
     }
 
     Vector<unsigned int> rids(num - ids.size());
-    it = ids.begin();
+    int it = 0;
     unsigned int allid = 0;
     int count = 0;
     while (count < (int)rids.size() - 1)
     {
-        if (*it != allid)
+        if (ids[it] != allid)
         {
             rids[count] = allid;
             count++;
@@ -149,19 +157,20 @@ Vector<unsigned int> MARS2D<Order, Container>::removeSmallEdges(Container<Point>
         }
         else
         {
-            ++it;
+            it++;
             allid++;
         }
     }
     return rids;
 }
 
-template <int Order, template <typename...> class Container>
-Vector<unsigned int> MARS2D<Order, Container>::splitLongEdges(const VectorFunction<2> &v, Container<Point> &pts, const Crv &crv, Real tn, Real dt)
+template <int Order>
+Vector<unsigned int> MARS2DIML<Order>::splitLongEdges(const VectorFunction<2> &v, Vector<Point> &pts, const Crv &crv, Real tn, Real dt)
 {
     assert(crv.isClosed(tol));
 
     int num = pts.size();
+    Vector<Point> res(2 * num);
     Vector<unsigned int> ids;
     Vector<Polynomial<Order, Point>> polys = crv.getPolys();
     Polynomial<Order, Point> lpoly;
@@ -169,7 +178,7 @@ Vector<unsigned int> MARS2D<Order, Container>::splitLongEdges(const VectorFuncti
     function<void(Real, Real, Vector<Real> &)> split;
 
     //lambda: split between two points
-    split = [&](Real left, Real right, Vector<Real> &chdt) -> void
+    split = [&](Real left, Real right, Vector<Real> &chdt)
     {
         Point lpt = lpoly(left);
         lpt = Base::TI->timeStep(v, lpt, tn, dt);
@@ -186,49 +195,55 @@ Vector<unsigned int> MARS2D<Order, Container>::splitLongEdges(const VectorFuncti
             }
             split(right - dl, right, chdt);
         }
-        else
-        {
-            return;
-        }
+        return;
     };
 
-    auto it = pts.begin();
-    unsigned int count = 0;
-    Point prept = *it;
-    ++it;
+    auto addpt = [&](int &count, Point pt)
+    {
+        res[count] = pt;
+        count++;
+        if (count >= (int)res.size())
+            res.resize(2 * count);
+        return;
+    };
+
+    unsigned int id = 0;
+    int count = 0;
+    addpt(count, pts[0]);
     Real dist;
+    Point opt;
 
     for (int i = 0; i < num - 1; i++)
     {
-        dist = norm(*it - prept);
+        dist = norm(pts[i + 1] - pts[i]);
         if (dist <= (chdLenRange.hi())[0])
         {
-            prept = *it;
-            ++it;
-            count++;
+            addpt(count, pts[i + 1]);
+            id++;
             continue;
         }
 
-        prept = *it;
         lpoly = polys[i];
         Vector<Real> chdt; //save parameter t of the added points
         split(0, knots[i + 1] - knots[i], chdt);
 
-        for (int j = chdt.size() - 1; j >= 0; j--)
+        for (int j = 0; j < (int)chdt.size(); j++)
         {
-            count++;
-            ids.push_back(count);
-            Point opt = lpoly(chdt[j]);
-            it = pts.emplace(it, Base::TI->timeStep(v, opt, tn, dt));
+            id++;
+            ids.push_back(id);
+            opt = lpoly(chdt[j]);
+            addpt(count, Base::TI->timeStep(v, opt, tn, dt));
         }
-        count++;
-        std::advance(it, (int)chdt.size() + 1);
+        id++;
+        addpt(count, pts[i + 1]);
     }
+    res.resize(count);
+    pts = res;
     return ids;
 }
 
-template <int Order, template <typename...> class Container>
-void MARS2D<Order, Container>::timeStep(const VectorFunction<2> &v, YS &ys, Real tn, Real dt)
+template <int Order>
+void MARS2DIML<Order>::timeStep(const VectorFunction<2> &v, YS &ys, Real tn, Real dt)
 {
     Vector<Crv> vcrv = ys.getBoundaryCycles();
     int id = 1;
@@ -238,14 +253,12 @@ void MARS2D<Order, Container>::timeStep(const VectorFunction<2> &v, YS &ys, Real
 
         //pts: now's points
         Vector<Polynomial<Order, Point>> polys = crv.getPolys();
-        Container<Point> pts(polys.size() + 1);
-        auto it = pts.begin();
+        Vector<Point> pts(polys.size() + 1);
         for (int i = 0; i < (int)polys.size(); i++)
         {
-            *it = polys[i][0];
-            ++it;
+            pts[i] = polys[i][0];
         }
-        *it = polys[0][0];
+        pts[polys.size()] = polys[0][0];
 
         //get the points after discrete flow map
         discreteFlowMap(v, pts, tn, dt);
@@ -262,18 +275,11 @@ void MARS2D<Order, Container>::timeStep(const VectorFunction<2> &v, YS &ys, Real
 
         //use Container<Point> pts to generate the Vector<Point> pts
         //fitCurve only support Vector<Point> version
-        Vector<Point> vpts(num);
-        it = pts.begin();
-        Point prept = *it;
         for (int i = 0; i < num - 1; i++)
         {
-            vpts[i] = prept;
-            ++it;
-            dist[i] = norm(*it - prept);
-            prept = *it;
+            dist[i] = norm(pts[i + 1] - pts[i], 2);
         }
-        vpts[num - 1] = prept;
-        crv = fitCurve<Order>(vpts, true);
+        crv = fitCurve<Order>(pts, true);
 
         auto maxp = max_element(dist.begin(), dist.end());
         auto minp = min_element(dist.begin(), dist.end());
@@ -289,5 +295,4 @@ void MARS2D<Order, Container>::timeStep(const VectorFunction<2> &v, YS &ys, Real
     return;
 }
 
-template class MARS2D<4, vector>;
-template class MARS2D<4, list>;
+template class MARS2DIML<4>;
