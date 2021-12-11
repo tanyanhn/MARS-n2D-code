@@ -8,7 +8,7 @@
 #include <sstream>
 #include <ctime>
 #include "InterfaceTracking/MARS2D.h"
-#include "InterfaceTracking/MARS2DIML.h"
+#include "InterfaceTracking/MARS2DIMV.h"
 #include "InterfaceTracking/ExplicitRK.h"
 #include "InterfaceTracking/ComputeError.h"
 #include "InterfaceTracking/TestExample.h"
@@ -47,7 +47,7 @@ void testIT()
     int stages = 5;
     cout << setiosflags(ios::scientific) << setprecision(4);
 
-    TestIT test = getTest(0);
+    TestIT test = getTest(6);
 
     //set the initial curve
     int n;
@@ -62,6 +62,7 @@ void testIT()
 
     Vector<Real> time1(2 * stages - 1, 0);
     Vector<Real> time2(2 * stages - 1, 0);
+    Vector<Real> time3(2 * stages - 1, 0);
     clock_t begin, end;
     for (int lp = 0; lp < loop; lp++)
     {
@@ -83,7 +84,7 @@ void testIT()
             YinSet<2, 4> YS(SegmentedRealizableSpadjor<4>(vcrv), tol);
 
             //set the CubicMARS method
-            MARS2D<4,list> CM(&ERK, 4 * M_PI * radio / n, test.rtiny);
+            MARS2DIMV<4> CM(&ERK, 4 * M_PI * radio / n, test.rtiny);
 
             ostringstream tmps;
             tmps << k;
@@ -105,7 +106,7 @@ void testIT()
         }
 
         //crvs[0] = output(crv, center, radio);
-        /*
+        
         n = test.n;
         dt = test.dt;
         opstride = test.opstride;
@@ -145,11 +146,51 @@ void testIT()
             opstride *= 2;
             dt /= 2;
         }
-        */
+        
+        n = test.n;
+        dt = test.dt;
+        opstride = test.opstride;
+
+        for (int k = 0; k < stages; k++)
+        {
+            //get the initial curve
+            Vector<Point> pts;
+            pts.push_back({center[0] + radio, center[1]});
+            for (int i = 1; i < n; i++)
+            {
+                pts.push_back({center[0] + radio * cos(2 * M_PI / n * i), center[1] + radio * sin(2 * M_PI / n * i)});
+            }
+            pts.push_back({center[0] + radio, center[1]});
+            crv = fitCurve<4>(pts, true);
+            Vector<Curve<2, 4>> vcrv{crv};
+            YinSet<2, 4> YS(SegmentedRealizableSpadjor<4>(vcrv), tol);
+
+            //set the CubicMARS method
+            MARS2D<4, list> CM(&ERK, 4 * M_PI * radio / n, test.rtiny);
+
+            ostringstream tmps;
+            tmps << k;
+            string fname = "results" + test.name + "/No" + tmps.str();
+
+            begin = clock();
+            if (plot == true)
+                CM.trackInterface(*test.velocity, YS, 0, dt, test.T, true, fname, opstride);
+            else
+                CM.trackInterface(*test.velocity, YS, 0, dt, test.T);
+            end = clock();
+            time3[2 * k] += (double)(end - begin) / CLOCKS_PER_SEC;
+            //get the curve after tracking
+            crv = (YS.getBoundaryCycles())[0];
+            crvs.push_back(crv);
+            n *= 2;
+            opstride *= 2;
+            dt /= 2;
+        }
+        
     }
 
     //get the approx solution
-    /*
+    
     n *= 8; //ensure that the chdlength is smaller than computational solutions'
     Vector<Point> rpts;
     rpts.push_back({center[0] + radio, center[1]});
@@ -163,10 +204,10 @@ void testIT()
     //output the convergency rate
     auto it1 = crvs.begin();
     auto it2 = crvs.begin() + stages;
-    auto it3 = crvs.end();
+    //auto it3 = crvs.end();
     auto result1 = exactError(Vector<Crv>(it1, it2), rcrv, tol);
     //auto result2 = exactError(Vector<Crv>(it1, it2), r2crv, tol);
-    auto result2 = exactError(Vector<Crv>(it2, it3), rcrv, tol);
+    //auto result2 = exactError(Vector<Crv>(it2, it3), rcrv, tol);
 
     //auto result1 = richardsonError(crvs, tol);
     for (auto &i : result1)
@@ -174,19 +215,25 @@ void testIT()
         cout << i << "  ";
     }
     cout << endl;
-    
+    /*
     for (auto &i : result2)
     {
         cout << i << "  ";
     }
     cout << endl;
     */
+
     for (auto &i : time1)
     {
         i = i / loop;
     }
 
     for (auto &i : time2)
+    {
+        i = i / loop;
+    }
+
+    for (auto &i : time3)
     {
         i = i / loop;
     }
@@ -195,8 +242,9 @@ void testIT()
     {
         time1[2 * i + 1] = log(time1[2 * i + 2]/time1[2 * i]) / log(2);
         time2[2 * i + 1] = log(time2[2 * i + 2]/time2[2 * i]) / log(2);
+        time3[2 * i + 1] = log(time3[2 * i + 2]/time3[2 * i]) / log(2);
     }
-    cout << "  method1 time: ";
+    cout << "method1 time: ";
     for (auto &i : time1)
     {
         cout << i << "  ";
@@ -205,6 +253,13 @@ void testIT()
 
     cout << "method2 time: ";
     for (auto &i : time2)
+    {
+        cout << i << "  ";
+    }
+    cout << endl;
+
+    cout << "method3 time: ";
+    for (auto &i : time3)
     {
         cout << i << "  ";
     }

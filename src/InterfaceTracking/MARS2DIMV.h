@@ -1,5 +1,5 @@
-#ifndef _MARS2DIML_H_
-#define _MARS2DIML_H_
+#ifndef _MARS2DIMV_H_
+#define _MARS2DIMV_H_
 
 #include "MARS.h"
 #include "Core/Curve.h"
@@ -8,7 +8,7 @@
 #include <list>
 
 template <int Order>
-class MARS2DIML : public MARS<2, Order>
+class MARS2DIMV : public MARS<2, Order>
 {
     template <class T>
     using Vector = std::vector<T>;
@@ -22,9 +22,9 @@ class MARS2DIML : public MARS<2, Order>
     using Base = MARS<2, Order>;
 
 public:
-    MARS2DIML() = delete;
+    MARS2DIMV() = delete;
 
-    MARS2DIML(TimeIntegrator<2> *_TI, Real hL, Real rtiny = 0.1) : Base(_TI), chdLenRange(Vec<Real, 1>(rtiny * hL), Vec<Real, 1>(hL))
+    MARS2DIMV(TimeIntegrator<2> *_TI, Real hL, Real rtiny = 0.1) : Base(_TI), chdLenRange(Vec<Real, 1>(rtiny * hL), Vec<Real, 1>(hL))
     {
     }
 

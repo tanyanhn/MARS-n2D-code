@@ -8,8 +8,8 @@ set(InterfaceTracking_Files
     InterfaceTracking/MARS.cpp
     InterfaceTracking/MARS2D.h
     InterfaceTracking/MARS2D.cpp
-    InterfaceTracking/MARS2DIML.h
-    InterfaceTracking/MARS2DIML.cpp
+    InterfaceTracking/MARS2DIMV.h
+    InterfaceTracking/MARS2DIMV.cpp
     InterfaceTracking/XorArea.h
     InterfaceTracking/XorArea.cpp
     InterfaceTracking/ComputeError.h

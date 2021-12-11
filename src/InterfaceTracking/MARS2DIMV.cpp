@@ -1,4 +1,4 @@
-#include "MARS2DIML.h"
+#include "MARS2DIMV.h"
 #include "Core/Polynomial.h"
 #include <fstream>
 #include <sstream>
@@ -18,7 +18,7 @@ using Vector = vector<T>;
 static Real tol = 1e-15;
 
 template <int Order>
-void MARS2DIML<Order>::discreteFlowMap(const VectorFunction<2> &v, Vector<Point> &pts, Real tn, Real dt)
+void MARS2DIMV<Order>::discreteFlowMap(const VectorFunction<2> &v, Vector<Point> &pts, Real tn, Real dt)
 {
     Base::TI->timeStep(v, pts, tn, dt);
     return;
@@ -32,20 +32,21 @@ void MARS2DIML<Order>::discreteFlowMap(const VectorFunction<2> &v, Vector<Point>
  * @param  lowBound         
  * @return has removed points or not
  */
-bool removeIML(Vector<unsigned int> &ids, Vector<Point> &pts, Real lowBound)
+bool removeIMV(Vector<unsigned int> &ids, Vector<Point> &pts, Real lowBound)
 {
     //set distances
     int num = pts.size();
-    Vector<Point> res(num);
-    Vector<unsigned int> resid(num);
 
     //function<void(int&, int&)> addpi;
 
     //lambda: split between two points
     auto addpi = [&](int &count, int &i) -> void
     {
-        res[count] = pts[i];
-        resid[count] = ids[i];
+        if(count!=i)
+        {
+            pts[count] = pts[i];
+            ids[count] = ids[i];
+        }
         count++;
         i++;
         return;
@@ -58,11 +59,7 @@ bool removeIML(Vector<unsigned int> &ids, Vector<Point> &pts, Real lowBound)
     }
 
     bool predelete = false; //mark whether the pre-point has been erased
-    int count = 0;
-    res[count] = pts[0];
-    resid[count] = ids[0];
-    count++;
-
+    int count = 1;
     int i = 1;
     if (dist[0] < lowBound)
     {
@@ -103,10 +100,8 @@ bool removeIML(Vector<unsigned int> &ids, Vector<Point> &pts, Real lowBound)
     if (i == num - 1)
     {
         addpi(count, i);
-        res.resize(count);
-        pts = res;
-        resid.resize(count);
-        ids = resid;
+        pts.resize(count);
+        ids.resize(count);
         return num != count;
     }
     else
@@ -115,10 +110,8 @@ bool removeIML(Vector<unsigned int> &ids, Vector<Point> &pts, Real lowBound)
         {
             addpi(count, i);
             addpi(count, i);
-            res.resize(count);
-            pts = res;
-            resid.resize(count);
-            ids = resid;
+            pts.resize(count);
+            ids.resize(count);
             return num != count;
         }
         i++;
@@ -128,7 +121,7 @@ bool removeIML(Vector<unsigned int> &ids, Vector<Point> &pts, Real lowBound)
 }
 
 template <int Order>
-Vector<unsigned int> MARS2DIML<Order>::removeSmallEdges(Vector<Point> &pts)
+Vector<unsigned int> MARS2DIMV<Order>::removeSmallEdges(Vector<Point> &pts)
 {
     int num = pts.size();
     Vector<unsigned int> ids(num);
@@ -139,7 +132,7 @@ Vector<unsigned int> MARS2DIML<Order>::removeSmallEdges(Vector<Point> &pts)
 
     while (true)
     {
-        if (!removeIML(ids, pts, (chdLenRange.lo())[0]))
+        if (!removeIMV(ids, pts, (chdLenRange.lo())[0]))
             break;
     }
 
@@ -165,7 +158,7 @@ Vector<unsigned int> MARS2DIML<Order>::removeSmallEdges(Vector<Point> &pts)
 }
 
 template <int Order>
-Vector<unsigned int> MARS2DIML<Order>::splitLongEdges(const VectorFunction<2> &v, Vector<Point> &pts, const Crv &crv, Real tn, Real dt)
+Vector<unsigned int> MARS2DIMV<Order>::splitLongEdges(const VectorFunction<2> &v, Vector<Point> &pts, const Crv &crv, Real tn, Real dt)
 {
     assert(crv.isClosed(tol));
 
@@ -243,7 +236,7 @@ Vector<unsigned int> MARS2DIML<Order>::splitLongEdges(const VectorFunction<2> &v
 }
 
 template <int Order>
-void MARS2DIML<Order>::timeStep(const VectorFunction<2> &v, YS &ys, Real tn, Real dt)
+void MARS2DIMV<Order>::timeStep(const VectorFunction<2> &v, YS &ys, Real tn, Real dt)
 {
     Vector<Crv> vcrv = ys.getBoundaryCycles();
     int id = 1;
@@ -295,4 +288,4 @@ void MARS2DIML<Order>::timeStep(const VectorFunction<2> &v, YS &ys, Real tn, Rea
     return;
 }
 
-template class MARS2DIML<4>;
+template class MARS2DIMV<4>;
