@@ -9,7 +9,8 @@
 #include <ctime>
 #include "InterfaceTracking/MARS2D.h"
 #include "InterfaceTracking/MARS2DIMV.h"
-#include "InterfaceTracking/ExplicitRK.h"
+#include "InterfaceTracking/ERK.h"
+#include "InterfaceTracking/DIRK.h"
 #include "InterfaceTracking/ComputeError.h"
 #include "InterfaceTracking/TestExample.h"
 
@@ -41,7 +42,7 @@ Crv output(const Crv &crv, Point center, Real radio)
 
 void testIT()
 {
-    int loop = 10;
+    int loop = 1;
     bool plot = false;
     Real tol = 1e-15;
     int stages = 5;
@@ -58,14 +59,14 @@ void testIT()
     Vector<Curve<2, 4>> crvs;
     Curve<2, 4> crv;
 
-    ExplicitRungeKutta<2, ClassicRK4> ERK;
+    ERK<2, RK::ClassicRK4> ERK;
 
     Vector<Real> time1(2 * stages - 1, 0);
     Vector<Real> time2(2 * stages - 1, 0);
-    Vector<Real> time3(2 * stages - 1, 0);
     clock_t begin, end;
     for (int lp = 0; lp < loop; lp++)
     {
+        
         n = test.n;
         dt = test.dt;
         opstride = test.opstride;
@@ -104,9 +105,9 @@ void testIT()
             opstride *= 2;
             dt /= 2;
         }
-
-        //crvs[0] = output(crv, center, radio);
         
+        //crvs[0] = output(crv, center, radio);
+        /*
         n = test.n;
         dt = test.dt;
         opstride = test.opstride;
@@ -126,7 +127,7 @@ void testIT()
             YinSet<2, 4> YS(SegmentedRealizableSpadjor<4>(vcrv), tol);
 
             //set the CubicMARS method
-            MARS2D<4, vector> CM(&ERK, 4 * M_PI * radio / n, test.rtiny);
+            MARS2D<4> CM(&ERK, 4 * M_PI * radio / n, test.rtiny);
 
             ostringstream tmps;
             tmps << k;
@@ -146,47 +147,7 @@ void testIT()
             opstride *= 2;
             dt /= 2;
         }
-        
-        n = test.n;
-        dt = test.dt;
-        opstride = test.opstride;
-
-        for (int k = 0; k < stages; k++)
-        {
-            //get the initial curve
-            Vector<Point> pts;
-            pts.push_back({center[0] + radio, center[1]});
-            for (int i = 1; i < n; i++)
-            {
-                pts.push_back({center[0] + radio * cos(2 * M_PI / n * i), center[1] + radio * sin(2 * M_PI / n * i)});
-            }
-            pts.push_back({center[0] + radio, center[1]});
-            crv = fitCurve<4>(pts, true);
-            Vector<Curve<2, 4>> vcrv{crv};
-            YinSet<2, 4> YS(SegmentedRealizableSpadjor<4>(vcrv), tol);
-
-            //set the CubicMARS method
-            MARS2D<4, list> CM(&ERK, 4 * M_PI * radio / n, test.rtiny);
-
-            ostringstream tmps;
-            tmps << k;
-            string fname = "results" + test.name + "/No" + tmps.str();
-
-            begin = clock();
-            if (plot == true)
-                CM.trackInterface(*test.velocity, YS, 0, dt, test.T, true, fname, opstride);
-            else
-                CM.trackInterface(*test.velocity, YS, 0, dt, test.T);
-            end = clock();
-            time3[2 * k] += (double)(end - begin) / CLOCKS_PER_SEC;
-            //get the curve after tracking
-            crv = (YS.getBoundaryCycles())[0];
-            crvs.push_back(crv);
-            n *= 2;
-            opstride *= 2;
-            dt /= 2;
-        }
-        
+        */
     }
 
     //get the approx solution
@@ -233,16 +194,10 @@ void testIT()
         i = i / loop;
     }
 
-    for (auto &i : time3)
-    {
-        i = i / loop;
-    }
-
     for (int i = 0; i < stages - 1; i++)
     {
         time1[2 * i + 1] = log(time1[2 * i + 2]/time1[2 * i]) / log(2);
         time2[2 * i + 1] = log(time2[2 * i + 2]/time2[2 * i]) / log(2);
-        time3[2 * i + 1] = log(time3[2 * i + 2]/time3[2 * i]) / log(2);
     }
     cout << "method1 time: ";
     for (auto &i : time1)
@@ -253,13 +208,6 @@ void testIT()
 
     cout << "method2 time: ";
     for (auto &i : time2)
-    {
-        cout << i << "  ";
-    }
-    cout << endl;
-
-    cout << "method3 time: ";
-    for (auto &i : time3)
     {
         cout << i << "  ";
     }

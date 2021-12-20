@@ -6,7 +6,7 @@
 #include "Core/Interval.h"
 #include <vector>
 
-template <int Order, template <typename...> class Container>
+template <int Order>
 class MARS2D : public MARS<2, Order>
 {
     template <class T>
@@ -30,11 +30,11 @@ public:
     void timeStep(const VectorFunction<2> &v, YS &ys, Real tn, Real dt);
 
 private:
-    void discreteFlowMap(const VectorFunction<2> &v, Container<Point> &pts, Real tn, Real dt);
+    void discreteFlowMap(const VectorFunction<2> &v, Vector<Point> &pts, Real tn, Real dt);
 
-    Vector<unsigned int> removeSmallEdges(Container<Point> &pts);
+    Vector<unsigned int> removeSmallEdges(Vector<Point> &pts);
 
-    Vector<unsigned int> splitLongEdges(const VectorFunction<2> &v, Container<Point> &pts, const Crv &crv, Real tn, Real dt);
+    Vector<unsigned int> splitLongEdges(const VectorFunction<2> &v, Vector<Point> &pts, const Crv &crv, Real tn, Real dt);
 
 private:
     Interval<1> chdLenRange;

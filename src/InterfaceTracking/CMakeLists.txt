@@ -4,6 +4,7 @@ set(InterfaceTracking_Files
     InterfaceTracking/RKButcher.cpp
     InterfaceTracking/VectorFunction.h
     InterfaceTracking/ExplicitRK.h
+    InterfaceTracking/DIRK.h
     InterfaceTracking/MARS.h
     InterfaceTracking/MARS.cpp
     InterfaceTracking/MARS2D.h
