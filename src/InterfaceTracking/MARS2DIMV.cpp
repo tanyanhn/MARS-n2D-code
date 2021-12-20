@@ -42,7 +42,7 @@ bool removeIMV(Vector<unsigned int> &ids, Vector<Point> &pts, Real lowBound)
     //lambda: split between two points
     auto addpi = [&](int &count, int &i) -> void
     {
-        if(count!=i)
+        if (count != i)
         {
             pts[count] = pts[i];
             ids[count] = ids[i];
@@ -158,6 +158,100 @@ Vector<unsigned int> MARS2DIMV<Order>::removeSmallEdges(Vector<Point> &pts)
 }
 
 template <int Order>
+bool splitIMV(Vector<bool> &ids, Vector<Point> &oldpts, const Curve<2, Order> &crv, const Vector<Real> &dist, Real highBound)
+{
+    int num = oldpts.size();
+    auto polys = crv.getPolys();
+    auto knots = crv.getKnots();
+    Vector<Point> res(2 * num);
+    Vector<bool> resid(2 * num);
+    Polynomial<Order, Point> lpoly;
+
+    auto addpt = [&](int &count, Point pt, bool type)
+    {
+        res[count] = pt;
+        resid[count] = type;
+        count++;
+        if (count >= (int)res.size())
+        {
+            res.resize(2 * count);
+            resid.resize(2 * count);
+        }
+        return;
+    };
+
+    int count = 0;
+    addpt(count, oldpts[0], ids[0]);
+
+    for (int i = 0; i < num - 1; i++)
+    {
+        if (dist[i] <= highBound)
+        {
+            addpt(count, oldpts[i + 1], ids[i + 1]);
+            continue;
+        }
+
+        int N = ceil(dist[i] / highBound);
+        Real dt = (knots[i + 1] - knots[i]) / N;
+        lpoly = polys[i];
+
+        for (int j = 1; j < N; j++)
+        {
+            addpt(count, lpoly(dt * j), true);
+        }
+        addpt(count, oldpts[i + 1], ids[i + 1]);
+    }
+    res.resize(count);
+    resid.resize(count);
+    oldpts = res;
+    ids = resid;
+    return count != num;
+}
+
+template <int Order>
+Vector<unsigned int> MARS2DIMV<Order>::splitLongEdges(const VectorFunction<2> &v, Vector<Point> &pts, const Crv &crv, Real tn, Real dt)
+{
+    int num = pts.size();
+    auto polys = crv.getPolys();
+    Vector<Point> oldpts(num);
+
+    for (int i = 0; i < num - 1; i++)
+    {
+        oldpts[i] = polys[i][0];
+    }
+    oldpts[num - 1] = polys[0][0];
+
+    Vector<bool> ids(num, false);
+    Vector<Real> dist(num - 1);
+
+    while (true)
+    {
+        for (int i = 0; i < (int)dist.size(); i++)
+        {
+            dist[i] = norm(pts[i + 1] - pts[i], 2);
+        }
+        if (!splitIMV(ids, oldpts, crv, dist, (chdLenRange.hi())[0]))
+            break;
+        pts = oldpts;
+        Base::TI->timeStep(v, pts, tn, dt);
+        dist.resize(pts.size() - 1);
+    }
+
+    Vector<unsigned int> aids(ids.size() - num);
+    int count = 0;
+    for (int i = 0; i < (int)ids.size(); i++)
+    {
+        if (ids[i] == true)
+        {
+            aids[count] = i;
+            count++;
+        }
+    }
+    return aids;
+}
+
+/*
+template <int Order>
 Vector<unsigned int> MARS2DIMV<Order>::splitLongEdges(const VectorFunction<2> &v, Vector<Point> &pts, const Crv &crv, Real tn, Real dt)
 {
     assert(crv.isClosed(tol));
@@ -234,6 +328,7 @@ Vector<unsigned int> MARS2DIMV<Order>::splitLongEdges(const VectorFunction<2> &v
     pts = res;
     return ids;
 }
+*/
 
 template <int Order>
 void MARS2DIMV<Order>::timeStep(const VectorFunction<2> &v, YS &ys, Real tn, Real dt)

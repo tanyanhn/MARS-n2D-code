@@ -21,8 +21,8 @@ using Crv = Curve<2, 4>;
 template <class T>
 using Vector = vector<T>;
 
-template <int Order, template <typename...> class Container>
-void MARS2D<Order, Container>::discreteFlowMap(const VectorFunction<2> &v, Container<Point> &pts, Real tn, Real dt)
+template <int Order>
+void MARS2D<Order>::discreteFlowMap(const VectorFunction<2> &v, Vector<Point> &pts, Real tn, Real dt)
 {
     Base::TI->timeStep(v, pts, tn, dt);
     return;
@@ -36,8 +36,7 @@ void MARS2D<Order, Container>::discreteFlowMap(const VectorFunction<2> &v, Conta
  * @param  lowBound         
  * @return has removed points or not
  */
-template <template <typename...> class Container>
-bool remove(Container<unsigned int> &ids, Container<Vec<Real, 2>> &pts, Real lowBound)
+bool removeMarkers(Vector<unsigned int> &ids, Vector<Point> &pts, Real lowBound)
 {
     //set distances
     int num = ids.size();
@@ -117,31 +116,29 @@ bool remove(Container<unsigned int> &ids, Container<Vec<Real, 2>> &pts, Real low
     }
 }
 
-template <int Order, template <typename...> class Container>
-Vector<unsigned int> MARS2D<Order, Container>::removeSmallEdges(Container<Point> &pts)
+template <int Order>
+Vector<unsigned int> MARS2D<Order>::removeSmallEdges(Vector<Point> &pts)
 {
     int num = pts.size();
-    Container<unsigned int> ids(num);
-    auto it = ids.begin();
+    Vector<unsigned int> ids(num);
     for (int i = 0; i < num; i++)
     {
-        *it = i;
-        ++it;
+        ids[i] = i;
     }
 
     while (true)
     {
-        if (!remove(ids, pts, (chdLenRange.lo())[0]))
+        if (!removeMarkers(ids, pts, (chdLenRange.lo())[0]))
             break;
     }
 
     Vector<unsigned int> rids(num - ids.size());
-    it = ids.begin();
+    int it = 0;
     unsigned int allid = 0;
     int count = 0;
     while (count < (int)rids.size() - 1)
     {
-        if (*it != allid)
+        if (ids[it] != allid)
         {
             rids[count] = allid;
             count++;
@@ -149,13 +146,97 @@ Vector<unsigned int> MARS2D<Order, Container>::removeSmallEdges(Container<Point>
         }
         else
         {
-            ++it;
+            it++;
             allid++;
         }
     }
     return rids;
 }
 
+template <int Order>
+bool splitMarkers(Vector<bool> &ids, Vector<Point> &oldpts, const Curve<2, Order> &crv, const Vector<Real> &dist, Real highBound)
+{
+    int num = oldpts.size();
+    Vector<Polynomial<Order, Point>> polys = crv.getPolys();
+    Polynomial<Order, Point> lpoly;
+    Vector<Real> knots = crv.getKnots();
+
+    auto it = oldpts.begin();
+    auto idit = ids.begin();
+    ++it;
+    ++idit;
+    Point opt;
+    int n;
+    Real dt;
+
+    for (int i = 0; i < num - 1; i++)
+    {
+        if (dist[i] <= highBound)
+        {
+            ++it;
+            ++idit;
+            continue;
+        }
+
+        lpoly = polys[i];
+        n = ceil(dist[i] / highBound);
+        dt = (knots[i + 1] - knots[i]) / n;
+
+        for (int j = n - 1; j >= 1; j--)
+        {
+            opt = lpoly(dt * j);
+            it = oldpts.emplace(it, opt);
+            idit = ids.emplace(idit, true);
+        }
+        std::advance(it, n);
+        std::advance(idit, n);
+    }
+    return num != (int)oldpts.size();
+}
+
+template <int Order>
+Vector<unsigned int> MARS2D<Order>::splitLongEdges(const VectorFunction<2> &v, Vector<Point> &pts, const Crv &crv, Real tn, Real dt)
+{
+    int num = pts.size();
+    auto polys = crv.getPolys();
+    Vector<Point> oldpts(num);
+
+    for (int i = 0; i < num - 1; i++)
+    {
+        oldpts[i] = polys[i][0];
+    }
+    oldpts[num - 1] = polys[0][0];
+
+    Vector<bool> ids(num, false);
+    Vector<Real> dist(num - 1);
+
+    while (true)
+    {
+        for (int i = 0; i < (int)dist.size(); i++)
+        {
+            dist[i] = norm(pts[i + 1] - pts[i], 2);
+        }
+        if (!splitMarkers(ids, oldpts, crv, dist, (chdLenRange.hi())[0]))
+            break;
+        pts = oldpts;
+        Base::TI->timeStep(v, pts, tn, dt);
+        dist.resize(pts.size() - 1);
+    }
+
+    Vector<unsigned int> aids(ids.size() - num);
+    int count = 0;
+    for (int i = 0; i < (int)ids.size(); i++)
+    {
+        if (ids[i] == true)
+        {
+            aids[count] = i;
+            count++;
+        }
+    }
+    return aids;
+}
+
+/*
 template <int Order, template <typename...> class Container>
 Vector<unsigned int> MARS2D<Order, Container>::splitLongEdges(const VectorFunction<2> &v, Container<Point> &pts, const Crv &crv, Real tn, Real dt)
 {
@@ -226,9 +307,10 @@ Vector<unsigned int> MARS2D<Order, Container>::splitLongEdges(const VectorFuncti
     }
     return ids;
 }
+*/
 
-template <int Order, template <typename...> class Container>
-void MARS2D<Order, Container>::timeStep(const VectorFunction<2> &v, YS &ys, Real tn, Real dt)
+template <int Order>
+void MARS2D<Order>::timeStep(const VectorFunction<2> &v, YS &ys, Real tn, Real dt)
 {
     Vector<Crv> vcrv = ys.getBoundaryCycles();
     int id = 1;
@@ -238,14 +320,12 @@ void MARS2D<Order, Container>::timeStep(const VectorFunction<2> &v, YS &ys, Real
 
         //pts: now's points
         Vector<Polynomial<Order, Point>> polys = crv.getPolys();
-        Container<Point> pts(polys.size() + 1);
-        auto it = pts.begin();
+        Vector<Point> pts(polys.size() + 1);
         for (int i = 0; i < (int)polys.size(); i++)
         {
-            *it = polys[i][0];
-            ++it;
+            pts[i] = polys[i][0];
         }
-        *it = polys[0][0];
+        pts[(int)polys.size()] = polys[0][0];
 
         //get the points after discrete flow map
         discreteFlowMap(v, pts, tn, dt);
@@ -262,18 +342,11 @@ void MARS2D<Order, Container>::timeStep(const VectorFunction<2> &v, YS &ys, Real
 
         //use Container<Point> pts to generate the Vector<Point> pts
         //fitCurve only support Vector<Point> version
-        Vector<Point> vpts(num);
-        it = pts.begin();
-        Point prept = *it;
         for (int i = 0; i < num - 1; i++)
         {
-            vpts[i] = prept;
-            ++it;
-            dist[i] = norm(*it - prept);
-            prept = *it;
+            dist[i] = norm(pts[i + 1] - pts[i], 2);
         }
-        vpts[num - 1] = prept;
-        crv = fitCurve<Order>(vpts, true);
+        crv = fitCurve<Order>(pts, true);
 
         auto maxp = max_element(dist.begin(), dist.end());
         auto minp = min_element(dist.begin(), dist.end());
@@ -289,5 +362,5 @@ void MARS2D<Order, Container>::timeStep(const VectorFunction<2> &v, YS &ys, Real
     return;
 }
 
-template class MARS2D<4, vector>;
-template class MARS2D<4, list>;
+template class MARS2D<2>;
+template class MARS2D<4>;
