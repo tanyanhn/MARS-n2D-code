@@ -60,6 +60,17 @@ Real segIntCurve(Point pt, Point grad, const Crv &crv, Real tol)
     }
     pts[Num] = polys[0][0];
 
+    //debug use
+    /*
+    std::cout << pt << std::endl;
+    std::cout << grad << std::endl;
+    for(auto &i: pts)
+    {
+        std::cout << i <<" ";
+    }
+    std::cout << std::endl;
+    */
+
     Vector<tuple<int, Real, Real>> intersect;
     for (int i = 0; i < Num; i++)
     {

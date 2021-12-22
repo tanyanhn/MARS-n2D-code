@@ -45,7 +45,7 @@ void testIT()
     int loop = 1;
     bool plot = false;
     Real tol = 1e-15;
-    int stages = 5;
+    int stages = 2;
     cout << setiosflags(ios::scientific) << setprecision(4);
 
     TestIT test = getTest(6);
@@ -60,6 +60,8 @@ void testIT()
     Curve<2, 4> crv;
 
     ERK<2, RK::ClassicRK4> ERK;
+    DIRK<2, RK::ESDIRK4> ESDIRK4;
+    DIRK<2, RK::SDIRK2> SDIRK2;
 
     Vector<Real> time1(2 * stages - 1, 0);
     Vector<Real> time2(2 * stages - 1, 0);
@@ -85,7 +87,8 @@ void testIT()
             YinSet<2, 4> YS(SegmentedRealizableSpadjor<4>(vcrv), tol);
 
             //set the CubicMARS method
-            MARS2DIMV<4> CM(&ERK, 4 * M_PI * radio / n, test.rtiny);
+            //MARS2DIMV<4> CM(&ERK, 4 * M_PI * radio / n, test.rtiny);
+            MARS2DIMV<4> CM(&ESDIRK4, 4 * M_PI * radio / n, test.rtiny);
 
             ostringstream tmps;
             tmps << k;
@@ -150,8 +153,7 @@ void testIT()
         */
     }
 
-    //get the approx solution
-    
+    //get the approx solution    
     n *= 8; //ensure that the chdlength is smaller than computational solutions'
     Vector<Point> rpts;
     rpts.push_back({center[0] + radio, center[1]});
@@ -205,13 +207,14 @@ void testIT()
         cout << i << "  ";
     }
     cout << endl;
-
+    /*
     cout << "method2 time: ";
     for (auto &i : time2)
     {
         cout << i << "  ";
     }
     cout << endl;
+    */
 }
 
 int main()
