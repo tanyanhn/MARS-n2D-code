@@ -45,10 +45,10 @@ void testIT()
     int loop = 1;
     bool plot = false;
     Real tol = 1e-15;
-    int stages = 2;
-    cout << setiosflags(ios::scientific) << setprecision(4);
+    int stages = 3;
+    cout << setiosflags(ios::scientific) << setprecision(2);
 
-    TestIT test = getTest(6);
+    TestIT test = getTest(0);
 
     //set the initial curve
     int n;
