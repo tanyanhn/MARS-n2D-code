@@ -40,6 +40,7 @@ public:
     {
         int num = pts.size() - 1;
         Tensor<Real, 2> jacobi(Dim * num);
+        jacobi = 0.0;
         Vector<Real> ptjac;
 
         for (int i = 0; i < num; i++)

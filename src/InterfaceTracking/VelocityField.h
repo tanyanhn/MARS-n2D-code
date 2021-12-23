@@ -3,12 +3,16 @@
 
 #include "TimeIntegrator.h"
 #include <cmath>
-/*
+
 class Translation : public VectorFunction<2>
 {
-public:
-    Translation(Real u1, Real u2) : v1(u1), v2(u2){};
-    const Vec<Real, 2> operator()(const Vec<Real, 2> &pt, Real tn) const
+private:
+    using Point = Vec<Real, 2>;
+
+    template <class T>
+    using Vector = std::vector<T>;
+
+    const Point operator()(Point pt, Real t) const
     {
         Vec<Real, 2> y;
         y[0] = v1;
@@ -16,16 +20,32 @@ public:
         return y;
     }
 
+    const Vector<Real> getJacobi(Point pt, Real t) const
+    {
+        Vector<Real> ptjac(4);
+        ptjac[0] = 0;
+        ptjac[1] = 0;
+        ptjac[2] = 0;
+        ptjac[3] = 0;
+        return ptjac;
+    }
+
+public:
+    Translation(Real u1, Real u2) : v1(u1), v2(u2){};
+
 private:
     Real v1, v2;
 };
-*/
-/*
+
 class Rotation : public VectorFunction<2>
 {
-public:
-    Rotation(Real c1, Real c2, Real _om) : rc1(c1), rc2(c2), om(_om){};
-    const Vec<Real, 2> operator()(const Vec<Real, 2> &pt, Real tn) const
+private:
+    using Point = Vec<Real, 2>;
+
+    template <class T>
+    using Vector = std::vector<T>;
+
+    const Point operator()(Point pt, Real t) const
     {
         Vec<Real, 2> y;
         y[0] = om * (rc1 - pt[1]);
@@ -33,10 +53,22 @@ public:
         return y;
     }
 
+    const Vector<Real> getJacobi(Point pt, Real t) const
+    {
+        Vector<Real> ptjac(4);
+        ptjac[0] = 0;
+        ptjac[1] = -om;
+        ptjac[2] = om;
+        ptjac[3] = 0;
+        return ptjac;
+    }
+
+public:
+    Rotation(Real c1, Real c2, Real _om) : rc1(c1), rc2(c2), om(_om){};
+
 private:
     Real rc1, rc2, om;
 };
-*/
 
 class RevRotation : public VectorFunction<2>
 {
@@ -46,7 +78,7 @@ private:
     template <class T>
     using Vector = std::vector<T>;
 
-    const Point operator()(const Point &pt, Real t) const
+    const Point operator()(Point pt, Real t) const
     {
         Point y;
         y[0] = om * (rc1 - pt[1]) * cos(M_PI * t / T);

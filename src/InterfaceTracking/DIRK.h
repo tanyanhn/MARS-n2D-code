@@ -10,29 +10,33 @@
 #include "Core/Wrapper_LAPACKE.h"
 
 template <int Dim>
-std::vector<Vec<Real, Dim>> solveNewton(const VectorFunction<Dim> &v, Real coef, const Tensor<Real, 2> &Jacobi, const std::vector<Vec<Real, Dim>> &rhs, const std::vector<Vec<Real, Dim>> &pts, Real tol)
+std::vector<Vec<Real, Dim>> solveNewton(const VectorFunction<Dim> &v, Real tn, Real coef, const Tensor<Real, 2> &Jacobi, const std::vector<Vec<Real, Dim>> &rhs, const std::vector<Vec<Real, Dim>> &pts, Real tol)
 {
     using Point = Vec<Real, Dim>;
 
     int num = pts.size() - 1;
     auto res = pts;
-    assert(2 * num == Jacobi.size()[0]);
+    assert(Dim * num == Jacobi.size()[0]);
 
     Tensor<Real, 2> mat = -Jacobi * coef;
-    for (int i = 0; i < 2 * num; i++)
+    for (int i = 0; i < Dim * num; i++)
     {
         mat(i, i) += 1;
     }
+    
+    //std::cout << mat << std::endl;
 
     std::vector<Point> vel;
-    Tensor<Real, 1> err(2 * num);
-    Tensor<int, 1> ipiv(2 * num);
+    Tensor<Real, 1> err(Dim * num);
+    Tensor<int, 1> ipiv(Dim * num);
 
-    vel = v(res);
+    vel = v(res, tn);
     for (int j = 0; j < num; j++)
     {
         err(j) = res[j][0] - rhs[j][0] - coef * vel[j][0];
         err(j + num) = res[j][1] - rhs[j][1] - coef * vel[j][1];
+        if (Dim == 3)
+            err(j + 2 * num) = res[j][2] - rhs[j][2] - coef * vel[j][2];
     }
 
     for (int i = 0; i < 10; i++)
@@ -40,18 +44,37 @@ std::vector<Vec<Real, Dim>> solveNewton(const VectorFunction<Dim> &v, Real coef,
         if (norm(err) < tol)
             break;
         auto info = LAPACKE_dgesv(LAPACK_COL_MAJOR, 2 * num, 1, mat.data(), 2 * num, ipiv.data(), err.data(), 2 * num);
+        if (info != 0)
+        {
+            std::cout << info << std::endl;
+            throw std::runtime_error("solveNewton() - DGESV");
+        }
         for (int j = 0; j < num; j++)
         {
             res[j][0] -= err(j);
             res[j][1] -= err(j + num);
+            if (Dim == 3)
+            {
+                res[j][2] -= err(j + 2 * num);
+            }
         }
         res[num][0] -= err(0);
         res[num][1] -= err(num);
-        vel = v(res);
+        if (Dim == 3)
+        {
+            res[num][2] -= err(2 * num);
+        }
+        vel = v(res, tn);
         for (int j = 0; j < num; j++)
         {
             err(j) = res[j][0] - rhs[j][0] - coef * vel[j][0];
             err(j + num) = res[j][1] - rhs[j][1] - coef * vel[j][1];
+            if (Dim == 3)
+                err(j + 2 * num) = res[j][2] - rhs[j][2] - coef * vel[j][2];
+        }
+        if (i == 10)
+        {
+            exit(1);
         }
     }
     return res;
@@ -74,7 +97,7 @@ public:
     void timeStep(const VectorFunction<Dim> &v, Vector<Point> &pts, Real tn, Real dt)
     {
         int num = pts.size();
-        Tensor<Real, 2> Jacobi = v.getJacobi(pts, tn);
+        Tensor<Real, 2> jacobi = v.getJacobi(pts, tn);
         Vector<Vector<Point>> step;
         step.resize(ButcherTab::nStages);
         Vector<Point> tmpts;
@@ -92,7 +115,7 @@ public:
             }
             if (ButcherTab::a[i][i] != 0)
             {
-                auto tmpts = solveNewton(v, ButcherTab::a[i][i] * dt, Jacobi, tmpts, pts, 1e-10);
+                tmpts = solveNewton<Dim>(v, tn + ButcherTab::c[i] * dt, ButcherTab::a[i][i] * dt, jacobi, tmpts, tmpts, 1e-10);
             }
             step[i] = v(tmpts, tn + ButcherTab::c[i] * dt);
             for (int k = 0; k < num; k++)
