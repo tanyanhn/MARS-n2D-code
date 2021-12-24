@@ -6,6 +6,10 @@
 
 #IncludeRegexTransform: 
 
+../src/Core/Box.h
+Vec.h
+../src/Core/Vec.h
+
 ../src/Core/Config.h
 iostream
 -
@@ -28,6 +32,26 @@ static_for.h
 numlib.h
 ../src/Core/numlib.h
 
+../src/Core/Tensor.h
+Box.h
+../src/Core/Box.h
+
+../src/Core/TensorExpr.h
+type_traits
+-
+limits
+-
+functional
+-
+numlib.h
+../src/Core/numlib.h
+Tensor.h
+../src/Core/Tensor.h
+
+../src/Core/TensorSlice.h
+TensorExpr.h
+../src/Core/TensorExpr.h
+
 ../src/Core/Vec.h
 utility
 -
@@ -39,6 +63,16 @@ cassert
 -
 Config.h
 ../src/Core/Config.h
+
+../src/Core/Wrapper_LAPACKE.h
+cblas.h
+-
+lapacke.h
+-
+mkl_cblas.h
+-
+mkl_lapacke.h
+-
 
 ../src/Core/numlib.h
 Vec.h
@@ -54,7 +88,23 @@ XorArea.h
 cmath
 -
 
-../src/InterfaceTracking/ExplicitRK.h
+../src/InterfaceTracking/DIRK.h
+vector
+-
+TimeIntegrator.h
+../src/InterfaceTracking/TimeIntegrator.h
+RKButcher.h
+../src/InterfaceTracking/RKButcher.h
+Core/Tensor.h
+../src/InterfaceTracking/Core/Tensor.h
+Core/TensorExpr.h
+../src/InterfaceTracking/Core/TensorExpr.h
+Core/TensorSlice.h
+../src/InterfaceTracking/Core/TensorSlice.h
+Core/Wrapper_LAPACKE.h
+../src/InterfaceTracking/Core/Wrapper_LAPACKE.h
+
+../src/InterfaceTracking/ERK.h
 vector
 -
 TimeIntegrator.h
@@ -80,7 +130,7 @@ Core/Interval.h
 vector
 -
 
-../src/InterfaceTracking/MARS2DLIST.h
+../src/InterfaceTracking/MARS2DIMV.h
 MARS.h
 ../src/InterfaceTracking/MARS.h
 Core/Curve.h
@@ -95,6 +145,8 @@ list
 ../src/InterfaceTracking/RKButcher.h
 Core/Config.h
 ../src/InterfaceTracking/Core/Config.h
+cmath
+-
 
 ../src/InterfaceTracking/TestExample.h
 VectorFunction.h
@@ -117,6 +169,10 @@ Core/Config.h
 ../src/InterfaceTracking/Core/Config.h
 Core/Vec.h
 ../src/InterfaceTracking/Core/Vec.h
+Core/Tensor.h
+../src/InterfaceTracking/Core/Tensor.h
+vector
+-
 
 ../src/InterfaceTracking/VelocityField.h
 TimeIntegrator.h
@@ -167,10 +223,12 @@ ctime
 -
 InterfaceTracking/MARS2D.h
 /home/ubuntu/codebase/YinSets2D-master/test/InterfaceTracking/MARS2D.h
-InterfaceTracking/MARS2DLIST.h
-/home/ubuntu/codebase/YinSets2D-master/test/InterfaceTracking/MARS2DLIST.h
-InterfaceTracking/ExplicitRK.h
-/home/ubuntu/codebase/YinSets2D-master/test/InterfaceTracking/ExplicitRK.h
+InterfaceTracking/MARS2DIMV.h
+/home/ubuntu/codebase/YinSets2D-master/test/InterfaceTracking/MARS2DIMV.h
+InterfaceTracking/ERK.h
+/home/ubuntu/codebase/YinSets2D-master/test/InterfaceTracking/ERK.h
+InterfaceTracking/DIRK.h
+/home/ubuntu/codebase/YinSets2D-master/test/InterfaceTracking/DIRK.h
 InterfaceTracking/ComputeError.h
 /home/ubuntu/codebase/YinSets2D-master/test/InterfaceTracking/ComputeError.h
 InterfaceTracking/TestExample.h
