@@ -108,12 +108,12 @@ TestIT getTest(int i)
     test.push_back(TestIT(Point{0.5, 0.5}, 0.15, 128, 0.02, 2, deformation, "Deformation", 40, 0.4));
 
     //test 8
-    //Translation(1, 1)
+    //Rotaion
     //n = 32; dt = 0.1; rtiny = 0.1
     test.push_back(TestIT(Point{0.5, 0}, 0.5, 32, 0.1, 2, rotation, "Rotation", 40, 0.1));
 
     //test 9
-    //Translation(1, 1)
+    //RevRotation
     //n = 32; dt = 0.1; rtiny = 0.1
     test.push_back(TestIT(Point{0.5, 0}, 0.5, 16, 0.1, 2, revrotation, "RevRotation", 40, 0.1));
 
