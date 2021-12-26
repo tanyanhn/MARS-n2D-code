@@ -4,5 +4,6 @@ set(GeometricFlow_Files
     GeometricFlow/DiscreteVecCoDimOne.h
     GeometricFlow/DiscreteVecCurvature.h
     GeometricFlow/DiscreteVecCurvatureLaplacian.h
+    GeometricFlow/VelocityTest.h
     PARENT_SCOPE
 )

@@ -9,6 +9,7 @@
 #include <ctime>
 #include "GeometricFlow/DiscreteVecCurvature.h"
 #include "GeometricFlow/DiscreteVecCurvatureLaplacian.h"
+#include "GeometricFlow/VelocityTest.h"
 #include "InterfaceTracking/MARS2D.h"
 #include "InterfaceTracking/MARS2DIMV.h"
 #include "InterfaceTracking/ERK.h"
@@ -29,9 +30,8 @@ void testFL()
     cout << setiosflags(ios::scientific) << setprecision(4);
 
     TestIT test = getTest(6);
-    //set the initial curve
     int n;
-    int loop = 3;
+    int loop = 6;
     Real dt;
     dt = test.dt;
     Real tol = 1e-15;
@@ -46,8 +46,9 @@ void testFL()
     //clock_t begin, end;
     radio = 1;
     center = Point{0.0,0.0};
-    n = 32;
-    dt = 0.005;
+    n = 64;
+    dt = 0.001;
+    Vector<Vector<Point> > list1;
     cout << "Circle test:" << endl;
     for (int j = 0 ; j < loop ; j++){
       //get the initial curve
@@ -60,32 +61,62 @@ void testFL()
       pts.push_back({center[0] + radio, center[1]});
       cout << "----------- n = " << n << ": ------------" << endl;
       crv = fitCurve<4>(pts, true);
-      Vector<Curve<2, 4>> vcrv{crv};
-      YinSet<2, 4> YS(SegmentedRealizableSpadjor<4>(vcrv), tol);
+      // Vector<Curve<2, 4>> vcrv{crv};
+      // YinSet<2, 4> YS(SegmentedRealizableSpadjor<4>(vcrv), tol);
 
-      //MARS2DIMV<4> CM(&ESDIRK4, 4 * M_PI * radio / n, test.rtiny);
+      // MARS2DIMV<4> CM(&ESDIRK4, 4 * M_PI * radio / n, test.rtiny);
       
       DiscreteVecCurvature<2,4> SFV1;
       DiscreteVecCurvatureLaplacian<2,2> SFV2;
       
       Vector<Point> velocity = SFV1(pts,0);
-      for (auto it = velocity.begin(); it != velocity.end() ; ++it)
-        cout << *it << endl;
-      // Tensor<Real,2> Jacobi = SFV2.getJacobi(pts,0);
+      Vector<Point> exactVelocity = CircleCurvature(radio,n);
+      Real maxnorm = MaxNormVelocity(velocity,exactVelocity);
+      cout << "max-norm: " << maxnorm << endl;
+      Real onenorm =
+      OneNormVelocity(velocity,exactVelocity,2*M_PI*radio/n);
+      cout << "1-norm: " << onenorm << endl;
+
+      
+      list1.push_back(velocity);
+      
+
+      // for (auto it = velocity.begin(); it != velocity.end() ; ++it)
+      //   cout << *it << endl;
+      // Tensor<Real,2> Jacobi = SFV1.getJacobi(pts,0);
       // for (int l = 0; l < (Jacobi.size())[0]; l++){
       //   for (int m = 0; m < (Jacobi.size())[1]; m++)
       //     cout << Jacobi(l,m) << " ";
       //   cout << endl;
       // }
-      //CM.trackInterface(SFV1, YS, 0, dt, 0.5);
+      
+      // CM.trackInterface(SFV1, YS, 0, dt, 0.1);
+      // Curve<2,4> crvn = (YS.getBoundaryCycles())[0];
+      // Vector<Real> knots = crvn.getKnots();
+      // for (int l = 0 ; l <= (int)knots.size() ; l++)
+      //   cout << crvn(knots[l]) << endl;
+      
       n*=2;
       dt /= 2;
     }
     
-    n = 128;
-    dt = 0.05;
+    n = 64;
+    for (int i = 0; i < loop - 2 ; i++){
+      cout << "----------- n = " << n << ": ------------" << endl;
+      cout << "max-norm: " <<
+    MaxNormVelocity(Extrapolation(list1[i],list1[loop-1]),list1[i]) <<
+    endl;
+      cout << "1-norm: " << OneNormVelocity(Extrapolation(list1[i],list1[loop-1]),list1[i],2*M_PI*radio/n) <<
+    endl;
+      n*=2;
+    }
+      
+    
+    n = 256;
+    dt = 0.0005;
     radio = 0.3;
     center = Point{1.0,1.0};
+    Vector<Vector<Point> > list2;
     cout << "Star test:" << endl;
     for (int j = 0 ; j < loop ; j++){
       //get the initial curve
@@ -97,35 +128,54 @@ void testFL()
                          (center[1] + radio * cos(6 * 2 * M_PI / n * i))*sin(2 * M_PI / n * i)});
         }
       pts.push_back({center[0] + radio, 0});
-      cout << "----------- n = " << n << ": ------------" << endl;
+      //cout << "----------- n = " << n << ": ------------" << endl;
       crv = fitCurve<4>(pts, true);
       Vector<Curve<2, 4>> vcrv{crv};
-      YinSet<2, 4> YS(SegmentedRealizableSpadjor<4>(vcrv), tol);
 
-      //MARS2DIMV<4> CM(&ERK, 4 * M_PI * radio / n, test.rtiny);
+      // YinSet<2, 4> YS(SegmentedRealizableSpadjor<4>(vcrv), tol);
+      // MARS2DIMV<4> CM(&ESDIRK4, 4 * M_PI * radio / n, test.rtiny);
       
       
       
       
-      // DiscreteVecCurvature<2,2> SFV1;
+      DiscreteVecCurvature<2,4> SFV1;
       DiscreteVecCurvatureLaplacian<2,4> SFV2;
       
-      Vector<Point> velocity = SFV2(pts,0);
-      for (auto it = velocity.begin(); it != velocity.end() ; ++it)
-        cout << *it << endl;
+      Vector<Point> velocity = SFV1(pts,0);
+      list2.push_back(velocity);
+      
+      
+      // for (auto it = velocity.begin(); it != velocity.end() ; ++it)
+      //   cout << *it << endl;
       // Tensor<Real,2> Jacobi = SFV2.getJacobi(pts,0);
       // for (int l = 0; l < (Jacobi.size())[0]; l++){
       //   for (int m = 0; m < (Jacobi.size())[1]; m++)
       //     cout << Jacobi(l,m) << " ";
       //   cout << endl;
       // }
-      //CM.trackInterface(SFV1, YS, 0, dt, test.T);
+
+      // CM.trackInterface(SFV1, YS, 0, dt, 0.01);
+      // Curve<2,4> crvn = (YS.getBoundaryCycles())[0];
+      // Vector<Real> knots = crvn.getKnots();
+      // for (int l = 0 ; l <= (int)knots.size() ; l++)
+      //   cout << crvn(knots[l])[0] << " " << crvn(knots[l])[1] << endl;
+
+      
       n*=2;
       dt /= 2;
     
     }
-
-
+    n = 256;
+    for (int i = 0; i < loop - 2 ; i++){
+      cout << "----------- n = " << n << ": ------------" << endl;
+      cout << "max-norm: " <<
+    MaxNormVelocity(Extrapolation(list2[i],list2[loop-1]),list2[i]) <<
+    endl;
+      cout << "1-norm: " << OneNormVelocity(Extrapolation(list2[i],list2[loop-1]),list2[i],2*M_PI*radio/n) <<
+    endl;
+      n*=2;
+    }
+    
    
       //Vector<Real> arclength2 = calArcLength<3>(crv);
       // Tensor<Real,2> FD2coes2 = calFD2coes<4>(arclength2);
