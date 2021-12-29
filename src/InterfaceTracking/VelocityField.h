@@ -4,6 +4,41 @@
 #include "TimeIntegrator.h"
 #include <cmath>
 
+class CircleShrink : public VectorFunction<2>
+{
+private:
+    using Point = Vec<Real, 2>;
+
+    template <class T>
+    using Vector = std::vector<T>;
+
+    const Point operator()(Point pt, Real t) const
+    {
+        Vec<Real, 2> y;
+        Real l = norm(pt, 2);
+        y[0] = -pt[0] / l * v;
+        y[1] = -pt[1] / l * v;
+        return y;
+    }
+
+    const Vector<Real> getJacobi(Point pt, Real t) const
+    {
+        Vector<Real> ptjac(4);
+        Real l = norm(pt, 2);
+        ptjac[0] = -v / l;
+        ptjac[1] = 0;
+        ptjac[2] = 0;
+        ptjac[3] = -v / l;
+        return ptjac;
+    }
+
+public:
+    CircleShrink(Real _v) : v(_v) {}
+
+private:
+    Real v;
+};
+
 class Translation : public VectorFunction<2>
 {
 private:
@@ -81,8 +116,8 @@ private:
     const Point operator()(Point pt, Real t) const
     {
         Point y;
-        y[0] = om * (rc1 - pt[1]) * cos(M_PI * t / T);
-        y[1] = -om * (rc2 - pt[0]) * cos(M_PI * t / T);
+        y[0] = om * (rc2 - pt[1]) * cos(M_PI * t / T);
+        y[1] = -om * (rc1 - pt[0]) * cos(M_PI * t / T);
         return y;
     }
 

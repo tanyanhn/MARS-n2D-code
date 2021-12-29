@@ -40,7 +40,7 @@ public:
         }
         return vel;
     }
-    /*
+    
     virtual const Tensor<Real, 2> getJacobi(const Vector<Point> &pts, Real t = 0) const
     {
         int num = pts.size() - 1;
@@ -61,7 +61,8 @@ public:
         }
         return jacobi;
     }
-    */
+    
+   /*
     virtual const SpMat getJacobi(const Vector<Point> &pts, Real t = 0) const
     {
         int num = pts.size() - 1;
@@ -85,6 +86,7 @@ public:
         jacobi.setFromTriplets(coef.begin(), coef.end());
         return jacobi;
     }
+    */
 };
 
 #endif

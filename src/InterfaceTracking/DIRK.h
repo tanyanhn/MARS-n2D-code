@@ -10,7 +10,8 @@
 #include "Core/Wrapper_LAPACKE.h"
 #include <Eigen/Sparse>
 #include <Eigen/SparseLU>
-
+#include <Eigen/IterativeLinearSolvers>
+/*
 template <int Dim>
 std::vector<Vec<Real, Dim>> solveNewton(const VectorFunction<Dim> &v, Real tn, Real coef, const Eigen::SparseMatrix<Real> &Jacobi, const std::vector<Vec<Real, Dim>> &rhs, const std::vector<Vec<Real, Dim>> &pts, Real tol)
 {
@@ -27,7 +28,9 @@ std::vector<Vec<Real, Dim>> solveNewton(const VectorFunction<Dim> &v, Real tn, R
         mat.coeffRef(i, i) += 1;
     }
 
-    Eigen::SparseLU<SpMat> lu(mat);
+    //Eigen::SparseLU<SpMat> solver(mat);
+    Eigen::BiCGSTAB<SpMat> solver;
+    solver.compute(mat);
     
     //std::cout << mat << std::endl;
 
@@ -59,8 +62,8 @@ std::vector<Vec<Real, Dim>> solveNewton(const VectorFunction<Dim> &v, Real tn, R
         if (normXd(err, Dim * num) < tol)
             break;
         //auto info = LAPACKE_dgesv(LAPACK_COL_MAJOR, 2 * num, 1, mat.data(), 2 * num, ipiv.data(), err.data(), 2 * num);
-        auto x = lu.solve(err);
-        if (lu.info() != Eigen::Success)
+        auto x = solver.solve(err);
+        if (solver.info() != Eigen::Success)
         {
             //std::cout << info << std::endl;
             throw std::runtime_error("solveNewton() - EigenSparseLU");
@@ -90,7 +93,89 @@ std::vector<Vec<Real, Dim>> solveNewton(const VectorFunction<Dim> &v, Real tn, R
         }
         if (i == 10)
         {
-            exit(1);
+            throw std::runtime_error("solveNewton() out of range");
+        }
+    }
+    return res;
+}
+*/
+
+template <int Dim>
+std::vector<Vec<Real, Dim>> solveNewton(const VectorFunction<Dim> &v, Real tn, Real coef, const Tensor<Real, 2> &Jacobi, const std::vector<Vec<Real, Dim>> &rhs, const std::vector<Vec<Real, Dim>> &pts, Real tol)
+{
+    using Point = Vec<Real, Dim>;
+
+    int num = pts.size() - 1;
+    auto res = pts;
+
+    Tensor<Real, 2> mat = -Jacobi * coef;
+    for (int i = 0; i < Dim * num; i++)
+    {
+        mat(i, i) += 1;
+    }
+    
+    //std::cout << mat << std::endl;
+
+    std::vector<Point> vel;
+    Tensor<Real, 1> err(Dim * num);
+    Tensor<int, 1> ipiv(Dim * num);
+
+    auto normXd = [](const Tensor<Real, 1> &err, int n) -> Real
+    {
+        Real res = 0;
+        for(int i=0; i<n; i++)
+        {
+            res += pow(err(i),2);
+        }
+        return sqrt(res);
+    };
+
+    vel = v(res, tn);
+    for (int j = 0; j < num; j++)
+    {
+        err(j) = res[j][0] - rhs[j][0] - coef * vel[j][0];
+        err(j + num) = res[j][1] - rhs[j][1] - coef * vel[j][1];
+        if (Dim == 3)
+            err(j + 2 * num) = res[j][2] - rhs[j][2] - coef * vel[j][2];
+    }
+
+    for (int i = 0; i < 10; i++)
+    {
+        if (normXd(err, Dim * num) < tol)
+            break;
+        auto info = LAPACKE_dgesv(LAPACK_COL_MAJOR, 2 * num, 1, mat.data(), 2 * num, ipiv.data(), err.data(), 2 * num);
+
+        if (info != 0)
+        {
+            std::cout << info << std::endl;
+            throw std::runtime_error("solveNewton() - LAPACKE_dgesv");
+        }
+        for (int j = 0; j < num; j++)
+        {
+            res[j][0] -= err(j);
+            res[j][1] -= err(j + num);
+            if (Dim == 3)
+            {
+                res[j][2] -= err(j + 2 * num);
+            }
+        }
+        res[num][0] -= err(0);
+        res[num][1] -= err(num);
+        if (Dim == 3)
+        {
+            res[num][2] -= err(2 * num);
+        }
+        vel = v(res, tn);
+        for (int j = 0; j < num; j++)
+        {
+            err(j) = res[j][0] - rhs[j][0] - coef * vel[j][0];
+            err(j + num) = res[j][1] - rhs[j][1] - coef * vel[j][1];
+            if (Dim == 3)
+                err(j + 2 * num) = res[j][2] - rhs[j][2] - coef * vel[j][2];
+        }
+        if (i == 10)
+        {
+            throw std::runtime_error("solveNewton() out of range");
         }
     }
     return res;
@@ -116,7 +201,7 @@ public:
     {
         int num = pts.size();
         //Tensor<Real, 2> jacobi = v.getJacobi(pts, tn);
-        SpMat jacobi = v.getJacobi(pts, tn);
+        auto jacobi = v.getJacobi(pts, tn);
         Vector<Vector<Point>> step;
         step.resize(ButcherTab::nStages);
         Vector<Point> tmpts;

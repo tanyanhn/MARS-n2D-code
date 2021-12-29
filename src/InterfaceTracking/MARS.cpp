@@ -17,9 +17,9 @@ void MARS<Dim, Order>::trackInterface(const VectorFunction<Dim> &v, YS &ys, Real
         ys.dump(of);
     }
 
-    while (T < EndTime)
+    while ((dt > 0 && T < EndTime) || (dt < 0 && T > EndTime))
     {
-        if (EndTime - T < dt)
+        if (abs(EndTime - T) < abs(dt))
         {
             t = EndTime - T;
         }

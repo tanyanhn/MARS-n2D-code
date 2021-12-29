@@ -48,7 +48,7 @@ void testIT()
     int stages = 2;
     cout << setiosflags(ios::scientific) << setprecision(2);
 
-    TestIT test = getTest(6);
+    TestIT test = getTest(9);
 
     //set the initial curve
     int n;

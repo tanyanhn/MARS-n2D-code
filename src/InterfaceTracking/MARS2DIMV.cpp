@@ -37,10 +37,13 @@ bool removeIMV(Vector<unsigned int> &ids, Vector<Point> &pts, Real lowBound)
     //set distances
     int num = pts.size();
 
+    int count = 1;
+    int i = 1;
+
     //function<void(int&, int&)> addpi;
 
     //lambda: split between two points
-    auto addpi = [&](int &count, int &i) -> void
+    auto addpi = [&]() -> void
     {
         if (count != i)
         {
@@ -53,14 +56,12 @@ bool removeIMV(Vector<unsigned int> &ids, Vector<Point> &pts, Real lowBound)
     };
 
     Vector<Real> dist(num - 1);
-    for (int i = 0; i < num - 1; i++)
+    for (int j = 0; j < num - 1; j++)
     {
-        dist[i] = norm(pts[i + 1] - pts[i], 2);
+        dist[j] = norm(pts[j + 1] - pts[j], 2);
     }
 
     bool predelete = false; //mark whether the pre-point has been erased
-    int count = 1;
-    int i = 1;
     if (dist[0] < lowBound)
     {
         predelete = true;
@@ -72,7 +73,7 @@ bool removeIMV(Vector<unsigned int> &ids, Vector<Point> &pts, Real lowBound)
         if (dist[i] >= lowBound)
         {
             predelete = false;
-            addpi(count, i);
+            addpi();
         }
         else
         {
@@ -85,13 +86,13 @@ bool removeIMV(Vector<unsigned int> &ids, Vector<Point> &pts, Real lowBound)
                 }
                 else
                 {
-                    addpi(count, i);
+                    addpi();
                     predelete = false;
                 }
             }
             else
             {
-                addpi(count, i);
+                addpi();
                 i++;
                 predelete = true;
             }
@@ -99,7 +100,7 @@ bool removeIMV(Vector<unsigned int> &ids, Vector<Point> &pts, Real lowBound)
     }
     if (i == num - 1)
     {
-        addpi(count, i);
+        addpi();
         pts.resize(count);
         ids.resize(count);
         return num != count;
@@ -108,14 +109,16 @@ bool removeIMV(Vector<unsigned int> &ids, Vector<Point> &pts, Real lowBound)
     {
         if (predelete == true || dist[i] >= lowBound)
         {
-            addpi(count, i);
-            addpi(count, i);
+            addpi();
+            addpi();
             pts.resize(count);
             ids.resize(count);
             return num != count;
         }
         i++;
-        addpi(count, i);
+        addpi();
+        pts.resize(count);
+        ids.resize(count);
         return true;
     }
 }
@@ -132,6 +135,14 @@ Vector<unsigned int> MARS2DIMV<Order>::removeSmallEdges(Vector<Point> &pts)
 
     while (true)
     {
+        //output ids, debug use
+        std::cout << "(";
+        for (auto &id : ids)
+        {
+            std::cout << id << ", ";
+        }
+        std::cout << "\b)" << std::endl;
+
         if (!removeIMV(ids, pts, (chdLenRange.lo())[0]))
             break;
     }
