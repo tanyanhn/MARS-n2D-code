@@ -12,6 +12,8 @@ private:
     template <class T>
     using Vector = std::vector<T>;
 
+public:
+
     const Point operator()(Point pt, Real t) const
     {
         Vec<Real, 2> y;
@@ -47,6 +49,8 @@ private:
     template <class T>
     using Vector = std::vector<T>;
 
+public:
+
     const Point operator()(Point pt, Real t) const
     {
         Vec<Real, 2> y;
@@ -79,6 +83,8 @@ private:
 
     template <class T>
     using Vector = std::vector<T>;
+
+public:
 
     const Point operator()(Point pt, Real t) const
     {
@@ -113,6 +119,8 @@ private:
     template <class T>
     using Vector = std::vector<T>;
 
+public:
+
     const Point operator()(Point pt, Real t) const
     {
         Point y;
@@ -146,6 +154,8 @@ private:
     template <class T>
     using Vector = std::vector<T>;
 
+public:
+
     const Point operator()(Point pt, Real t) const
     {
         Point y;
@@ -178,6 +188,8 @@ private:
 
     template <class T>
     using Vector = std::vector<T>;
+
+public:
 
     const Point operator()(Point pt, Real t) const
     {

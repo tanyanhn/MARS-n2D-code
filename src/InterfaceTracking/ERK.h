@@ -23,6 +23,26 @@ class ERK : public TimeIntegrator<Dim>
 public:
     const int order = ButcherTab::order;
 
+    void timeStep(const VectorFunction<Dim> &v, Point &pt, Real tn, Real dt)
+    {
+        Vector<Point> step;
+        step.resize(ButcherTab::nStages);
+        Point tmpt;
+        Point result = pt;
+
+        for (int i = 0; i < ButcherTab::nStages; i++)
+        {
+            tmpt = pt;
+            for (int j = 0; j < i; j++)
+            {
+                tmpt = tmpt + step[j] * ButcherTab::a[i][j] * dt;
+            }
+            step[i] = v(tmpt, tn + ButcherTab::c[i] * dt);
+            result = result + step[i] * ButcherTab::b[i] * dt;
+        }
+        pt = result;
+    }
+
     void timeStep(const VectorFunction<Dim> &v, Vector<Point> &pts, Real tn, Real dt)
     {
         int num = pts.size();

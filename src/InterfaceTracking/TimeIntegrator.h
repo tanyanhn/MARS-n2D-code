@@ -17,6 +17,8 @@ class TimeIntegrator
 public:
     virtual ~TimeIntegrator() {}
 
+    virtual void timeStep(const VectorFunction<Dim> &v, Point &pt, Real tn, Real k) = 0;
+
     virtual void timeStep(const VectorFunction<Dim> &v, Vector<Point> &pts, Real tn, Real k) = 0;
 };
 

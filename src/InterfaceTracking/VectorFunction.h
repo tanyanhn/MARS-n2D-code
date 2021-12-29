@@ -20,15 +20,15 @@ private:
 
     using Tri = Eigen::Triplet<Real>;
 
+public:
+    virtual ~VectorFunction(){};
+
     virtual const Point operator()(Point pt, Real t) const = 0;
 
     virtual const Vector<Real> getJacobi(Point pt, Real t) const
     {
         return Vector<Real>(Dim * Dim);
     }
-
-public:
-    virtual ~VectorFunction(){};
 
     virtual const Vector<Point> operator()(const Vector<Point> &pts, Real t = 0) const
     {
