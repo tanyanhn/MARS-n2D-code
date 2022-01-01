@@ -23,7 +23,7 @@
 \usepackage{amsmath}
 \usepackage{amsthm}
 \usepackage{enumerate}
-\usepackage{xcolor,graphicx,float}
+\usepackage{xcolor,graphicx,float,subfigure}
 \usepackage{epstopdf}
 \usepackage{multicol}
 \usepackage{fancyhdr}
@@ -119,7 +119,7 @@ $\nabla_s$表示曲面上的梯度算子。表面扩散流有两个最基本的�
 (2)二维情形下，曲线的总弧长随时间递减；三维情形下，曲面的总表面积递减。
 
 
-我们的研究对象是二维表面扩散流，我们将其定义如下
+我们的研究对象是二维表面扩散流，我们将其定义如下：
 \begin{definition}[二维表面扩散流问题]
     \label{eq:defequ}
 对于嵌入二维平面$\mathbb{R}$中的随时间变化的简单闭合曲线
@@ -294,12 +294,11 @@ $\bar{\boldsymbol X}_i$到$\bar{\boldsymbol X}_{i+1}$的弧长为
 \indent 在得到上述近似弧长的基础上，我们用差分格式近似计算空间导数$\frac{\partial^2\boldsymbol X_i}{\partial
     s^2},\pdfrac{\boldsymbol X_i}{s}$，从而根据\eqref{eq:onor}，
   \eqref{eq:rcurv}得到近似的外法向$\bar{\boldsymbol n}_i$和近似曲率
-  $\bar{\kappa}_i$。为了达到二阶精度，这里分别对一阶和二阶导数采用六点
-  格式，即四阶差分方法。
+  $\bar{\kappa}_i$。为了达到二阶精度，这里分别对一阶和二阶导数采用\textcolor{red}{五点和}六点格式，即四阶差分方法。
   \begin{eqnarray}    
     \pdfrac{\bar{\boldsymbol X}_i}{s} =
     \boldsymbol f_{\bar{s},4}^{(1)}(\bar{\boldsymbol X}_i,t) =
-    \sum_{j=i-2}^{i+3}\alpha_{\bar{s},4,i,j}^{(1)}(\bar{\boldsymbol X},t)
+    \sum_{j=i-2}^{i+\textcolor{red}{2}}\alpha_{\bar{s},4,i,j}^{(1)}(\bar{\boldsymbol X},t)
     \bar{\boldsymbol X}_j,
     \label{eq:calder1}\\
     \frac{\partial^2\bar{\boldsymbol X}_i}{\partial s^2} =
@@ -312,16 +311,17 @@ $\bar{\boldsymbol X}_i$到$\bar{\boldsymbol X}_{i+1}$的弧长为
   的离散，上标$(k)$表示对$k$阶导数的离散，下标$4$表示四
   阶。离散格式的具体系数$\alpha_{\bar{s},4,i,j}^{(k)}(\bar{\boldsymbol X},t)$可以通过拉格朗日插
   值求$k$阶导数得到：
+  
   \begin{footnotesize}
-  \begin{eqnarray}
+    \begin{eqnarray}
     \begin{aligned}
-      \label{eq:dercoe1}
-  \alpha_{\bar{s},4,i,i-2}^{(1)} &=
-  \frac{\bar{s}_{i-1}\bar{s}_{i}^3+2\bar{s}_{i-1}\bar{s}_{i}^2\bar{s}_{i+1}+\bar{s}_{i-1}\bar{s}_{i}^2\bar{s}_{i+2}+\bar{s}_{i-1}\bar{s}_{i}\bar{s}_{i+1}^2+\bar{s}_{i-1}\bar{s}_{i}\bar{s}_{i+1}\bar{s}_{i+2}}{\bar{s}_{i-2}(\bar{s}_{i-2}+\bar{s}_{i-1})(\bar{s}_{i-2}+\bar{s}_{i-1}+\bar{s}_{i})(\bar{s}_{i-2}+\bar{s}_{i-1}+\bar{s}_{i}+\bar{s}_{i+1})(\bar{s}_{i-2}+\bar{s}_{i-1}+\bar{s}_{i}+\bar{s}_{i+1}+\bar{s}_{i+2})},
+      \label{eq:dercoe1}      
+  {\color{red} \alpha_{\bar{s},4,i,i-2}^{(1)} }&{\color{red} =
+  \frac{\bar{s}_{i-1}\bar{s}_{i}(\bar{s}_{i}+\bar{s}_{i+1})}{\bar{s}_{i-2}(\bar{s}_{i-2}+\bar{s}_{i-1})(\bar{s}_{i-2}+\bar{s}_{i-1}+\bar{s}_{i})(\bar{s}_{i-2}+\bar{s}_{i-1}+\bar{s}_{i}+\bar{s}_{i+1})},}
   \\
   \alpha_{\bar{s},4,i,i-1}^{(1)} &= \cdots\\
   \vdots\\
-  \alpha_{\bar{s},4,i,i+3}^{(1)} &= \cdots
+  \alpha_{\bar{s},4,i,i+2}^{(1)} &= \cdots
 \end{aligned}
   \end{eqnarray}
 \begin{eqnarray}
@@ -336,8 +336,7 @@ $\bar{\boldsymbol X}_i$到$\bar{\boldsymbol X}_{i+1}$的弧长为
   \end{aligned}                               
 \end{eqnarray}
 \end{footnotesize}
-\indent 如果需要四阶精度，只需要将六点格式替换为八点格式，即使用六阶精度的空间
-离散。\\
+\indent 如果需要四阶精度，只需要将\textcolor{red}{五点/}六点格式替换为\textcolor{red}{七点/}八点格式，即使用六阶精度的空间离散。\\
 \indent 通过\eqref{eq:onor}，
   \eqref{eq:rcurv}得到近似的外法向$\bar{\boldsymbol n}_i$和近似曲率
   $\bar{\kappa}_i$后，我们用一样的方式计算
@@ -903,25 +902,25 @@ $\boldsymbol f_{\bar{s}}$为方程\eqref{eq:nODEs}的右端项，$\boldsymbol X 
   \label{eq:showcalintails2}
   \begin{aligned}
     \pdfrac{f_{\bar{s},r+2}^{(k)}(\bar{x}_i)}{x_j} &=
-    \alpha_{\bar{s},r+2,i,j} +
-    \sum_{l=i-r/2-1}^{i+r/2+2}(x_l\pdfrac{\alpha_{\bar{s},r+2,i,l}}{\bar{s}_{j-1}}\pdfrac{\bar{s}_{j-1}}{x_j})
+    \alpha_{\bar{s},r+2,i,j}^{(k)} +
+    \sum_{l=i-r/2-1}^{i+r/2+\textcolor{red}{k}}(x_l\pdfrac{\alpha_{\bar{s},r+2,i,l}}{\bar{s}_{j-1}}\pdfrac{\bar{s}_{j-1}}{x_j})
     +
-    \sum_{l=i-r/2-1}^{i+r/2+2}(x_l\pdfrac{\alpha_{\bar{s},r+2,i,l}}{\bar{s}_{j}}\pdfrac{\bar{s}_{j}}{x_j}),\\
+    \sum_{l=i-r/2-1}^{i+r/2+\textcolor{red}{k}}(x_l\pdfrac{\alpha_{\bar{s},r+2,i,l}}{\bar{s}_{j}}\pdfrac{\bar{s}_{j}}{x_j}),\\
     \pdfrac{f_{\bar{s},r+2}^{(k)}(\bar{x}_i)}{y_j} &=
-    \sum_{l=i-r/2-1}^{i+r/2+2}(x_l\pdfrac{\alpha_{\bar{s},r+2,i,l}}{\bar{s}_{j-1}}\pdfrac{\bar{s}_{j-1}}{y_j})
+    \sum_{l=i-r/2-1}^{i+r/2+\textcolor{red}{k}}(x_l\pdfrac{\alpha_{\bar{s},r+2,i,l}}{\bar{s}_{j-1}}\pdfrac{\bar{s}_{j-1}}{y_j})
     +
-    \sum_{l=i-r/2-1}^{i+r/2+2}(x_l\pdfrac{\alpha_{\bar{s},r+2,i,l}}{\bar{s}_{j}}\pdfrac{\bar{s}_{j}}{y_j}),\\
+    \sum_{l=i-r/2-1}^{i+r/2+\textcolor{red}{k}}(x_l\pdfrac{\alpha_{\bar{s},r+2,i,l}}{\bar{s}_{j}}\pdfrac{\bar{s}_{j}}{y_j}),\\
     \pdfrac{f_{\bar{s},r+2}^{(k)}(\bar{y}_i)}{x_j} &=
-    \sum_{l=i-r/2-1}^{i+r/2+2}(y_l\pdfrac{\alpha_{\bar{s},r+2,i,l}}{\bar{s}_{j-1}}\pdfrac{\bar{s}_{j-1}}{x_j})
+    \sum_{l=i-r/2-1}^{i+r/2+\textcolor{red}{k}}(y_l\pdfrac{\alpha_{\bar{s},r+2,i,l}}{\bar{s}_{j-1}}\pdfrac{\bar{s}_{j-1}}{x_j})
     +
-    \sum_{l=i-r/2-1}^{i+r/2+2}(y_l\pdfrac{\alpha_{\bar{s},r+2,i,l}}{\bar{s}_{j}}\pdfrac{\bar{s}_{j}}{x_j}),\\
+    \sum_{l=i-r/2-1}^{i+r/2+\textcolor{red}{k}}(y_l\pdfrac{\alpha_{\bar{s},r+2,i,l}}{\bar{s}_{j}}\pdfrac{\bar{s}_{j}}{x_j}),\\
     \pdfrac{f_{\bar{s},r+2}^{(k)}(\bar{y}_i)}{y_j} &=
-    \alpha_{\bar{s},r+2,i,j} +
-    \sum_{l=i-r/2-1}^{i+r/2+2}(y_l\pdfrac{\alpha_{\bar{s},r+2,i,l}}{\bar{s}_{j-1}}\pdfrac{\bar{s}_{j-1}}{y_j})
+    \alpha_{\bar{s},r+2,i,j}^{(k)} +
+    \sum_{l=i-r/2-1}^{i+r/2+\textcolor{red}{k}}(y_l\pdfrac{\alpha_{\bar{s},r+2,i,l}}{\bar{s}_{j-1}}\pdfrac{\bar{s}_{j-1}}{y_j})
     +
-    \sum_{l=i-r/2-1}^{i+r/2+2}(y_l\pdfrac{\alpha_{\bar{s},r+2,i,l}}{\bar{s}_{j}}\pdfrac{\bar{s}_{j}}{y_j}),\\
+    \sum_{l=i-r/2-1}^{i+r/2+\textcolor{red}{k}}(y_l\pdfrac{\alpha_{\bar{s},r+2,i,l}}{\bar{s}_{j}}\pdfrac{\bar{s}_{j}}{y_j}),\\
     \pdfrac{f_{\bar{s},r+2}^{(k)}(\bar{\kappa}_i)}{\kappa_j} &=
-    \alpha_{\bar{s},r+2,i,j}
+    \alpha_{\bar{s},r+2,i,j}^{(k)}
     %+
     %\sum_{l=i-r/2-1}^{i+r/2+2}(\kappa_l\pdfrac{\alpha_{\bar{s},r+2,i,l}}{\bar{s}_{j-1}}\pdfrac{\bar{s}_{j-1}}{\kappa_j})
     %+
@@ -963,8 +962,42 @@ $\boldsymbol X_j$直接相连的两段弧长，而$\kappa_j$的改变不对弧�
 \end{eqnarray}
 综上，可以得到矩阵\eqref{eq:Jacobiij}的各项元素。当$i,j$遍历所有点时，
 即可得到如\eqref{eq:Jacobi}式所示的整体雅可比矩阵。
-
-
+\subsection{稳定性分析结论}
+如前所述，我们考察雅可比矩阵$J_{\boldsymbol f_{\bar{s}}}$的特征分布。
+\begin{figure}[H]
+  \centering  %图片全局居中
+	\subfigure[$t=0$]{
+		\includegraphics[width=0.3\linewidth]{star_originfill.eps}
+    }
+	\subfigure{
+		\includegraphics[width=0.3\linewidth]{Eigenvalues_0.eps}
+    }\\
+    \subfigure[$t=0.0005$]{
+        \includegraphics[width=0.3\linewidth]{star_ESDIRK64_0.0005.eps}
+      }
+      \subfigure{
+        \includegraphics[width=0.3\linewidth]{Eigenvalues_0.0005.eps}
+    }\\
+    \subfigure[$t=0.002$]{
+		\includegraphics[width=0.3\linewidth]{star_ESDIRK64_0.002.eps}
+    }
+	\subfigure{
+		\includegraphics[width=0.3\linewidth]{Eigenvalues_0.002.eps}
+    }\\
+    \subfigure[$t=0.006$]{
+        \includegraphics[width=0.3\linewidth]{star_ESDIRK64_0.006.eps}
+      }
+      \subfigure{
+        \includegraphics[width=0.3\linewidth]{Eigenvalues_0.006.eps}
+    }
+    \caption{四阶方法曲线和雅可比矩阵$J_{\boldsymbol f_{\bar{s}}}$特征
+      值乘$1/n^2$后的分布，$n=64$，$k=$ 5e-7，$r_\mathrm{tiny}=0.01$,
+      结束时间$t_e = 0.6$。}
+    \label{fig:Eigenvlaues}
+  \end{figure}
+  从上图可以看出，雅可比矩阵的特征值的分布基本沿虚轴和负实轴。在初始时
+  刻点分布较均匀的情况下，谱半径较小，随着时间推移，后续步骤中谱半径约
+  为初始值的20倍。对二阶方法的分析可以得到相似的结果。
 \newpage
 \begin{thebibliography}{99}  
 \bibitem{ref1}C. M. Elliott and H. Garcke, Existence results for geometric interface models for surface

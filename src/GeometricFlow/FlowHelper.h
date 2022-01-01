@@ -15,13 +15,11 @@ template <int Order>
 Vector<Real> calArcLength(const Crv& crv);
 
 template <int Order>
-Vector<Real> calLocalFD2coes(const Vector<Real>& arclength, const int i);
+Vector<Real> calLocalFDcoes(const Vector<Real>& arclength, const int
+i, const int M);
 
 template <int Order>
-Tensor<Real,2> calFD1coes(const Vector<Real>& arclength);
-
-template <int Order>
-Tensor<Real,2> calFD2coes(const Vector<Real>& arclength);
+Tensor<Real,2> calFDcoes(const Vector<Real>& arclength, const int k);
 
 //crv must be the curve fitted by points lying in datas, and k must be
 //1 or 2

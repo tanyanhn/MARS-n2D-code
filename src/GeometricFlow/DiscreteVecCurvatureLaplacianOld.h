@@ -1,11 +1,11 @@
-#ifndef _DISCRETEVECCURVATURELAPLACIAN_H_
-#define _DISCRETEVECCURVATURELAPLACIAN_H_
+#ifndef _DISCRETEVECCURVATURELAPLACIANOLD_H_
+#define _DISCRETEVECCURVATURELAPLACIANOLD_H_
 
 #include "DiscreteVecCoDimOne.h"
 #include "FlowHelper.h"
 
 template<int Dim, int Order>
-class DiscreteVecCurvatureLaplacian: public DiscreteVecCoDimOne<Dim>
+class DiscreteVecCurvatureLaplacianOld: public DiscreteVecCoDimOne<Dim>
 {
 private:
   template<class T>
@@ -20,7 +20,7 @@ public:
 };
 
 template<int Order>
-class DiscreteVecCurvatureLaplacian<2,Order>: public DiscreteVecCoDimOne<2>
+class DiscreteVecCurvatureLaplacianOld<2,Order>: public DiscreteVecCoDimOne<2>
 {
 private:
   template<class T>
@@ -38,7 +38,7 @@ public:
 
 template<int Order>
 const Vector<Point>
-DiscreteVecCurvatureLaplacian<2,Order>::operator()(const
+DiscreteVecCurvatureLaplacianOld<2,Order>::operator()(const
                                                    Vector<Point>& pts, Real t) const{
   const int num = pts.size();
   const Curve<2,4> crv = fitCurve<4>(pts,true);
@@ -58,7 +58,7 @@ DiscreteVecCurvatureLaplacian<2,Order>::operator()(const
 
 template<int Order>
 const Tensor<Real,2>
-DiscreteVecCurvatureLaplacian<2,Order>::getJacobi(const
+DiscreteVecCurvatureLaplacianOld<2,Order>::getJacobi(const
                                                   Vector<Point>& pts, Real t) const
 {
   const int num = pts.size();
@@ -78,7 +78,7 @@ DiscreteVecCurvatureLaplacian<2,Order>::getJacobi(const
     for (int j = 0 ; j < 2*num-2 ; j++)
       res(i,j) = 0.0;
   for (int i = 0 ; i < num - 1 ; i++){
-    Vector<Real> Localcoes2 = calLocalFD2coes<Order+2>(arclength,i);
+    Vector<Real> Localcoes2 = calLocalFDcoes<Order+2>(arclength,i,2);
     Tensor<Real,2> Localdderdx1 = calLocaldderdx1<Order+2>(pts,crv,i);
     for (int m = i - Order/2 - 1 ; m <= i + Order/2 + 2 ; m++){
       int tmpm = 0;

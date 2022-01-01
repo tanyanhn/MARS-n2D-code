@@ -116,6 +116,8 @@ bool removeIMV(Vector<unsigned int> &ids, Vector<Point> &pts, Real lowBound)
         }
         i++;
         addpi(count, i);
+        pts.resize(count);
+        ids.resize(count);
         return true;
     }
 }

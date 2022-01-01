@@ -29,137 +29,251 @@ Vector<Real> calArcLength(const Crv& crv)
   return res;
 }
 
-template <int Order>
-Vector<Real> calLocalFD1coes(const Vector<Real>& arclength, const int
-i)
-{
-  assert(Order%2 == 0);
+Real adjustpoint(const Vector<Real>& arclength, const int j){
   const int num = arclength.size();
-  Vector<Real> res(Order+1);
-  for (int j = i - Order/2 ; j <= i + Order/2 ; j++){
-      Real tmpj = 0;
-      if (j >= 0 && j < num)
-        tmpj = arclength[j];
-      else if (j < 0)
-        tmpj = arclength[j+num-1] - arclength[num-1];
-      else
-        tmpj = arclength[num-1] + arclength[j-num+1];
-      Polynomial<Order+1,Real> poly;
-      poly[0] = 1.0;
-      for (int k = i - Order/2 ; k <= i + Order/2 ; k++){
-        if (k != j){
-          Real tmpk = 0;
-          if (k >= 0 && k < num)
-            tmpk = arclength[k];
-          else if (k < 0)
-            tmpk = arclength[k+num-1] - arclength[num-1];
-          else
-            tmpk = arclength[num-1] + arclength[k-num+1];
-          Polynomial<2,Real>
-            tmppoly{-(tmpk-arclength[i])/(tmpj-tmpk),1/(tmpj-tmpk)};
-          auto polyl = poly*tmppoly;
-          for (int m = 0 ; m < std::min(k - i + Order/2 + 2,Order+1); m++)
-            poly[m] = polyl[m];
-        }
+  Real tmpj = 0.0;
+  if (j >= 0 && j < num)
+    tmpj = arclength[j];
+  else if (j < 0)
+    tmpj = arclength[j+num-1] - arclength[num-1];
+  else
+    tmpj = arclength[num-1] + arclength[j-num+1];
+  return tmpj;
+}
+
+
+// template <int Order>
+// Vector<Real> calLocalFD1coes(const Vector<Real>& arclength, const int
+// i)
+// {
+//   assert(Order%2 == 0);
+//   Vector<Real> res(Order+1);
+//   for (int j = i - Order/2 ; j <= i + Order/2 ; j++){
+//       Real tmpj = adjustpoint(arclength,j);
+//       Polynomial<Order+1,Real> poly;
+//       poly[0] = 1.0;
+//       for (int k = i - Order/2 ; k <= i + Order/2 ; k++){
+//         if (k != j){
+//           Real tmpk = adjustpoint(arclength,k);
+//           Polynomial<2,Real>
+//             tmppoly{-(tmpk-arclength[i])/(tmpj-tmpk),1/(tmpj-tmpk)};
+//           auto polyl = poly*tmppoly;
+//           for (int m = 0 ; m < std::min(k - i + Order/2 + 2,Order+1); m++)
+//             poly[m] = polyl[m];
+//         }
+//       }
+//       auto dpoly = poly.der();
+//       res[j-i+Order/2] = dpoly(0.0);
+//     }
+//   return res;
+// }
+
+// template <int Order>
+// Vector<Real> calLocalFD2coes(const Vector<Real>& arclength, const int
+// i)
+// {
+//   assert(Order%2 == 0);
+//   Vector<Real> res(Order+2);
+//   for (int j = i - Order/2 ; j <= i + Order/2 + 1 ; j++){
+//     Real tmpj = adjustpoint(arclength,j);
+//       Polynomial<Order+2,Real> poly;
+//       poly[0] = 1.0;
+//       for (int k = i - Order/2 ; k <= i + Order/2 + 1 ; k++){
+//         if (k != j){
+//           Real tmpk = adjustpoint(arclength,k);
+//           Polynomial<2,Real>
+//             tmppoly{-(tmpk-arclength[i])/(tmpj-tmpk),1/(tmpj-tmpk)};
+//           auto polyl = poly*tmppoly;
+//           for (int m = 0 ; m < std::min(k - i + Order/2 + 2,Order+2); m++)
+//             poly[m] = polyl[m];
+//         }
+//       }
+//       auto ddpoly = poly.der().der(); 
+//       res[j-i+Order/2] = ddpoly(0.0);
+//     }
+//   return res;
+// }
+
+// template <int Order>
+// Vector<Real> calLocalFD3coes(const Vector<Real>& arclength, const int
+// i)
+// {
+//   assert(Order%2 == 0);
+//   Vector<Real> res(Order+3);
+//   for (int j = i - Order/2 - 1 ; j <= i + Order/2 + 1 ; j++){
+//       Real tmpj = adjustpoint(arclength,j);
+//       Polynomial<Order+3,Real> poly;
+//       poly[0] = 1.0;
+//       for (int k = i - Order/2 - 1 ; k <= i + Order/2 + 1 ; k++){
+//         if (k != j){
+//           Real tmpk = adjustpoint(arclength,k);
+//           Polynomial<2,Real>
+//             tmppoly{-(tmpk-arclength[i])/(tmpj-tmpk),1/(tmpj-tmpk)};
+//           auto polyl = poly*tmppoly;
+//           for (int m = 0 ; m < std::min(k - i + Order/2 + 3,Order+3); m++)
+//             poly[m] = polyl[m];
+//         }
+//       }
+//       auto ddpoly = poly.der().der().der(); 
+//       res[j-i+Order/2+1] = ddpoly(0.0);
+//     }
+//   return res;
+// }
+
+// template <int Order>
+// Vector<Real> calLocalFD4coes(const Vector<Real>& arclength, const int
+// i)
+// {
+//   assert(Order%2 == 0);
+//   Vector<Real> res(Order+4);
+//   for (int j = i - Order/2 - 1 ; j <= i + Order/2 + 2 ; j++){
+//       Real tmpj = adjustpoint(arclength,j);
+//       Polynomial<Order+4,Real> poly;
+//       poly[0] = 1.0;
+//       for (int k = i - Order/2 -1 ; k <= i + Order/2 + 2 ; k++){
+//         if (k != j){
+//           Real tmpk = adjustpoint(arclength,k);
+//           Polynomial<2,Real>
+//             tmppoly{-(tmpk-arclength[i])/(tmpj-tmpk),1/(tmpj-tmpk)};
+//           auto polyl = poly*tmppoly;
+//           for (int m = 0 ; m < std::min(k - i + Order/2 + 4,Order+4); m++)
+//             poly[m] = polyl[m];
+//         }
+//       }
+//       auto ddpoly = poly.der().der().der().der(); 
+//       res[j-i+Order/2+1] = ddpoly(0.0);
+//     }
+//   return res;
+// }
+
+template <int Order>
+Vector<Real> calLocalFDcoes(const Vector<Real>& arclength, const int
+                             i, const int M){
+  assert(Order%2 == 0);
+  Tensor<Real,3> table(Vec<int,3>{M+1,Order+M,Order+M});
+  table(0,0,0) = 1.0;
+  double c1 = 1.0;
+  for (int n = 1 ; n < Order + M ; n++){
+    double c2 = 1.0;
+    int j = i - Order/2 - (M-1)/2 + n;
+    Real tmpj = adjustpoint(arclength,j);
+    for (int mu = 0 ; mu < n ; mu++){
+      int k = i - Order/2 - (M-1)/2 + mu;
+      Real tmpk = adjustpoint(arclength,k);
+      double c3 = tmpj - tmpk;
+      c2 = c2 * c3;
+      if (n <= M)
+        table(n,n-1,mu) = 0.0;
+      for (int m = 0 ; m <= std::min(n,M) ; m++){
+        if (m > 0)
+          table(m,n,mu) = ((tmpj -
+          arclength[i])*table(m,n-1,mu)-m*table(m-1,n-1,mu))/c3;
+        else
+          table(m,n,mu) = ((tmpj - arclength[i])*table(m,n-1,mu))/c3;
       }
-      auto dpoly = poly.der();
-      res[j-i+Order/2] = dpoly(0.0);
     }
+    int jj = i - Order/2 - (M-1)/2 + n - 1;
+    Real tmpjj = adjustpoint(arclength,jj);
+    for (int m = 0 ; m <= std::min(n,M) ; m++){
+      if (m > 0)
+        table(m,n,n) =
+        c1/c2*(m*table(m-1,n-1,n-1)-(tmpjj-arclength[i])*table(m,n-1,n-1));
+      else
+        table(m,n,n) = c1/c2*(-(tmpjj-arclength[i])*table(m,n-1,n-1));
+    }
+    c1 = c2;
+  }
+  Vector<Real> res(Order+M);
+  for (int j = 0 ; j < Order + M ; j++)
+    res[j] = table(M,Order+M-1,j);
   return res;
 }
 
 template <int Order>
-Vector<Real> calLocalFD2coes(const Vector<Real>& arclength, const int
-i)
-{
+Tensor<Real,2> calFDcoes(const Vector<Real>& arclength, const int k){
   assert(Order%2 == 0);
   const int num = arclength.size();
-  Vector<Real> res(Order+2);
-  for (int j = i - Order/2 ; j <= i + Order/2 + 1 ; j++){
-      Real tmpj = 0;
-      if (j >= 0 && j < num)
-        tmpj = arclength[j];
-      else if (j < 0)
-        tmpj = arclength[j+num-1] - arclength[num-1];
-      else
-        tmpj = arclength[num-1] + arclength[j-num+1];
-      Polynomial<Order+2,Real> poly;
-      poly[0] = 1.0;
-      for (int k = i - Order/2 ; k <= i + Order/2 + 1 ; k++){
-        if (k != j){
-          Real tmpk = 0;
-          if (k >= 0 && k < num)
-            tmpk = arclength[k];
-          else if (k < 0)
-            tmpk = arclength[k+num-1] - arclength[num-1];
-          else
-            tmpk = arclength[num-1] + arclength[k-num+1];
-          Polynomial<2,Real>
-            tmppoly{-(tmpk-arclength[i])/(tmpj-tmpk),1/(tmpj-tmpk)};
-          auto polyl = poly*tmppoly;
-          for (int m = 0 ; m < std::min(k - i + Order/2 + 2,Order+2); m++)
-            poly[m] = polyl[m];
-        }
-      }
-      auto ddpoly = poly.der().der();
-      res[j-i+Order/2] = ddpoly(0.0);
-    }
-  return res;
-}
-
-template <int Order>
-Tensor<Real,2> calFD1coes(const Vector<Real>& arclength)
-{
-  assert(Order%2 == 0);
-  const int num = arclength.size();
-  Tensor<Real,2> res(Vec<int,2> {Order+1,num-1});
+  Tensor<Real,2> res(Vec<int,2> {Order+k,num-1});
   for (int i = 0 ; i < num - 1 ; i++){
-    Vector<Real> LocalFD1coes = calLocalFD1coes<Order>(arclength,i);
-    for (int j = 0 ; j < Order + 1 ; j++)
-      res(j,i)=LocalFD1coes[j];
+    Vector<Real> LocalFDcoes = calLocalFDcoes<Order>(arclength,i,k);
+    for (int j = 0 ; j < Order + k ; j++)
+      res(j,i)=LocalFDcoes[j];
   }
   return res;
 }
 
+// template <int Order>
+// Tensor<Real,2> calFD1coes(const Vector<Real>& arclength)
+// {
+//   assert(Order%2 == 0);
+//   const int num = arclength.size();
+//   Tensor<Real,2> res(Vec<int,2> {Order+1,num-1});
+//   for (int i = 0 ; i < num - 1 ; i++){
+//     Vector<Real> LocalFD1coes = calLocalFD1coes<Order>(arclength,i);
+//     for (int j = 0 ; j < Order + 1 ; j++)
+//       res(j,i)=LocalFD1coes[j];
+//   }
+//   return res;
+// }
 
 
-template <int Order>
-Tensor<Real,2> calFD2coes(const Vector<Real>& arclength)
-{
-  assert(Order%2 == 0);
-  const int num = arclength.size();
-  Tensor<Real,2> res(Vec<int,2> {Order+2,num-1});
-  for (int i = 0 ; i < num - 1 ; i++){
-    Vector<Real> LocalFD2coes = calLocalFD2coes<Order>(arclength,i);
-    for (int j = 0 ; j < Order + 2 ; j++)
-      res(j,i)=LocalFD2coes[j];
-  }
-  return res;
-}
+
+// template <int Order>
+// Tensor<Real,2> calFD2coes(const Vector<Real>& arclength)
+// {
+//   assert(Order%2 == 0);
+//   const int num = arclength.size();
+//   Tensor<Real,2> res(Vec<int,2> {Order+2,num-1});
+//   for (int i = 0 ; i < num - 1 ; i++){
+//     Vector<Real> LocalFD2coes = calLocalFD2coes<Order>(arclength,i);
+//     for (int j = 0 ; j < Order + 2 ; j++)
+//       res(j,i)=LocalFD2coes[j];
+//   }
+//   return res;
+// }
+
+// template <int Order>
+// Tensor<Real,2> calFD3coes(const Vector<Real>& arclength)
+// {
+//   assert(Order%2 == 0);
+//   const int num = arclength.size();
+//   Tensor<Real,2> res(Vec<int,2> {Order+3,num-1});
+//   for (int i = 0 ; i < num - 1 ; i++){
+//     Vector<Real> LocalFD3coes = calLocalFD3coes<Order>(arclength,i);
+//     for (int j = 0 ; j < Order + 3 ; j++)
+//       res(j,i)=LocalFD3coes[j];
+//   }
+//   return res;
+// }
+
+// template <int Order>
+// Tensor<Real,2> calFD4coes(const Vector<Real>& arclength)
+// {
+//   assert(Order%2 == 0);
+//   const int num = arclength.size();
+//   Tensor<Real,2> res(Vec<int,2> {Order+4,num-1});
+//   for (int i = 0 ; i < num - 1 ; i++){
+//     Vector<Real> LocalFD4coes = calLocalFD4coes<Order>(arclength,i);
+//     for (int j = 0 ; j < Order + 4 ; j++)
+//       res(j,i)=LocalFD4coes[j];
+//   }
+//   return res;
+// }
+
 
 template <int Order, class T>
 Vector<T> calDer(const Vector<T>& datas, const Crv& crv, const int k)
 {
   assert(Order%2 == 0);
   Vector<Real> arclength = calArcLength<Order/2+1>(crv);
-  Tensor<Real,2> FDcoes;
-  switch (k){
-  case 1:
-    FDcoes = calFD1coes<Order>(arclength);
-    break;
-  case 2:
-    FDcoes = calFD2coes<Order>(arclength);
-    break;
-  default:
-    throw Vector<T>();
-  }
+  Tensor<Real,2> FDcoes = calFDcoes<Order>(arclength,k);
   const int num = datas.size();
   Vector<T> res(num);
   const int numterms = (FDcoes.size())[0];
   for (int i = 0 ; i < num - 1 ; i++){
     for (int j = 0 ; j < numterms ; j++){
       int tmp = 0;
-      const int index = i - Order/2 + j;
+      const int index = i - Order/2 + j - (k-1)/2;
       if (index >= 0 && index < num)
         tmp = index;
       else if (index < 0)
@@ -220,7 +334,7 @@ const int i, const double dx)
   const int num = arclength.size();
   Tensor<Real,2> res(Vec<int,2> {Order+1,Order});
   //Before small increment
-  Vector<Real> coesBefore = calLocalFD1coes<Order>(arclength,i);
+  Vector<Real> coesBefore = calLocalFDcoes<Order>(arclength,i,1);
   //After small increment 
   for (int l = i - Order/2 ; l <= i + Order/2 - 1; l++){
     int tmpl = 0;
@@ -231,7 +345,7 @@ const int i, const double dx)
     else
       tmpl = l-num+1;
     Vector<Real> newarclength = adjustarc(arclength,tmpl,dx);
-    Vector<Real> coesAfter = calLocalFD1coes<Order>(newarclength,i);
+    Vector<Real> coesAfter = calLocalFDcoes<Order>(newarclength,i,1);
     for (int j = i - Order/2; j <= i + Order/2 ; j++)
       res(j-i+Order/2,l-i+Order/2) = (coesAfter[j-i+Order/2]-coesBefore[j-i+Order/2])/dx; 
   }
@@ -248,7 +362,7 @@ const int i, const double dx)
   const int num = arclength.size();
   Tensor<Real,2> res(Vec<int,2> {Order+2,Order+1});
   //Before small increment
-  Vector<Real> coesBefore = calLocalFD2coes<Order>(arclength,i);
+  Vector<Real> coesBefore = calLocalFDcoes<Order>(arclength,i,2);
   //After small increment 
   for (int l = i - Order/2 ; l <= i + Order/2 ; l++){
     int tmpl = 0;
@@ -259,7 +373,7 @@ const int i, const double dx)
     else
       tmpl = l-num+1;
     Vector<Real> newarclength = adjustarc(arclength,tmpl,dx);
-    Vector<Real> coesAfter = calLocalFD2coes<Order>(newarclength,i);
+    Vector<Real> coesAfter = calLocalFDcoes<Order>(newarclength,i,2);
     for (int j = i - Order/2; j <= i + Order/2 + 1 ; j++)
       res(j-i+Order/2,l-i+Order/2) = (coesAfter[j-i+Order/2]-coesBefore[j-i+Order/2])/dx; 
   }
@@ -393,7 +507,7 @@ Tensor<Real,2> calLocaldderdx2(const Vector<Point>& pts, const Crv& crv,
   const int num = pts.size();
   Vector<Real> arclength = calArcLength<Order/2+1>(crv);
   // cal FD coes we need
-  Vector<Real> coes = calLocalFD2coes<Order>(arclength,i);
+  Vector<Real> coes = calLocalFDcoes<Order>(arclength,i,2);
   // prepare for building results: dsdx
   Vector<Vector<Real> > Localdsdx1(Order+2);
   Vector<Vector<Real> > Localdsdx2(Order+2);
@@ -456,7 +570,7 @@ Tensor<Real,2> calLocaldderdx1(const Vector<Point>& pts, const Crv& crv,
   const int num = pts.size();
   Vector<Real> arclength = calArcLength<Order/2+1>(crv);
   // cal FD coes we need
-  Vector<Real> coes = calLocalFD1coes<Order>(arclength,i);
+  Vector<Real> coes = calLocalFDcoes<Order>(arclength,i,1);
   // prepare for building results: dsdx
   Vector<Vector<Real> > Localdsdx1(Order+1);
   Vector<Vector<Real> > Localdsdx2(Order+1);
@@ -550,20 +664,37 @@ template Vector<Real> calArcLength<2>(const Crv& crv);
 template Vector<Real> calArcLength<3>(const Crv& crv);
 template Vector<Real> calArcLength<4>(const Crv& crv);
 
-template Vector<Real> calLocalFD2coes<2>(const Vector<Real>&
-arclength, const int i);
-template Vector<Real> calLocalFD2coes<4>(const Vector<Real>&
-arclength, const int i);
-template Vector<Real> calLocalFD2coes<6>(const Vector<Real>&
-arclength, const int i);
+// template Vector<Real> calLocalFD2coes<2>(const Vector<Real>&
+// arclength, const int i);
+// template Vector<Real> calLocalFD2coes<4>(const Vector<Real>&
+// arclength, const int i);
+// template Vector<Real> calLocalFD2coes<6>(const Vector<Real>&
+// arclength, const int i);
 
-template Tensor<Real,2> calFD1coes<2>(const Vector<Real>& arclength);
-template Tensor<Real,2> calFD1coes<4>(const Vector<Real>& arclength);
-template Tensor<Real,2> calFD1coes<6>(const Vector<Real>& arclength);
+template Vector<Real> calLocalFDcoes<2>(const Vector<Real>&
+                                         arclength, const int i, const
+                                         int M);
+template Vector<Real> calLocalFDcoes<4>(const Vector<Real>&
+                                         arclength, const int i, const
+                                         int M);
+template Vector<Real> calLocalFDcoes<6>(const Vector<Real>&
+                                         arclength, const int i, const
+                                         int M);
 
-template Tensor<Real,2> calFD2coes<2>(const Vector<Real>& arclength);
-template Tensor<Real,2> calFD2coes<4>(const Vector<Real>& arclength);
-template Tensor<Real,2> calFD2coes<6>(const Vector<Real>& arclength);
+template Tensor<Real,2> calFDcoes<2>(const Vector<Real>& arclength,
+const int k);
+template Tensor<Real,2> calFDcoes<4>(const Vector<Real>& arclength,
+const int k);
+template Tensor<Real,2> calFDcoes<6>(const Vector<Real>& arclength,
+const int k);
+
+// template Tensor<Real,2> calFD1coes<2>(const Vector<Real>& arclength);
+// template Tensor<Real,2> calFD1coes<4>(const Vector<Real>& arclength);
+// template Tensor<Real,2> calFD1coes<6>(const Vector<Real>& arclength);
+
+// template Tensor<Real,2> calFD2coes<2>(const Vector<Real>& arclength);
+// template Tensor<Real,2> calFD2coes<4>(const Vector<Real>& arclength);
+// template Tensor<Real,2> calFD2coes<6>(const Vector<Real>& arclength);
 
 template Vector<Point> calDer<2>(const Vector<Point>& datas, const 
 Crv& crv, const int k);

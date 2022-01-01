@@ -3,7 +3,8 @@ set(GeometricFlow_Files
     GeometricFlow/FlowHelper.cpp
     GeometricFlow/DiscreteVecCoDimOne.h
     GeometricFlow/DiscreteVecCurvature.h
-    GeometricFlow/DiscreteVecCurvatureLaplacian.h
+    GeometricFlow/DiscreteVecCurvatureLaplacianNew.h
+    GeometricFlow/DiscreteVecCurvatureLaplacianOld.h
     GeometricFlow/VelocityTest.h
     PARENT_SCOPE
 )
