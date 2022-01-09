@@ -18,7 +18,7 @@ using Vector = vector<T>;
 static Real tol = 1e-15;
 
 template <int Order>
-void MARS2DIMV<Order>::discreteFlowMap(const VectorFunction<2> &v, Vector<Point> &pts, Real tn, Real dt)
+void MARS2DIMV<Order, VectorFunction>::discreteFlowMap(const VectorFunction<2> &v, Vector<Point> &pts, Real tn, Real dt)
 {
     Base::TI->timeStep(v, pts, tn, dt);
     return;
@@ -124,7 +124,7 @@ bool removeIMV(Vector<unsigned int> &ids, Vector<Point> &pts, Real lowBound)
 }
 
 template <int Order>
-Vector<unsigned int> MARS2DIMV<Order>::removeSmallEdges(Vector<Point> &pts)
+Vector<unsigned int> MARS2DIMV<Order, VectorFunction>::removeSmallEdges(Vector<Point> &pts)
 {
     int num = pts.size();
     Vector<unsigned int> ids(num);
@@ -136,12 +136,14 @@ Vector<unsigned int> MARS2DIMV<Order>::removeSmallEdges(Vector<Point> &pts)
     while (true)
     {
         //output ids, debug use
+        /*
         std::cout << "(";
         for (auto &id : ids)
         {
             std::cout << id << ", ";
         }
         std::cout << "\b)" << std::endl;
+        */
 
         if (!removeIMV(ids, pts, (chdLenRange.lo())[0]))
             break;
@@ -168,6 +170,7 @@ Vector<unsigned int> MARS2DIMV<Order>::removeSmallEdges(Vector<Point> &pts)
     return rids;
 }
 
+/*
 template <int Order>
 bool splitIMV(Vector<bool> &ids, Vector<Point> &oldpts, const Curve<2, Order> &crv, const Vector<Real> &dist, Real highBound)
 {
@@ -260,10 +263,11 @@ Vector<unsigned int> MARS2DIMV<Order>::splitLongEdges(const VectorFunction<2> &v
     }
     return aids;
 }
+*/
 
-/*
+
 template <int Order>
-Vector<unsigned int> MARS2DIMV<Order>::splitLongEdges(const VectorFunction<2> &v, Vector<Point> &pts, const Crv &crv, Real tn, Real dt)
+Vector<unsigned int> MARS2DIMV<Order, VectorFunction>::splitLongEdges(const VectorFunction<2> &v, Vector<Point> &pts, const Crv &crv, Real tn, Real dt)
 {
     assert(crv.isClosed(tol));
 
@@ -339,10 +343,10 @@ Vector<unsigned int> MARS2DIMV<Order>::splitLongEdges(const VectorFunction<2> &v
     pts = res;
     return ids;
 }
-*/
+
 
 template <int Order>
-void MARS2DIMV<Order>::timeStep(const VectorFunction<2> &v, YS &ys, Real tn, Real dt)
+void MARS2DIMV<Order, VectorFunction>::timeStep(const VectorFunction<2> &v, YS &ys, Real tn, Real dt)
 {
     Vector<Crv> vcrv = ys.getBoundaryCycles();
     int id = 1;
@@ -394,4 +398,5 @@ void MARS2DIMV<Order>::timeStep(const VectorFunction<2> &v, YS &ys, Real tn, Rea
     return;
 }
 
-template class MARS2DIMV<4>;
+template class MARS2DIMV<2, VectorFunction>;
+template class MARS2DIMV<4, VectorFunction>;

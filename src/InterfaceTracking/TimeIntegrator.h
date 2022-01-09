@@ -6,7 +6,7 @@
 #include "VectorFunction.h"
 #include <vector>
 
-template <int Dim>
+template <int Dim, template <int> class VectorRHS>
 class TimeIntegrator
 {
     template <class T>
@@ -17,9 +17,9 @@ class TimeIntegrator
 public:
     virtual ~TimeIntegrator() {}
 
-    virtual void timeStep(const VectorFunction<Dim> &v, Point &pt, Real tn, Real k) = 0;
+    virtual const Point timeStep(const VectorRHS<Dim> &v, const Point &pt, Real tn, Real k) = 0;
 
-    virtual void timeStep(const VectorFunction<Dim> &v, Vector<Point> &pts, Real tn, Real k) = 0;
+    virtual void timeStep(const VectorRHS<Dim> &v, Vector<Point> &pts, Real tn, Real k) = 0;
 };
 
 #endif

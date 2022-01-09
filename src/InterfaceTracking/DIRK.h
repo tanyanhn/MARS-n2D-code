@@ -99,9 +99,9 @@ std::vector<Vec<Real, Dim>> solveNewton(const VectorFunction<Dim> &v, Real tn, R
     return res;
 }
 */
-
-template <int Dim>
-std::vector<Vec<Real, Dim>> solveNewton(const VectorFunction<Dim> &v, Real tn, Real coef, const Tensor<Real, 2> &Jacobi, const std::vector<Vec<Real, Dim>> &rhs, const std::vector<Vec<Real, Dim>> &pts, Real tol)
+/*
+template <int Dim, template <int> class VectorRHS>
+std::vector<Vec<Real, Dim>> solveNewton(const VectorRHS<Dim> &v, Real tn, Real coef, const Tensor<Real, 2> &Jacobi, const std::vector<Vec<Real, Dim>> &rhs, const std::vector<Vec<Real, Dim>> &pts, Real tol)
 {
     using Point = Vec<Real, Dim>;
 
@@ -180,6 +180,7 @@ std::vector<Vec<Real, Dim>> solveNewton(const VectorFunction<Dim> &v, Real tn, R
     }
     return res;
 }
+*/
 
 template <int Dim>
 Vec<Real, Dim> solveNewton(const VectorFunction<Dim> &v, Real tn, Real coef, const Tensor<Real, 2> &Jacobi, const Vec<Real, Dim> &rhs, const Vec<Real, Dim> &pt, Real tol)
@@ -224,12 +225,14 @@ Vec<Real, Dim> solveNewton(const VectorFunction<Dim> &v, Real tn, Real coef, con
             std::cout << info << std::endl;
             throw std::runtime_error("solveNewton() - LAPACKE_dgesv");
         }
+
         res[0] -= err(0);
         res[1] -= err(1);
         if (Dim == 3)
         {
             res[2] -= err(2);
         }
+
         vel = v(res, tn);
         err(0) = res[0] - rhs[0] - coef * vel[0];
         err(1) = res[1] - rhs[1] - coef * vel[1];
@@ -237,14 +240,14 @@ Vec<Real, Dim> solveNewton(const VectorFunction<Dim> &v, Real tn, Real coef, con
             err(2) = res[2] - rhs[2] - coef * vel[2];
         if (i == 10)
         {
-            throw std::runtime_error("solveNewton() out of range");
+            throw std::runtime_error("solveNewton() reach the maximal number of iterations");
         }
     }
     return res;
 }
 
-template <int Dim, RK::Type_Minor Type>
-class DIRK : public TimeIntegrator<Dim>
+template <int Dim, RK::Type_Minor Type, template <int> class VectorRHS>
+class DIRK : public TimeIntegrator<Dim, VectorRHS>
 {
 
     template <class T>
@@ -259,10 +262,27 @@ class DIRK : public TimeIntegrator<Dim>
 public:
     const int order = ButcherTab::order;
 
-    void timeStep(const VectorFunction<Dim> &v, Point &pt, Real tn, Real dt)
+    const Point timeStep(const VectorRHS<Dim> &v, const Point &pt, Real tn, Real dt);
+
+    void timeStep(const VectorRHS<Dim> &v, Vector<Point> &pts, Real tn, Real dt);
+};
+
+template <int Dim, RK::Type_Minor Type>
+class DIRK<Dim, Type, VectorFunction> : public TimeIntegrator<Dim, VectorFunction>
+{
+    template <class T>
+    using Vector = std::vector<T>;
+
+    using Point = Vec<Real, Dim>;
+
+    using ButcherTab = ButcherTableau<RK::DIRK, Type>;
+
+public:
+    const int order = ButcherTab::order;
+
+    const Point timeStep(const VectorFunction<Dim> &v, const Point &pt, Real tn, Real dt)
     {
-        Vector<Point> step;
-        step.resize(ButcherTab::nStages);
+        Vector<Point> step(ButcherTab::nStages);
         Point tmpt;
         Point result = pt;
         Vector<Real> ptjac = v.getJacobi(pt, tn);
@@ -280,16 +300,46 @@ public:
             tmpt = pt;
             for (int j = 0; j < i; j++)
             {
-                tmpt = tmpt + step[j] * ButcherTab::a[i][j];
+                tmpt = tmpt + step[j] * ButcherTab::a[i][j] * dt;
             }
             if (ButcherTab::a[i][i] != 0)
             {
-                tmpt = solveNewton<Dim>(v, tn + ButcherTab::c[i] * dt, ButcherTab::a[i][i] * dt, jacobi, tmpt, pt, 1e-10);
+                tmpt = solveNewton<Dim>(v, tn + ButcherTab::c[i] * dt, ButcherTab::a[i][i] * dt, jacobi, tmpt, pt, 1e-15);
             }
             step[i] = v(tmpt, tn + ButcherTab::c[i] * dt);
             result = result + step[i] * ButcherTab::b[i] * dt;
         }
-        pt = result;
+        return result;
+    }
+
+    void timeStep(const VectorFunction<Dim> &v, Vector<Point> &pts, Real tn, Real dt)
+    {
+        int num = pts.size();
+        for (int i = 0; i < num - 1; i++)
+        {
+            pts[i] = this->timeStep(v, pts[i], tn, dt);
+        }
+        pts[num - 1] = pts[0];
+    }
+};
+
+/*
+template <int Dim, RK::Type_Minor Type>
+class DIRK<Dim, VectorOnHypersurface, Type>
+{
+    template <class T>
+    using Vector = std::vector<T>;
+
+    using Point = Vec<Real, Dim>;
+
+    using ButcherTab = ButcherTableau<RK::DIRK, Type>;
+
+public:
+    const int order = ButcherTab::order;
+
+    void timeStep(const VectorOnHypersurface<Dim> &v, Point &pt, Real tn, Real dt)
+    {
+        throw pt;
     }
 
     void timeStep(const VectorFunction<Dim> &v, Vector<Point> &pts, Real tn, Real dt)
@@ -325,5 +375,6 @@ public:
         pts = result;
     }
 };
+*/
 
 #endif

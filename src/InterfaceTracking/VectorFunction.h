@@ -16,16 +16,12 @@ private:
     template <class T>
     using Vector = std::vector<T>;
 
-    using SpMat = Eigen::SparseMatrix<Real>;
-
-    using Tri = Eigen::Triplet<Real>;
-
 public:
     virtual ~VectorFunction(){};
 
-    virtual const Point operator()(Point pt, Real t) const = 0;
+    virtual const Point operator()(const Point &pt, Real t) const = 0;
 
-    virtual const Vector<Real> getJacobi(Point pt, Real t) const
+    virtual const Vector<Real> getJacobi(const Point &pt, Real t) const
     {
         return Vector<Real>(Dim * Dim);
     }
@@ -41,6 +37,7 @@ public:
         return vel;
     }
     
+    /*
     virtual const Tensor<Real, 2> getJacobi(const Vector<Point> &pts, Real t = 0) const
     {
         int num = pts.size() - 1;
@@ -61,6 +58,7 @@ public:
         }
         return jacobi;
     }
+    */
     
    /*
     virtual const SpMat getJacobi(const Vector<Point> &pts, Real t = 0) const

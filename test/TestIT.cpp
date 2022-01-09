@@ -45,10 +45,9 @@ void testIT()
     int loop = 1;
     bool plot = false;
     Real tol = 1e-15;
-    int stages = 2;
+    int stages = 3;
     cout << setiosflags(ios::scientific) << setprecision(2);
-
-    TestIT test = getTest(9);
+    TestIT test = getTest(0);
 
     //set the initial curve
     int n;
@@ -59,9 +58,9 @@ void testIT()
     Vector<Curve<2, 4>> crvs;
     Curve<2, 4> crv;
 
-    ERK<2, RK::ClassicRK4> ERK;
-    DIRK<2, RK::ESDIRK4> ESDIRK4;
-    DIRK<2, RK::SDIRK2> SDIRK2;
+    ERK<2, RK::ClassicRK4, VectorFunction> ERK;
+    DIRK<2, RK::ESDIRK4, VectorFunction> ESDIRK4;
+    DIRK<2, RK::SDIRK2, VectorFunction> SDIRK2;
 
     Vector<Real> time1(2 * stages - 1, 0);
     Vector<Real> time2(2 * stages - 1, 0);
@@ -87,8 +86,9 @@ void testIT()
             YinSet<2, 4> YS(SegmentedRealizableSpadjor<4>(vcrv), tol);
 
             //set the CubicMARS method
-            //MARS2DIMV<4> CM(&ERK, 4 * M_PI * radio / n, test.rtiny);
-            MARS2DIMV<4> CM(&ESDIRK4, 4 * M_PI * radio / n, test.rtiny);
+            //MARS2DIMV<4, VectorFunction> CM(&ERK, 4 * M_PI * radio / n, test.rtiny);
+            MARS2DIMV<4, VectorFunction> CM(&ESDIRK4, 4 * M_PI * radio / n, test.rtiny);
+            //MARS2DIMV<4, VectorFunction> CM(&SDIRK2, 4 * M_PI * radio / n, test.rtiny);
 
             ostringstream tmps;
             tmps << k;

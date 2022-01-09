@@ -14,7 +14,7 @@ private:
 
 public:
 
-    const Point operator()(Point pt, Real t) const
+    const Point operator()(const Point &pt, Real t) const
     {
         Vec<Real, 2> y;
         Real l = norm(pt, 2);
@@ -23,7 +23,7 @@ public:
         return y;
     }
 
-    const Vector<Real> getJacobi(Point pt, Real t) const
+    const Vector<Real> getJacobi(const Point &pt, Real t) const
     {
         Vector<Real> ptjac(4);
         Real l = norm(pt, 2);
@@ -51,7 +51,7 @@ private:
 
 public:
 
-    const Point operator()(Point pt, Real t) const
+    const Point operator()(const Point &pt, Real t) const
     {
         Vec<Real, 2> y;
         y[0] = v1;
@@ -59,7 +59,7 @@ public:
         return y;
     }
 
-    const Vector<Real> getJacobi(Point pt, Real t) const
+    const Vector<Real> getJacobi(const Point &pt, Real t) const
     {
         Vector<Real> ptjac(4);
         ptjac[0] = 0;
@@ -86,7 +86,7 @@ private:
 
 public:
 
-    const Point operator()(Point pt, Real t) const
+    const Point operator()(const Point &pt, Real t) const
     {
         Vec<Real, 2> y;
         y[0] = om * (rc1 - pt[1]);
@@ -94,7 +94,7 @@ public:
         return y;
     }
 
-    const Vector<Real> getJacobi(Point pt, Real t) const
+    const Vector<Real> getJacobi(const Point &pt, Real t) const
     {
         Vector<Real> ptjac(4);
         ptjac[0] = 0;
@@ -121,7 +121,7 @@ private:
 
 public:
 
-    const Point operator()(Point pt, Real t) const
+    const Point operator()(const Point &pt, Real t) const
     {
         Point y;
         y[0] = om * (rc2 - pt[1]) * cos(M_PI * t / T);
@@ -129,7 +129,7 @@ public:
         return y;
     }
 
-    const Vector<Real> getJacobi(Point pt, Real t) const
+    const Vector<Real> getJacobi(const Point &pt, Real t) const
     {
         Vector<Real> ptjac(4);
         ptjac[0] = 0;
@@ -156,7 +156,7 @@ private:
 
 public:
 
-    const Point operator()(Point pt, Real t) const
+    const Point operator()(const Point &pt, Real t) const
     {
         Point y;
         y[0] = cos(M_PI * t / T) * pow(sin(M_PI * pt[0]), 2) * sin(2 * M_PI * pt[1]);
@@ -164,7 +164,7 @@ public:
         return y;
     }
 
-    const Vector<Real> getJacobi(Point pt, Real t) const
+    const Vector<Real> getJacobi(const Point &pt, Real t) const
     {
         Vector<Real> ptjac(4);
         ptjac[0] = cos(M_PI * t / T) * 2 * M_PI * sin(M_PI * pt[0]) * cos(M_PI * pt[0]) * sin(2 * M_PI * pt[1]);
@@ -191,7 +191,7 @@ private:
 
 public:
 
-    const Point operator()(Point pt, Real t) const
+    const Point operator()(const Point &pt, Real t) const
     {
         Point y;
         y[0] = cos(M_PI * t / T) * sin(n * M_PI * (pt[0] + 0.5)) * sin(n * M_PI * (pt[1] + 0.5));
@@ -199,7 +199,7 @@ public:
         return y;
     }
 
-    const Vector<Real> getJacobi(Point pt, Real t) const
+    const Vector<Real> getJacobi(const Point &pt, Real t) const
     {
         Vector<Real> ptjac(4);
         ptjac[0] = cos(M_PI * t / T) * n * M_PI * cos(n * M_PI * (pt[0] + 0.5)) * sin(n * M_PI * (pt[1] + 0.5));

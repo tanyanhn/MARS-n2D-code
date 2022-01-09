@@ -5,8 +5,8 @@
 
 using namespace std;
 
-template <int Dim, int Order>
-void MARS<Dim, Order>::trackInterface(const VectorFunction<Dim> &v, YS &ys, Real StartTime, Real dt, Real EndTime, bool output, string fName, int opstride)
+template <int Dim, int Order, template <int> class VelocityField>
+void MARS<Dim, Order, VelocityField>::trackInterface(const VelocityField<Dim> &v, YS &ys, Real StartTime, Real dt, Real EndTime, bool output, string fName, int opstride)
 {
     Real T = StartTime;
     int stages = ceil(abs(EndTime - StartTime) / abs(dt));
@@ -39,4 +39,5 @@ void MARS<Dim, Order>::trackInterface(const VectorFunction<Dim> &v, YS &ys, Real
     return;
 }
 
-template class MARS<2, 4>;
+template class MARS<2, 2, VectorFunction>;
+template class MARS<2, 4, VectorFunction>;
