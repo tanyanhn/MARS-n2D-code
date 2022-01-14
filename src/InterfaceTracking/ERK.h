@@ -7,8 +7,8 @@
 
 /// The compile time constants of numbers of stages
 
-template <int Dim, RK::Type_Minor Type>
-class ERK : public TimeIntegrator<Dim>
+template <int Dim, RK::Type_Minor Type, template <int> class VectorRHS>
+class ERK : public TimeIntegrator<Dim, VectorRHS>
 {
 
     template <class T>
@@ -23,7 +23,27 @@ class ERK : public TimeIntegrator<Dim>
 public:
     const int order = ButcherTab::order;
 
-    void timeStep(const VectorFunction<Dim> &v, Vector<Point> &pts, Real tn, Real dt)
+    const Point timeStep(const VectorRHS<Dim> &v, const Point &pt, Real tn, Real dt)
+    {
+        Vector<Point> step;
+        step.resize(ButcherTab::nStages);
+        Point tmpt;
+        Point result = pt;
+
+        for (int i = 0; i < ButcherTab::nStages; i++)
+        {
+            tmpt = pt;
+            for (int j = 0; j < i; j++)
+            {
+                tmpt = tmpt + step[j] * ButcherTab::a[i][j] * dt;
+            }
+            step[i] = v(tmpt, tn + ButcherTab::c[i] * dt);
+            result = result + step[i] * ButcherTab::b[i] * dt;
+        }
+        return result;
+    }
+
+    void timeStep(const VectorRHS<Dim> &v, Vector<Point> &pts, Real tn, Real dt)
     {
         int num = pts.size();
         Vector<Vector<Point>> step;

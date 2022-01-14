@@ -31,6 +31,7 @@ VectorFunction<2> *deformation = new Deformation(2);
 VectorFunction<2> *translation = new Translation(1, 1);
 VectorFunction<2> *rotation = new Rotation(0, 0, M_PI);
 VectorFunction<2> *revrotation = new RevRotation(0, 0, M_PI, 2);
+VectorFunction<2> *circleshrink = new CircleShrink(1);
 
 TestIT getTest(int i)
 {
@@ -39,13 +40,15 @@ TestIT getTest(int i)
     //test 0
     //Vortex(8)
     //n = 64; dt = 0.04; rtiny = 0.01
-    //4.26e-5 4.16 2.38e-6 5.04 7.21e-8(richardson)
-    //
+    //ERK
     //4.80e-5 4.25 2.52e-6 4.96 8.08e-8 7.41 4.77e-10 4.09 2.80e-11(exact)
-    //2.47e-5 3.89 1.66e-6 5.02 5.10e-8 6.80 4.56e-10 4.07 2.72e-11(coarse to fine)
     //time_IML  2.83e-01  1.92  1.07e+00  1.95  4.14e+00  1.99  1.64e+01  2.02  6.65e+01
     //time_vect 2.91e-01  1.87  1.06e+00  1.95  4.11e+00  1.99  1.64e+01  2.02  6.63e+01
     //time_list 3.13e-01  1.87  1.15e+00  1.96  4.45e+00  1.98  1.76e+01  2.01  7.11e+01
+    
+    //ESDIRK4
+    //4.64e-05  4.23e+00  2.47e-06  4.97e+00  7.89e-08
+    //time_IML: 2.45e+02  3.74e+00  3.27e+03  3.78e+00  4.49e+04 
     test.push_back(TestIT(Point{0.5, 0.75}, 0.15, 64, 0.04, 8, vortex, "Vortex", 100, 0.01));
 
     //test 1
@@ -90,9 +93,11 @@ TestIT getTest(int i)
     //time_IML  3.04e-1  1.97  1.20e+0  2.01  4.81e+0  2.00  1.92e+1  1.84  6.90e+1
     //time_vect 3.01e-1  1.99  1.19e+0  2.01  4.81e+0  2.00  1.93e+1  1.84  6.92e+1
     //time_list 3.26e-1  1.97  1.28e+0  2.01  5.13e+0  1.99  2.04e+1  1.84  7.29e+1
+
     //ESDIRK4
-    //2.3105e-05  3.5988e+00  1.9070e-06
-    //time_IML 1.8421e+03  3.8022e+00  2.5698e+04
+    //2.31e-05  3.60e+00  1.91e-06
+    //time_IML(LAPACKE) 1.84e+03  3.80e+00  2.57e+04
+    //time_IML(EigSpLU) 1.50e+04  2.76e+00  1.02e+05  
     test.push_back(TestIT(Point{0.5, 0.5}, 0.15, 128, 0.02, 2, deformation, "Deformation", 40, 0.01));
 
     //test 7
@@ -105,20 +110,22 @@ TestIT getTest(int i)
     test.push_back(TestIT(Point{0.5, 0.5}, 0.15, 128, 0.02, 2, deformation, "Deformation", 40, 0.4));
 
     //test 8
-    //Translation(1, 1)
+    //Rotaion
     //n = 32; dt = 0.1; rtiny = 0.1
     test.push_back(TestIT(Point{0.5, 0}, 0.5, 32, 0.1, 2, rotation, "Rotation", 40, 0.1));
 
     //test 9
-    //Translation(1, 1)
-    //n = 32; dt = 0.1; rtiny = 0.1
+    //RevRotation
+    //n = 16; dt = 0.1; rtiny = 0.1
+    //5.54e-05  4.06e+00  3.32e-06  4.02e+00  2.05e-07  4.01e+00  1.27e-08
+    //time_IMV(EigSpLU) 1.55e+00  2.55e+00  9.06e+00  2.24e+00  4.27e+01  2.78e+00  2.92e+02
     test.push_back(TestIT(Point{0.5, 0}, 0.5, 16, 0.1, 2, revrotation, "RevRotation", 40, 0.1));
 
     //test 10
-    //Deformation(2, 4)
-    //n = 64; dt = 0.02; rtiny = 0.01
-    //2.5198e-04  3.3685e+00  2.4398e-05
-    test.push_back(TestIT(Point{0.5, 0.5}, 0.15, 64, 0.02, 2, deformation, "Deformation", 40, 0.01));
+    //CircleShrink
+    //n = 32; dt = 0.05; rtiny = 0.3
+    test.push_back(TestIT(Point{0, 0}, 1, 32, 0.05, 0.5, circleshrink, "CircleShrink", 40, 0.3));
+
 
 
     return test[i];

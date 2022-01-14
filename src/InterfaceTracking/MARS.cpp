@@ -5,11 +5,12 @@
 
 using namespace std;
 
-template <int Dim, int Order>
-void MARS<Dim, Order>::trackInterface(const VectorFunction<Dim> &v, YS &ys, Real StartTime, Real dt, Real EndTime, bool output, string fName, int opstride)
+template <int Dim, int Order, template <int> class VelocityField>
+void MARS<Dim, Order, VelocityField>::trackInterface(const VelocityField<Dim> &v, YS &ys, Real StartTime, Real dt, Real EndTime, bool output, string fName, int opstride)
 {
     Real T = StartTime;
-    Real t = dt;
+    int stages = ceil(abs(EndTime - StartTime) / abs(dt));
+    Real k = (EndTime - StartTime) / stages;
     int step = 1;
     if (output == true)
     {
@@ -17,25 +18,15 @@ void MARS<Dim, Order>::trackInterface(const VectorFunction<Dim> &v, YS &ys, Real
         ys.dump(of);
     }
 
-    while (T < EndTime)
+    while (step <= stages)
     {
-        if (EndTime - T < dt)
-        {
-            t = EndTime - T;
-        }
-        cout << "Step: " << step << "     timestep: " << t << endl;
+        cout << "Step: " << step << "     timestep: " << k << endl;
 
-        timeStep(v, ys, T, t);
+        timeStep(v, ys, T, k);
 
         cout << endl;
-        T += t;
+        T += k;
 
-        if (output == true && T == EndTime)
-        {
-            ofstream of(string(fName + "_End.dat"), ios_base::binary);
-            ys.dump(of);
-            break;
-        }
         if (output == true && step % opstride == 0)
         {
             ostringstream tmps;
@@ -48,5 +39,8 @@ void MARS<Dim, Order>::trackInterface(const VectorFunction<Dim> &v, YS &ys, Real
     return;
 }
 
-template class MARS<2, 2>;
-template class MARS<2, 4>;
+<<<<<<< HEAD
+=======
+template class MARS<2, 2, VectorFunction>;
+template class MARS<2, 4, VectorFunction>;
+>>>>>>> master

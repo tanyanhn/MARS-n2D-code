@@ -18,7 +18,7 @@ using Vector = vector<T>;
 static Real tol = 1e-15;
 
 template <int Order>
-void MARS2DIMV<Order>::discreteFlowMap(const VectorFunction<2> &v, Vector<Point> &pts, Real tn, Real dt)
+void MARS2DIMV<Order, VectorFunction>::discreteFlowMap(const VectorFunction<2> &v, Vector<Point> &pts, Real tn, Real dt)
 {
     Base::TI->timeStep(v, pts, tn, dt);
     return;
@@ -37,10 +37,13 @@ bool removeIMV(Vector<unsigned int> &ids, Vector<Point> &pts, Real lowBound)
     //set distances
     int num = pts.size();
 
+    int count = 1;
+    int i = 1;
+
     //function<void(int&, int&)> addpi;
 
     //lambda: split between two points
-    auto addpi = [&](int &count, int &i) -> void
+    auto addpi = [&]() -> void
     {
         if (count != i)
         {
@@ -53,14 +56,12 @@ bool removeIMV(Vector<unsigned int> &ids, Vector<Point> &pts, Real lowBound)
     };
 
     Vector<Real> dist(num - 1);
-    for (int i = 0; i < num - 1; i++)
+    for (int j = 0; j < num - 1; j++)
     {
-        dist[i] = norm(pts[i + 1] - pts[i], 2);
+        dist[j] = norm(pts[j + 1] - pts[j], 2);
     }
 
     bool predelete = false; //mark whether the pre-point has been erased
-    int count = 1;
-    int i = 1;
     if (dist[0] < lowBound)
     {
         predelete = true;
@@ -72,7 +73,7 @@ bool removeIMV(Vector<unsigned int> &ids, Vector<Point> &pts, Real lowBound)
         if (dist[i] >= lowBound)
         {
             predelete = false;
-            addpi(count, i);
+            addpi();
         }
         else
         {
@@ -85,13 +86,13 @@ bool removeIMV(Vector<unsigned int> &ids, Vector<Point> &pts, Real lowBound)
                 }
                 else
                 {
-                    addpi(count, i);
+                    addpi();
                     predelete = false;
                 }
             }
             else
             {
-                addpi(count, i);
+                addpi();
                 i++;
                 predelete = true;
             }
@@ -99,7 +100,7 @@ bool removeIMV(Vector<unsigned int> &ids, Vector<Point> &pts, Real lowBound)
     }
     if (i == num - 1)
     {
-        addpi(count, i);
+        addpi();
         pts.resize(count);
         ids.resize(count);
         return num != count;
@@ -108,14 +109,18 @@ bool removeIMV(Vector<unsigned int> &ids, Vector<Point> &pts, Real lowBound)
     {
         if (predelete == true || dist[i] >= lowBound)
         {
-            addpi(count, i);
-            addpi(count, i);
+            addpi();
+            addpi();
             pts.resize(count);
             ids.resize(count);
             return num != count;
         }
         i++;
+<<<<<<< HEAD
         addpi(count, i);
+=======
+        addpi();
+>>>>>>> master
         pts.resize(count);
         ids.resize(count);
         return true;
@@ -123,7 +128,7 @@ bool removeIMV(Vector<unsigned int> &ids, Vector<Point> &pts, Real lowBound)
 }
 
 template <int Order>
-Vector<unsigned int> MARS2DIMV<Order>::removeSmallEdges(Vector<Point> &pts)
+Vector<unsigned int> MARS2DIMV<Order, VectorFunction>::removeSmallEdges(Vector<Point> &pts)
 {
     int num = pts.size();
     Vector<unsigned int> ids(num);
@@ -134,6 +139,16 @@ Vector<unsigned int> MARS2DIMV<Order>::removeSmallEdges(Vector<Point> &pts)
 
     while (true)
     {
+        //output ids, debug use
+        /*
+        std::cout << "(";
+        for (auto &id : ids)
+        {
+            std::cout << id << ", ";
+        }
+        std::cout << "\b)" << std::endl;
+        */
+
         if (!removeIMV(ids, pts, (chdLenRange.lo())[0]))
             break;
     }
@@ -159,6 +174,7 @@ Vector<unsigned int> MARS2DIMV<Order>::removeSmallEdges(Vector<Point> &pts)
     return rids;
 }
 
+/*
 template <int Order>
 bool splitIMV(Vector<bool> &ids, Vector<Point> &oldpts, const Curve<2, Order> &crv, const Vector<Real> &dist, Real highBound)
 {
@@ -251,10 +267,11 @@ Vector<unsigned int> MARS2DIMV<Order>::splitLongEdges(const VectorFunction<2> &v
     }
     return aids;
 }
+*/
 
-/*
+
 template <int Order>
-Vector<unsigned int> MARS2DIMV<Order>::splitLongEdges(const VectorFunction<2> &v, Vector<Point> &pts, const Crv &crv, Real tn, Real dt)
+Vector<unsigned int> MARS2DIMV<Order, VectorFunction>::splitLongEdges(const VectorFunction<2> &v, Vector<Point> &pts, const Crv &crv, Real tn, Real dt)
 {
     assert(crv.isClosed(tol));
 
@@ -330,10 +347,10 @@ Vector<unsigned int> MARS2DIMV<Order>::splitLongEdges(const VectorFunction<2> &v
     pts = res;
     return ids;
 }
-*/
+
 
 template <int Order>
-void MARS2DIMV<Order>::timeStep(const VectorFunction<2> &v, YS &ys, Real tn, Real dt)
+void MARS2DIMV<Order, VectorFunction>::timeStep(const VectorFunction<2> &v, YS &ys, Real tn, Real dt)
 {
     Vector<Crv> vcrv = ys.getBoundaryCycles();
     int id = 1;
@@ -385,4 +402,9 @@ void MARS2DIMV<Order>::timeStep(const VectorFunction<2> &v, YS &ys, Real tn, Rea
     return;
 }
 
+<<<<<<< HEAD
 template class MARS2DIMV<4>;
+=======
+template class MARS2DIMV<2, VectorFunction>;
+template class MARS2DIMV<4, VectorFunction>;
+>>>>>>> master

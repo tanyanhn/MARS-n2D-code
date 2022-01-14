@@ -5,6 +5,7 @@
 #include "Core/Vec.h"
 #include "Core/Tensor.h"
 #include <vector>
+#include <Eigen/Sparse>
 
 template <int Dim>
 class VectorFunction
@@ -15,15 +16,15 @@ private:
     template <class T>
     using Vector = std::vector<T>;
 
-    virtual const Point operator()(Point pt, Real t) const = 0;
+public:
+    virtual ~VectorFunction(){};
 
-    virtual const Vector<Real> getJacobi(Point pt, Real t) const
+    virtual const Point operator()(const Point &pt, Real t) const = 0;
+
+    virtual const Vector<Real> getJacobi(const Point &pt, Real t) const
     {
         return Vector<Real>(Dim * Dim);
     }
-
-public:
-    virtual ~VectorFunction(){};
 
     virtual const Vector<Point> operator()(const Vector<Point> &pts, Real t = 0) const
     {
@@ -35,7 +36,8 @@ public:
         }
         return vel;
     }
-
+    
+    /*
     virtual const Tensor<Real, 2> getJacobi(const Vector<Point> &pts, Real t = 0) const
     {
         int num = pts.size() - 1;
@@ -56,6 +58,33 @@ public:
         }
         return jacobi;
     }
+    */
+    
+   /*
+    virtual const SpMat getJacobi(const Vector<Point> &pts, Real t = 0) const
+    {
+        int num = pts.size() - 1;
+        Vector<Tri> coef;
+        coef.reserve(Dim * Dim * num);
+        Vector<Real> ptjac;
+
+        for (int i = 0; i < num; i++)
+        {
+            ptjac = getJacobi(pts[i], t);
+            for (int j = 0; j < Dim; j++)
+            {
+                for (int k = 0; k < Dim; k++)
+                {
+                    coef.push_back(Tri(i + j * num, i + k * num, ptjac[j * Dim + k]));
+                }
+            }
+        }
+
+        SpMat jacobi(num * Dim, num * Dim);
+        jacobi.setFromTriplets(coef.begin(), coef.end());
+        return jacobi;
+    }
+    */
 };
 
 #endif
