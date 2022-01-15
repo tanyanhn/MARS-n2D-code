@@ -1,11 +1,11 @@
-#ifndef _DISCRETEVECCURVATURE_H_
-#define _DISCRETEVECCURVATURE_H_
+#ifndef _VECTORFORCURVATUREFLOW_H_
+#define _VECTORFORCURVATUREFLOW_H_
 
-#include "DiscreteVecCoDimOne.h"
+#include "VectorOnHypersurface.h"
 #include "FlowHelper.h"
 
 template<int Dim, int Order>
-class DiscreteVecCurvature: public DiscreteVecCoDimOne<Dim>
+class VectorForCurvatureFlow: public VectorOnHypersurface<Dim>
 {
 private:
   template<class T>
@@ -20,7 +20,7 @@ public:
 };
 
 template<int Order>
-class DiscreteVecCurvature<2,Order>: public DiscreteVecCoDimOne<2>
+class VectorForCurvatureFlow<2,Order>: public VectorOnHypersurface<2>
 {
 private:
   template<class T>
@@ -38,7 +38,7 @@ public:
 
 template<int Order>
 const Vector<Point>
-DiscreteVecCurvature<2,Order>::operator()(const Vector<Point>& pts, Real t) const
+VectorForCurvatureFlow<2,Order>::operator()(const Vector<Point>& pts, Real t) const
 {
   const Curve<2,4> crv = fitCurve<4>(pts,true);
   Vector<Point> res = calDer<Order>(pts,crv,2);
@@ -47,7 +47,7 @@ DiscreteVecCurvature<2,Order>::operator()(const Vector<Point>& pts, Real t) cons
 
 template<int Order>
 const Tensor<Real,2>
-DiscreteVecCurvature<2,Order>::getJacobi(const Vector<Point>& pts, Real t) const
+VectorForCurvatureFlow<2,Order>::getJacobi(const Vector<Point>& pts, Real t) const
 {
   const int num = pts.size()-1;
   const Curve<2,4> crv = fitCurve<4>(pts,true);

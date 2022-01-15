@@ -294,11 +294,11 @@ $\bar{\boldsymbol X}_i$到$\bar{\boldsymbol X}_{i+1}$的弧长为
 \indent 在得到上述近似弧长的基础上，我们用差分格式近似计算空间导数$\frac{\partial^2\boldsymbol X_i}{\partial
     s^2},\pdfrac{\boldsymbol X_i}{s}$，从而根据\eqref{eq:onor}，
   \eqref{eq:rcurv}得到近似的外法向$\bar{\boldsymbol n}_i$和近似曲率
-  $\bar{\kappa}_i$。为了达到二阶精度，这里分别对一阶和二阶导数采用\textcolor{red}{五点和}六点格式，即四阶差分方法。
+  $\bar{\kappa}_i$。为了达到二阶精度，这里分别对一阶和二阶导数采用五点和六点格式，即四阶差分方法。
   \begin{eqnarray}    
     \pdfrac{\bar{\boldsymbol X}_i}{s} =
     \boldsymbol f_{\bar{s},4}^{(1)}(\bar{\boldsymbol X}_i,t) =
-    \sum_{j=i-2}^{i+\textcolor{red}{2}}\alpha_{\bar{s},4,i,j}^{(1)}(\bar{\boldsymbol X},t)
+    \sum_{j=i-2}^{i+2}\alpha_{\bar{s},4,i,j}^{(1)}(\bar{\boldsymbol X},t)
     \bar{\boldsymbol X}_j,
     \label{eq:calder1}\\
     \frac{\partial^2\bar{\boldsymbol X}_i}{\partial s^2} =
@@ -316,8 +316,8 @@ $\bar{\boldsymbol X}_i$到$\bar{\boldsymbol X}_{i+1}$的弧长为
     \begin{eqnarray}
     \begin{aligned}
       \label{eq:dercoe1}      
-  {\color{red} \alpha_{\bar{s},4,i,i-2}^{(1)} }&{\color{red} =
-  \frac{\bar{s}_{i-1}\bar{s}_{i}(\bar{s}_{i}+\bar{s}_{i+1})}{\bar{s}_{i-2}(\bar{s}_{i-2}+\bar{s}_{i-1})(\bar{s}_{i-2}+\bar{s}_{i-1}+\bar{s}_{i})(\bar{s}_{i-2}+\bar{s}_{i-1}+\bar{s}_{i}+\bar{s}_{i+1})},}
+  \alpha_{\bar{s},4,i,i-2}^{(1)} & =
+  \frac{\bar{s}_{i-1}\bar{s}_{i}(\bar{s}_{i}+\bar{s}_{i+1})}{\bar{s}_{i-2}(\bar{s}_{i-2}+\bar{s}_{i-1})(\bar{s}_{i-2}+\bar{s}_{i-1}+\bar{s}_{i})(\bar{s}_{i-2}+\bar{s}_{i-1}+\bar{s}_{i}+\bar{s}_{i+1})},
   \\
   \alpha_{\bar{s},4,i,i-1}^{(1)} &= \cdots\\
   \vdots\\
@@ -336,7 +336,7 @@ $\bar{\boldsymbol X}_i$到$\bar{\boldsymbol X}_{i+1}$的弧长为
   \end{aligned}                               
 \end{eqnarray}
 \end{footnotesize}
-\indent 如果需要四阶精度，只需要将\textcolor{red}{五点/}六点格式替换为\textcolor{red}{七点/}八点格式，即使用六阶精度的空间离散。\\
+\indent 如果需要四阶精度，只需要将五点/六点格式替换为七点/八点格式，即使用六阶精度的空间离散。\\
 \indent 通过\eqref{eq:onor}，
   \eqref{eq:rcurv}得到近似的外法向$\bar{\boldsymbol n}_i$和近似曲率
   $\bar{\kappa}_i$后，我们用一样的方式计算
@@ -560,20 +560,14 @@ $\mathcal{M}^0$近似$\mathcal{M}(t_0)$时使用的近似曲线$\partial
 \ref{le:1},我们有
 \begin{equation}
   \label{eq:initcontrol}
-  \| \mathcal{M}(t_0) - \mathcal{M}^0\| \le O(h_L^4).
+  \| \mathcal{M}(t_0) \oplus \mathcal{M}^0\| \le O(h_L^4).
 \end{equation}
-在此基础上，我们先假设$\|\phi_{t_0}^{nk}[\mathcal{M}(t_0),\mathcal{M}^0]\|
-  \le C\| \mathcal{M}(t_0) - \mathcal{M}^0\|$成立($C$为常数)，从而
+在此基础上，根据对表示误差的相关分析\textsuperscript{\cite{ref7}}，有
 \begin{equation}
   \label{eq:calREP}
   E^{REP}(t_n) = \|\phi_{t_0}^{nk}[\mathcal{M}(t_0),\mathcal{M}^0]\|
-  \le C\| \mathcal{M}(t_0) - \mathcal{M}^0\| \le O(h_L^4).
+  = \| \mathcal{M}(t_0) \oplus \mathcal{M}^0\| (1 + O(nk)) \le O(h_L^4).
 \end{equation}
-\begin{remark}
-上述假设$\|\phi_{t_0}^{nk}[\mathcal{M}(t_0),\mathcal{M}^0]\|
-  \le C\| \mathcal{M}(t_0) - \mathcal{M}^0\|$目前还不能从已有性质推
-  出，需要进一步查阅文献。
-\end{remark}
 \subsection{映射误差$E^{\textbf{MAP}}$}
 \label{sec:MAP}
 根据\eqref{eq:deferr}中映射误差$E^{MAP}$的定义，我们需要计算
@@ -903,22 +897,22 @@ $\boldsymbol f_{\bar{s}}$为方程\eqref{eq:nODEs}的右端项，$\boldsymbol X 
   \begin{aligned}
     \pdfrac{f_{\bar{s},r+2}^{(k)}(\bar{x}_i)}{x_j} &=
     \alpha_{\bar{s},r+2,i,j}^{(k)} +
-    \sum_{l=i-r/2-1}^{i+r/2+\textcolor{red}{k}}(x_l\pdfrac{\alpha_{\bar{s},r+2,i,l}}{\bar{s}_{j-1}}\pdfrac{\bar{s}_{j-1}}{x_j})
+    \sum_{l=i-r/2-1}^{i+r/2+k}(x_l\pdfrac{\alpha_{\bar{s},r+2,i,l}}{\bar{s}_{j-1}}\pdfrac{\bar{s}_{j-1}}{x_j})
     +
-    \sum_{l=i-r/2-1}^{i+r/2+\textcolor{red}{k}}(x_l\pdfrac{\alpha_{\bar{s},r+2,i,l}}{\bar{s}_{j}}\pdfrac{\bar{s}_{j}}{x_j}),\\
+    \sum_{l=i-r/2-1}^{i+r/2+k}(x_l\pdfrac{\alpha_{\bar{s},r+2,i,l}}{\bar{s}_{j}}\pdfrac{\bar{s}_{j}}{x_j}),\\
     \pdfrac{f_{\bar{s},r+2}^{(k)}(\bar{x}_i)}{y_j} &=
-    \sum_{l=i-r/2-1}^{i+r/2+\textcolor{red}{k}}(x_l\pdfrac{\alpha_{\bar{s},r+2,i,l}}{\bar{s}_{j-1}}\pdfrac{\bar{s}_{j-1}}{y_j})
+    \sum_{l=i-r/2-1}^{i+r/2+k}(x_l\pdfrac{\alpha_{\bar{s},r+2,i,l}}{\bar{s}_{j-1}}\pdfrac{\bar{s}_{j-1}}{y_j})
     +
-    \sum_{l=i-r/2-1}^{i+r/2+\textcolor{red}{k}}(x_l\pdfrac{\alpha_{\bar{s},r+2,i,l}}{\bar{s}_{j}}\pdfrac{\bar{s}_{j}}{y_j}),\\
+    \sum_{l=i-r/2-1}^{i+r/2+k}(x_l\pdfrac{\alpha_{\bar{s},r+2,i,l}}{\bar{s}_{j}}\pdfrac{\bar{s}_{j}}{y_j}),\\
     \pdfrac{f_{\bar{s},r+2}^{(k)}(\bar{y}_i)}{x_j} &=
-    \sum_{l=i-r/2-1}^{i+r/2+\textcolor{red}{k}}(y_l\pdfrac{\alpha_{\bar{s},r+2,i,l}}{\bar{s}_{j-1}}\pdfrac{\bar{s}_{j-1}}{x_j})
+    \sum_{l=i-r/2-1}^{i+r/2+k}(y_l\pdfrac{\alpha_{\bar{s},r+2,i,l}}{\bar{s}_{j-1}}\pdfrac{\bar{s}_{j-1}}{x_j})
     +
-    \sum_{l=i-r/2-1}^{i+r/2+\textcolor{red}{k}}(y_l\pdfrac{\alpha_{\bar{s},r+2,i,l}}{\bar{s}_{j}}\pdfrac{\bar{s}_{j}}{x_j}),\\
+    \sum_{l=i-r/2-1}^{i+r/2+k}(y_l\pdfrac{\alpha_{\bar{s},r+2,i,l}}{\bar{s}_{j}}\pdfrac{\bar{s}_{j}}{x_j}),\\
     \pdfrac{f_{\bar{s},r+2}^{(k)}(\bar{y}_i)}{y_j} &=
     \alpha_{\bar{s},r+2,i,j}^{(k)} +
-    \sum_{l=i-r/2-1}^{i+r/2+\textcolor{red}{k}}(y_l\pdfrac{\alpha_{\bar{s},r+2,i,l}}{\bar{s}_{j-1}}\pdfrac{\bar{s}_{j-1}}{y_j})
+    \sum_{l=i-r/2-1}^{i+r/2+k}(y_l\pdfrac{\alpha_{\bar{s},r+2,i,l}}{\bar{s}_{j-1}}\pdfrac{\bar{s}_{j-1}}{y_j})
     +
-    \sum_{l=i-r/2-1}^{i+r/2+\textcolor{red}{k}}(y_l\pdfrac{\alpha_{\bar{s},r+2,i,l}}{\bar{s}_{j}}\pdfrac{\bar{s}_{j}}{y_j}),\\
+    \sum_{l=i-r/2-1}^{i+r/2+k}(y_l\pdfrac{\alpha_{\bar{s},r+2,i,l}}{\bar{s}_{j}}\pdfrac{\bar{s}_{j}}{y_j}),\\
     \pdfrac{f_{\bar{s},r+2}^{(k)}(\bar{\kappa}_i)}{\kappa_j} &=
     \alpha_{\bar{s},r+2,i,j}^{(k)}
     %+

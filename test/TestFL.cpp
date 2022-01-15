@@ -7,9 +7,9 @@
 #include <fstream>
 #include <sstream>
 #include <ctime>
-#include "GeometricFlow/DiscreteVecCurvature.h"
-#include "GeometricFlow/DiscreteVecCurvatureLaplacianNew.h"
-#include "GeometricFlow/DiscreteVecCurvatureLaplacianOld.h"
+#include "GeometricFlow/VectorForCurvatureFlow.h"
+#include "GeometricFlow/VectorForSurfaceDiffusionFlow.h"
+#include "GeometricFlow/VectorForSurfaceDiffusionFlowNew.h"
 #include "GeometricFlow/VelocityTest.h"
 #include "InterfaceTracking/MARS2D.h"
 #include "InterfaceTracking/MARS2DIMV.h"
@@ -42,8 +42,8 @@ void testFL()
     Vector<Curve<2, 4>> crvs;
     Curve<2, 4> crv;
 
-    DIRK<2, RK::ESDIRK4> ESDIRK4;
-    ERK<2, RK::ClassicRK4> ERK;
+    DIRK<2, RK::ESDIRK4, VectorOnHypersurface> ESDIRK4;
+    ERK<2, RK::ClassicRK4, VectorOnHypersurface> ERK;
 
     
     clock_t begin, end;
@@ -69,10 +69,10 @@ void testFL()
       Vector<Curve<2, 4>> vcrv{crv};
       YinSet<2, 4> YS(SegmentedRealizableSpadjor<4>(vcrv), tol);
 
-      MARS2DIMV<4> CM(&ESDIRK4, 4 * M_PI * radio / n, test.rtiny);
+      MARS2DIMV<4,VectorOnHypersurface> CM(&ESDIRK4, 4 * M_PI * radio / n, test.rtiny);
       
-      DiscreteVecCurvature<2,4> SFV1;
-      DiscreteVecCurvatureLaplacianOld<2,4> SFV2;
+      VectorForCurvatureFlow<2,4> SFV1;
+      VectorForSurfaceDiffusionFlow<2,4> SFV2;
 
       
       //Vector<Real> arclength = calArcLength<3>(crv);
@@ -158,8 +158,8 @@ void testFL()
     */
     
     // n = 32;
-    dt = 5e-7;
-    n = 64;
+    dt = 1e-6;
+    n = 32;
     radio = 0.3;
     center = Point{1.0,1.0};
     Vector<Vector<Point> > list2;
@@ -179,13 +179,13 @@ void testFL()
       Vector<Curve<2, 4>> vcrv{crv};
 
       YinSet<2, 4> YS(SegmentedRealizableSpadjor<4>(vcrv), tol);
-      MARS2DIMV<4> CM(&ESDIRK4, 4* M_PI/ n, test.rtiny);
+      MARS2DIMV<4,VectorOnHypersurface> CM(&ESDIRK4, 4* M_PI/ n, test.rtiny);
       
       
       
       
-      DiscreteVecCurvature<2,4> SFV1;
-      DiscreteVecCurvatureLaplacianOld<2,4> SFV2;
+      VectorForCurvatureFlow<2,4> SFV1;
+      VectorForSurfaceDiffusionFlow<2,4> SFV2;
       
       // Vector<Point> velocity = SFV1(pts,0);
       // list2.push_back(velocity);
@@ -202,7 +202,7 @@ void testFL()
       // }
 
       begin = clock();
-      CM.trackInterface(SFV2, YS, 0, dt, 6e-3);
+      CM.trackInterface(SFV2, YS, 0, dt, 1e-2);
       end = clock();
       time1[j] = (double)(end - begin) / CLOCKS_PER_SEC;
       Curve<2,4> crvn = (YS.getBoundaryCycles())[0];
@@ -216,12 +216,12 @@ void testFL()
       }
         
 
-      Tensor<Real,2> Jacobi = SFV2.getJacobi(newpts,0);
-      for (int l = 0; l < (Jacobi.size())[0]; l++){
-        for (int m = 0; m < (Jacobi.size())[1]; m++)
-          cout << Jacobi(l,m) << " ";
-        cout << endl;
-      }
+      // Tensor<Real,2> Jacobi = SFV2.getJacobi(newpts,0);
+      // for (int l = 0; l < (Jacobi.size())[0]; l++){
+      //   for (int m = 0; m < (Jacobi.size())[1]; m++)
+      //     cout << Jacobi(l,m) << " ";
+      //   cout << endl;
+      // }
       
       n*=2;
       dt/=2;
@@ -238,29 +238,29 @@ void testFL()
     // }
 
     //get the approx solution    
-    // n *= 8; //ensure that the chdlength is smaller than computational solutions'
-    // Vector<Point> rpts;
-    // double nradio = sqrt(209.0/200);
-    // rpts.push_back({nradio, 0.0});
-    // for (int i = 1; i < n; i++)
-    // {
-    //     rpts.push_back({nradio * cos(2 * M_PI / n * i), nradio * sin(2 * M_PI / n * i)});
-    // }
-    // rpts.push_back({nradio, 0.0});
-    // auto rcrv = fitCurve<4>(rpts, true);
+    n *= 8; //ensure that the chdlength is smaller than computational solutions'
+    Vector<Point> rpts;
+    double nradio = sqrt(209.0/200);
+    rpts.push_back({nradio, 0.0});
+    for (int i = 1; i < n; i++)
+    {
+        rpts.push_back({nradio * cos(2 * M_PI / n * i), nradio * sin(2 * M_PI / n * i)});
+    }
+    rpts.push_back({nradio, 0.0});
+    auto rcrv = fitCurve<4>(rpts, true);
 
-    // //output the convergency rate
-    // auto it1 = crvs.begin();
-    // //auto it2 = crvs.begin() + loop - 1;
-    // auto it3 = crvs.end();
-    // auto result1 = exactError(Vector<Crv>(it1, it3), rcrv, tol);
-    // //auto result2 = exactError(Vector<Crv>(it1, it2), r2crv, tol);
-    // //auto result2 = exactError(Vector<Crv>(it2, it3), rcrv, tol);
-    // cout << "Error and ratio:" << endl;
-    // for (int l = 0 ; l < (int)result1.size() ; l++)
-    //   cout << result1[l] << endl;
-    // for (int l = 0 ; l < (int)time1.size() ; l++)
-    //   cout << time1[l] << endl;
+    //output the convergency rate
+    auto it1 = crvs.begin();
+    //auto it2 = crvs.begin() + loop - 1;
+    auto it3 = crvs.end();
+    auto result1 = exactError(Vector<Crv>(it1, it3), rcrv, tol);
+    //auto result2 = exactError(Vector<Crv>(it1, it2), r2crv, tol);
+    //auto result2 = exactError(Vector<Crv>(it2, it3), rcrv, tol);
+    cout << "Error and ratio:" << endl;
+    for (int l = 0 ; l < (int)result1.size() ; l++)
+      cout << result1[l] << endl;
+    for (int l = 0 ; l < (int)time1.size() ; l++)
+      cout << time1[l] << endl;
     
     
 

@@ -1,12 +1,12 @@
 #ifndef _DISCRETEVECCURVATURELAPLACIANNEW_H_
 #define _DISCRETEVECCURVATURELAPLACIANNEW_H_
 
-#include "DiscreteVecCoDimOne.h"
-#include "DiscreteVecCurvatureLaplacianOld.h" 
+#include "VectorOnHypersurface.h"
+#include "VectorForSurfaceDiffusionFlow.h" 
 #include "FlowHelper.h"
 
 template<int Dim, int Order>
-class DiscreteVecCurvatureLaplacianNew: public DiscreteVecCoDimOne<Dim>
+class VectorForSurfaceDiffusionFlowNew: public VectorOnHypersurface<Dim>
 {
 private:
   template<class T>
@@ -21,7 +21,7 @@ public:
 };
 
 template<int Order>
-class DiscreteVecCurvatureLaplacianNew<2,Order>: public DiscreteVecCoDimOne<2>
+class VectorForSurfaceDiffusionFlowNew<2,Order>: public VectorOnHypersurface<2>
 {
 private:
   template<class T>
@@ -39,7 +39,7 @@ public:
 
 template<int Order>
 const Vector<Point>
-DiscreteVecCurvatureLaplacianNew<2,Order>::operator()(const
+VectorForSurfaceDiffusionFlowNew<2,Order>::operator()(const
                                                    Vector<Point>& pts, Real t) const{
   const int num = pts.size();
   const Curve<2,4> crv = fitCurve<4>(pts,true);
@@ -64,10 +64,10 @@ DiscreteVecCurvatureLaplacianNew<2,Order>::operator()(const
 
 template<int Order>
 const Tensor<Real,2>
-DiscreteVecCurvatureLaplacianNew<2,Order>::getJacobi(const
+VectorForSurfaceDiffusionFlowNew<2,Order>::getJacobi(const
                                                   Vector<Point>& pts, Real t) const
 {
-  DiscreteVecCurvatureLaplacianOld<2,Order> SDF;
+  VectorForSurfaceDiffusionFlow<2,Order> SDF;
   return SDF(pts,t);
 }
 

@@ -39,8 +39,8 @@ void MARS<Dim, Order, VelocityField>::trackInterface(const VelocityField<Dim> &v
     return;
 }
 
-<<<<<<< HEAD
-=======
 template class MARS<2, 2, VectorFunction>;
 template class MARS<2, 4, VectorFunction>;
->>>>>>> master
+
+template class MARS<2, 2, VectorOnHypersurface>;
+template class MARS<2, 4, VectorOnHypersurface>;

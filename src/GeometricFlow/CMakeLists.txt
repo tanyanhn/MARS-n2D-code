@@ -1,10 +1,10 @@
 set(GeometricFlow_Files
     GeometricFlow/FlowHelper.h
     GeometricFlow/FlowHelper.cpp
-    GeometricFlow/DiscreteVecCoDimOne.h
-    GeometricFlow/DiscreteVecCurvature.h
-    GeometricFlow/DiscreteVecCurvatureLaplacianNew.h
-    GeometricFlow/DiscreteVecCurvatureLaplacianOld.h
+    GeometricFlow/VectorOnHypersurface.h
+    GeometricFlow/VectorForCurvatureFlow.h
+    GeometricFlow/VectorForSurfaceDiffusionFlow.h
+    GeometricFlow/VectorForSurfaceDiffusionFlowNew.h
     GeometricFlow/VelocityTest.h
     PARENT_SCOPE
 )
