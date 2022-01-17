@@ -4,6 +4,7 @@
 #include "Core/Config.h"
 #include "Core/Vec.h"
 #include "VectorFunction.h"
+#include "GeometricFlow/VectorOnHypersurface.h"
 #include <vector>
 
 template <int Dim, template <int> class VectorRHS>
