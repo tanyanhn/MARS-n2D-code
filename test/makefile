@@ -7,7 +7,7 @@ MATLAB := matlab -nodesktop -nosplash -logfile Y.log -r
 .SUFFIXES: .o .cpp .ex .hpp
 
 # 正则表达式表示目录下所有.c文件，相当于：SRCS = main.c a.c b.c
-SRCS = TestOrientedJordanCurve.cpp ../src/YinSet/OrientedJordanCurve.cpp ../src/Core/Curve.cpp ../src/Core/Config.cpp
+SRCS = TestOrientedJordanCurve.cpp ../src/YinSet/OrientedJordanCurve.cpp ../src/Core/Curve.cpp ../src/Core/Config.cpp ../src/YinSet/SegmentedRealizableSpadjor.cpp ../src/YinSet/YinSet.cpp ../src/YinSet/SegmentsIntersector.cpp ../src/YinSet/PointsLocater.cpp ../src/YinSet/PastingMap.cpp
 
 TARGET = TestOrientedJordanCurve.exe
 

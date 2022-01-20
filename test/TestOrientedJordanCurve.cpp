@@ -19,6 +19,12 @@ void TestOrientedJordanCurve::doTest(int num) {
   rectanglePtr = new Rectangle<2>();
   string c4 = "-3 -5 8 11 1 1 0.1";
   rectanglePtr->define(c4);
+  CurveFactory<2, 2> fac2;
+  CurveFactory<2, 4> fac4;
+  string c5 = "OrientedJordanCurve 4 1 0 0 1 -1 0 0 -1";
+  fac2.createCurve(c5);
+  string c6 = "Circle " + c3;
+  fac4.createCurve(c6);
 };
 
 int main() {

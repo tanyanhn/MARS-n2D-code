@@ -154,13 +154,13 @@ CurveFactory<2, Order>::createCurve(const std::string& parameters) {
   std::unique_ptr<OrientedJordanCurve<2, Order>> ret(nullptr);
   if (type == "OrientedJordanCurve") {
     ret.reset(new OrientedJordanCurve<2, Order>());
-    ret->define(iss.str());
+    ret->define(parameters.substr(20));
   } else if (type == "Circle") {
     ret.reset(new Circle<Order>());
-    ret->define(iss.str());
+    ret->define(parameters.substr(7));
   } else if (type == "Rectangle") {
     ret.reset(new Rectangle<Order>());
-    ret->define(iss.str());
+    ret->define(parameters.substr(10));
   } else {
     assert(false && "undefined type.");
   }
@@ -187,3 +187,5 @@ template class Circle<2>;
 template class Circle<4>;
 template class Rectangle<2>;
 template class Rectangle<4>;
+template class CurveFactory<2, 2>;
+template class CurveFactory<2, 4>;
