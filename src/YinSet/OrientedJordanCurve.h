@@ -16,10 +16,10 @@ class OrientedJordanCurve : public Curve<Dim, Order> {
   // constructors
   OrientedJordanCurve() = default;
 
-  void define(const std::string& parameters);
+  virtual void define(const std::string& parameters);
 
  protected:
-  void define(const std::vector<Vec<Real, Dim>>& knots,
+  void define(const std::vector<Vec<Real, Dim>>& points,
               const SimplicialComplex& kinks);
 };
 

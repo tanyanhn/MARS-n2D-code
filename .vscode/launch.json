@@ -8,7 +8,7 @@
             "name": "cpp - 生成和调试活动文件",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/cmake-build-debug/test/TestIT",
+            "program": "${workspaceFolder}/test/TestOrientedJordanCurve.exe",
             "args": [],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",

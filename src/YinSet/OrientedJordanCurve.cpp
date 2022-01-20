@@ -6,6 +6,7 @@
 #include <memory>
 #include <sstream>
 #include <string>
+#include "Core/Curve.h"
 #include "SimplicialComplex.h"
 #include "YinSet.h"
 #include "YinSet/SegmentedRealizableSpadjor.h"
@@ -38,8 +39,40 @@ void OrientedJordanCurve<Dim, Order>::define(const string& parameters) {
 
 template <int Dim, int Order>
 void OrientedJordanCurve<Dim, Order>::define(
-    const std::vector<Vec<Real, Dim>>& knots,
-    const SimplicialComplex& kinks) {}
+    const std::vector<Vec<Real, Dim>>& points,
+    const SimplicialComplex& kinks) {
+  if (kinks.getSimplexes().size() == 0) {
+    Curve<Dim, Order> res = fitCurve<Order>(points);
+    this->knots = res.getKnots();
+    this->polys = res.getPolys();
+  } else {
+    int pre = -1, pos = -1;
+    for (auto& simplex : kinks.getSimplexes()[0]) {
+      if (pre == -1) {
+        pre = *simplex.vertices.begin();
+      } else {
+        pos = *simplex.vertices.begin();
+        vector<Vec<Real, Dim>> subPoints(std::next(points.begin(), pre),
+                                         std::next(points.begin(), pos + 1));
+        // TODO need use new fitCurve for natural boundary condition.
+        Curve<Dim, Order> res = fitCurve<Order>(subPoints);
+        Real startT;
+        if (this->knots.empty()) {
+          startT = 0;
+        } else {
+          startT = this->knots.back();
+          this->knots.pop_back();
+        }
+        for (auto t : res.getKnots()) {
+          this->knots.push_back(startT + t);
+        }
+        this->polys.insert(this->polys.end(), res.getPolys().begin(),
+                           res.getPolys().end());
+        pre = pos;
+      }
+    }
+  }
+}
 
 template <int Order>
 void Circle<Order>::define(const std::string& parameters) {
@@ -62,7 +95,7 @@ void Circle<Order>::define(const std::string& parameters) {
     points[i][0] = center[0] + radius * std::cos(sign * i * dtheta);
     points[i][1] = center[1] + radius * std::sin(sign * i * dtheta);
   }
-  define(points, SimplicialComplex());
+  OrientedJordanCurve<2, Order>::define(points, SimplicialComplex());
 }
 
 template <int Order>
@@ -102,6 +135,13 @@ void Rectangle<Order>::define(const std::string& parameters) {
     points.push_back(Vec<Real, 2>{smallEnd[0], bigEnd[1] - i * dy});
   points.push_back(smallEnd);
 
+  Real c = cos(theta), s = sin(theta), x, y;
+  for (auto& p : points) {
+    x = c * p[0] - s * p[1];
+    y = s * p[0] + c * p[1];
+    p[0] = x, p[1] = y;
+  }
+
   OrientedJordanCurve<2, Order>::define(points, kinks);
 }
 
@@ -140,3 +180,10 @@ YinSet<2, Order> CurveFactory<2, Order>::createYinSet(
 
   return YinSet<2, Order>(segmentedSpadjor, tol);
 }
+
+template class OrientedJordanCurve<2, 2>;
+template class OrientedJordanCurve<2, 4>;
+template class Circle<2>;
+template class Circle<4>;
+template class Rectangle<2>;
+template class Rectangle<4>;

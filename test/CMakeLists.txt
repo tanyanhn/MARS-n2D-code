@@ -10,7 +10,9 @@ add_executable(UnitTest UnitTest.cpp
         TestLocater.h
         TestLocater.cpp
         TestYinSetsBooleanOps.cpp
-        TestYinSetsBooleanOps.H)
+        TestYinSetsBooleanOps.H
+        TestOrientedJordanCurve.h 
+        TestOrientedJordanCurve.cpp)
 target_link_libraries(UnitTest ${CPPUNIT_LIBRARIES} bays)
 
 add_test(NAME UnitTest COMMAND UnitTest WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/test)

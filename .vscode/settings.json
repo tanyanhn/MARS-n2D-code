@@ -19,6 +19,7 @@
     },
     "clang.cxxflags": [
         "-I ${workspaceRoot}/**",
-        "-I ${workspaceRoot}/src"
+        "-I ${workspaceRoot}/src",
+        "-I ${workspaceRoot}/test"
     ],
 }
