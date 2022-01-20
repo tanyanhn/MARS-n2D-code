@@ -16,5 +16,9 @@
         "array": "cpp",
         "bitset": "cpp",
         "initializer_list": "cpp"
-    }
+    },
+    "clang.cxxflags": [
+        "-I ${workspaceRoot}/**",
+        "-I ${workspaceRoot}/src"
+    ],
 }
