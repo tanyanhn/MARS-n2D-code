@@ -104,6 +104,7 @@ class SimplicialComplex {
     }
     return *this;
   }
+  const vector<set<Simplex>>& getSimplexes() const { return simplexes; }
   int getNSim() const { return simplexes.size() - 1; }
   int starClosure(unsigned int p, SimplicialComplex& Closure) const;
   int link(unsigned int p, unordered_set<unsigned int>& res) const;
@@ -121,7 +122,7 @@ class SimplicialComplex {
   }
   void print(std::ostream& os) const {
     os << "{";
-    int i = 0;
+    size_t i = 0;
     for (i = 0; i < simplexes.size(); ++i) {
       for (auto& s : simplexes[i]) {
         s.print(os);
@@ -180,7 +181,7 @@ inline int SimplicialComplex::insert(Simplex& s) {
   int sNSim = s.getNSim();
   if (sNSim == -1)
     return 0;
-  if (sNSim >= simplexes.size())
+  if (sNSim >= (int)simplexes.size())
     simplexes.resize(sNSim + 1);
   auto [sIt, b] = simplexes[sNSim].insert(s);
   if (b == false)
