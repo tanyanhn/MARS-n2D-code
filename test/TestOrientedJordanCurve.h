@@ -1,17 +1,27 @@
 #ifndef TESTORIENTEDJORDANCURVE_TY_H
 #define TESTORIENTEDJORDANCURVE_TY_H
 
+#include "YinSet/OrientedJordanCurve.h"
 #include <cppunit/TestCase.h>
 #include <cppunit/extensions/HelperMacros.h>
 
 class TestOrientedJordanCurve : public CppUnit::TestFixture {
- public:
+public:
+  using rVec = Vec<Real,Dim>;
+
   void setUp() {}
   void tearDown() {}
 
-  void doTest(int num);
-  void test1() { doTest(1); }
+  void doTest();
+  void test1() { doTest(); }
 
+  void testCircle(const std::string input, const Real tol);
+  void testRectangle(const std::string& input, const Real tol);
+  void testOrientedJordanCurve(const std::string& input, const Real tol);
+  bool TestOrientedJordanCurve::verifySpline(const std::vector<Polynomial<Order, rVec>>& polys,
+                                             const std::vector<Real>& knots,
+                                             const bool periodic,
+                                             const Real tol)
   CPPUNIT_TEST_SUITE(TestOrientedJordanCurve);
   CPPUNIT_TEST(test1);
   CPPUNIT_TEST_SUITE_END();
