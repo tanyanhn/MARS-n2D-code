@@ -65,7 +65,7 @@ void testFL()
         }
       pts.push_back({center[0] + radio, center[1]});
       cout << "----------- n = " << n << ": ------------" << endl;
-      crv = fitCurve<4>(pts, true);
+      crv = fitCurve<4>(pts, periodic);
       Vector<Curve<2, 4>> vcrv{crv};
       YinSet<2, 4> YS(SegmentedRealizableSpadjor<4>(vcrv), tol);
 
@@ -129,7 +129,7 @@ void testFL()
         rpts.push_back({center[0] + radio * cos(2 * M_PI / n * i), center[1] + radio * sin(2 * M_PI / n * i)});
     }
     rpts.push_back({center[0] + radio, center[1]});
-    auto rcrv = fitCurve<4>(rpts, true);
+    auto rcrv = fitCurve<4>(rpts, periodic);
 
     //output the convergency rate
     auto it1 = crvs.begin();
@@ -158,7 +158,7 @@ void testFL()
     */
     
     // n = 32;
-    dt = 1e-6;
+    dt = 1e-4;
     n = 32;
     radio = 0.3;
     center = Point{1.0,1.0};
@@ -175,7 +175,7 @@ void testFL()
         }
       pts.push_back({center[0] + radio, 0});
       //cout << "----------- n = " << n << ": ------------" << endl;
-      crv = fitCurve<4>(pts, true);
+      crv = fitCurve<4>(pts, periodic);
       Vector<Curve<2, 4>> vcrv{crv};
 
       YinSet<2, 4> YS(SegmentedRealizableSpadjor<4>(vcrv), tol);
@@ -202,7 +202,7 @@ void testFL()
       // }
 
       begin = clock();
-      CM.trackInterface(SFV2, YS, 0, dt, 1e-2);
+      CM.trackInterface(SFV2, YS, 0, dt, 6e-2);
       end = clock();
       time1[j] = (double)(end - begin) / CLOCKS_PER_SEC;
       Curve<2,4> crvn = (YS.getBoundaryCycles())[0];
@@ -247,7 +247,7 @@ void testFL()
         rpts.push_back({nradio * cos(2 * M_PI / n * i), nradio * sin(2 * M_PI / n * i)});
     }
     rpts.push_back({nradio, 0.0});
-    auto rcrv = fitCurve<4>(rpts, true);
+    auto rcrv = fitCurve<4>(rpts, periodic);
 
     //output the convergency rate
     auto it1 = crvs.begin();

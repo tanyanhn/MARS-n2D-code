@@ -40,7 +40,7 @@ template<int Order>
 const Vector<Point>
 VectorForCurvatureFlow<2,Order>::operator()(const Vector<Point>& pts, Real t) const
 {
-  const Curve<2,4> crv = fitCurve<4>(pts,true);
+  const Curve<2,4> crv = fitCurve<4>(pts,periodic);
   Vector<Point> res = calDer<Order>(pts,crv,2);
   return res;
 }
@@ -50,7 +50,7 @@ const Tensor<Real,2>
 VectorForCurvatureFlow<2,Order>::getJacobi(const Vector<Point>& pts, Real t) const
 {
   const int num = pts.size()-1;
-  const Curve<2,4> crv = fitCurve<4>(pts,true);
+  const Curve<2,4> crv = fitCurve<4>(pts,periodic);
   Tensor<Real,2> res(Vec<int,2>{num*2,num*2});
   for (int l = 0 ; l < num*2 ; l++)
     for (int m = 0 ; m < num*2 ; m++)

@@ -31,7 +31,7 @@ void TestLocater::doTest(int num)
     for(int k=0; k<nk; ++k)
       infile >> knots[k][0] >> knots[k][1];
     knots.back() = knots.front();
-    jordanCurves.push_back(fitCurve<2>(knots));
+    jordanCurves.push_back(fitCurve<2>(knots,periodic));
   }
   SegmentedRealizableSpadjor<Order> srs(jordanCurves);
 
