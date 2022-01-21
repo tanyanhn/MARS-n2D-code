@@ -37,7 +37,7 @@ Crv output(const Crv &crv, Point center, Real radio)
         }
     }
     npts.push_back(polys[0][0]);
-    return fitCurve<4>(npts, true);
+    return fitCurve<4>(npts, periodic);
 }
 
 void testIT()
@@ -81,7 +81,7 @@ void testIT()
                 pts.push_back({center[0] + radio * cos(2 * M_PI / n * i), center[1] + radio * sin(2 * M_PI / n * i)});
             }
             pts.push_back({center[0] + radio, center[1]});
-            crv = fitCurve<4>(pts, true);
+            crv = fitCurve<4>(pts, periodic);
             Vector<Curve<2, 4>> vcrv{crv};
             YinSet<2, 4> YS(SegmentedRealizableSpadjor<4>(vcrv), tol);
 
@@ -125,7 +125,7 @@ void testIT()
                 pts.push_back({center[0] + radio * cos(2 * M_PI / n * i), center[1] + radio * sin(2 * M_PI / n * i)});
             }
             pts.push_back({center[0] + radio, center[1]});
-            crv = fitCurve<4>(pts, true);
+            crv = fitCurve<4>(pts, periodic);
             Vector<Curve<2, 4>> vcrv{crv};
             YinSet<2, 4> YS(SegmentedRealizableSpadjor<4>(vcrv), tol);
 
@@ -162,7 +162,7 @@ void testIT()
         rpts.push_back({center[0] + radio * cos(2 * M_PI / n * i), center[1] + radio * sin(2 * M_PI / n * i)});
     }
     rpts.push_back({center[0] + radio, center[1]});
-    auto rcrv = fitCurve<4>(rpts, true);
+    auto rcrv = fitCurve<4>(rpts, periodic);
 
     //output the convergency rate
     auto it1 = crvs.begin();
