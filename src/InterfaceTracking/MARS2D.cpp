@@ -42,6 +42,9 @@ bool removeMarkers(Vector<unsigned int> &ids, Vector<Point> &pts, Real lowBound)
 {
     //set distances
     int num = ids.size();
+    if(num == 2)
+    return false;
+
     Vector<Real> dist(num - 1);
     auto pit = pts.begin();
     Point prept = *pit;

@@ -27,7 +27,7 @@ void MARS2DIMV<Order, VectorFunction>::discreteFlowMap(const VectorFunction<2> &
 }
 
 /**
- * @brief helper function of removeSmallEdges
+ * @brief remove cycle: do not remove the first and the last point, do not remove points consecutively
  * @tparam Container 
  * @param  ids              id of the current points
  * @param  pts              
@@ -38,6 +38,8 @@ bool removeIMV(Vector<unsigned int> &ids, Vector<Point> &pts, Real lowBound)
 {
     //set distances
     int num = pts.size();
+    if (num == 2)
+        return false;
 
     int count = 1;
     int i = 1;
@@ -172,9 +174,6 @@ Vector<unsigned int> MARS2DIMV<Order, VectorFunction>::removeSmallEdges(Vector<P
     return rids;
 }
 
-
-
-
 template <int Order>
 Vector<unsigned int> MARS2DIMV<Order, VectorFunction>::splitLongEdges(const VectorFunction<2> &v, Vector<Point> &pts, const Crv &crv, Real tn, Real dt)
 {
@@ -252,7 +251,6 @@ Vector<unsigned int> MARS2DIMV<Order, VectorFunction>::splitLongEdges(const Vect
     pts = res;
     return ids;
 }
-
 
 template <int Order>
 void MARS2DIMV<Order, VectorFunction>::timeStep(const VectorFunction<2> &v, YS &ys, Real tn, Real dt)
@@ -414,7 +412,6 @@ bool splitIMV(Vector<bool> &ids, Vector<Point> &oldpts, const Curve<2, Order> &c
     return count != num;
 }
 
-
 template <int Order>
 Vector<unsigned int> MARS2DIMV<Order, VectorOnHypersurface>::splitLongEdges(const VectorOnHypersurface<2> &v, Vector<Point> &pts, const Crv &crv, Real tn, Real dt)
 {
@@ -509,7 +506,6 @@ void MARS2DIMV<Order, VectorOnHypersurface>::timeStep(const VectorOnHypersurface
     ys = YS(SegmentedRealizableSpadjor<Order>(vcrv), tol);
     return;
 }
-
 
 template class MARS2DIMV<2, VectorFunction>;
 template class MARS2DIMV<4, VectorFunction>;
