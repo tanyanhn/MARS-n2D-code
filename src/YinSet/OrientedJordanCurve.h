@@ -6,6 +6,7 @@
 #include <vector>
 #include "Core/Curve.h"
 #include "SimplicialComplex.h"
+#include "YinSet/YinSet.h"
 
 template <int Dim, int Order>
 class YinSet;
