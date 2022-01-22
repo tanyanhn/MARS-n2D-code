@@ -24,7 +24,7 @@ bool verifySpline(const std::vector<Polynomial<4, rVec>>& polys,
     if(pt_cmp.compare(Mn, {0, 0}) != 0)
       return false;
   }
-  for(size_t i = 1; i != polys.size(); i++) {
+  for(size_t i = 0; i != polys.size(); i++) {
     if(i == 0) {
       if(!periodic)
         continue;
@@ -40,77 +40,88 @@ bool verifySpline(const std::vector<Polynomial<4, rVec>>& polys,
     auto rpoly = polys[ridx];
     std::cout << lpoly(t) << ' ' << rpoly[0] << std::endl;
     if(pt_cmp.compare(lpoly(t), rpoly[0]) != 0)
-      return false;
+      ;//return false;
     auto d_lpoly = lpoly.der();
     auto d_rpoly = rpoly.der();
     std::cout << d_lpoly(t) << d_rpoly[0] << std::endl;
     if(pt_cmp.compare(d_lpoly(t), d_rpoly[0]) != 0)
-      return false;
+      ;//return false;
     auto dd_lpoly = d_lpoly.der();
     auto dd_rpoly = d_rpoly.der();
     std::cout << dd_lpoly(t) << dd_rpoly[0] << std::endl;
     std::cout << std::endl;
     if(pt_cmp.compare(dd_lpoly(t), dd_rpoly[0]) != 0)
-      return false;
+      ;//return false;
   }
   return true;
 };
 
-int main(int argc, char* argv[])
+template <int Order>
+void drawCurve(Curve<2, Order>& cur, size_t num_piece, string of_name)
 {
-  string inJordanCurve1 = "4 1 0 0 1 -1 0 0 -1 1 0";
-  string inJordanCurve2 = "4 0 0 1 0 1 2 0 2 0 0 0 1 2 3 4";
-  string inJordanCurve3 = "4 0 0 0 1 -2 1 -2 0 0 0 0 1 2 3 4";
-  string inCircle1 = "0 0 1 1 2";
-  string inRectangle1 = "0 0 1 2 0 1 0.5";
-  string inRectangle2 = "0 0 1 2 " + std::to_string(0.5*M_PI) + " 1 0.5";
-  Real tol = 1e-8;
-  std::ofstream Curve_rebuild_out("output_test.m");
-  std::vector<string> factory_params(2);
-  factory_params[0] = std::to_string(0.0);
-  //  testOrientedJordanCurve(inJordanCurve1, tol);
-  //testCircle(inCircle1, tol);
-  //testRectangle(inRectangle1, tol);
-
-  CurveFactory<2, 4> factory4;
-  CurveFactory<2, 2> factory2;
-  inJordanCurve1 = "OrientedJordanCurve " + inJordanCurve1;
-  inJordanCurve2 = "OrientedJordanCurve " + inJordanCurve2;
-  inJordanCurve3 = "OrientedJordanCurve " + inJordanCurve3;
-  inCircle1 = "Circle " + inCircle1;
-  inRectangle1 = "Rectangle " + inRectangle1;
-  inRectangle2 = "Rectangle " + inRectangle2;
-  auto cur = *factory4.createCurve(inCircle1);
-  std::cout << verifySpline(cur.getPolys(), cur.getKnots(), true, tol) << std::endl;
   auto polys = cur.getPolys();
   auto knots = cur.getKnots();
-  /*Curve_rebuild_out << "X=[";
-  Curve_rebuild_out << polys[0][0][0] << ", " << polys[0][0][1] << ";" << std::endl;
+  std::ofstream Curve_build_out(of_name);
+  Curve_build_out << "X=[";
+  Curve_build_out << polys[0][0][0] << ", " << polys[0][0][1] << ";" << std::endl;
   for(size_t j = 0; j != polys.size(); j++) {
-    Curve_rebuild_out << (polys[j](knots[j + 1] - knots[j]))[0] << ", " << (polys[j](knots[j + 1] - knots[j]))[1] << ";" << std::endl;
+    Real leng = knots[j + 1] - knots[j];
+    for(size_t i = 1; i != num_piece + 1; i++) {
+      Curve_build_out << (polys[j](leng*1.0*i/num_piece))[0]
+                      << ", " << (polys[j](leng*1.0*i/num_piece))[1] << ";" << std::endl;
+    }
   }
-  Curve_rebuild_out << "];" << std::endl;
-  Curve_rebuild_out << "hold on; plot(X(:, 1), X(:, 2), '-b');" << std::endl;*/
+  Curve_build_out << "];" << std::endl;
+  Curve_build_out << "hold on; plot(X(:, 1), X(:, 2), '-b');" << std::endl;
+}
 
-  //factory_params.push_back(inRectangle2);
-  auto outYS = [&factory4, &factory_params](string param, string of_name) {
-                 Curve<2, 4> curv = *factory4.createCurve(param);
-                 auto knots = curv.getKnots();
-                 auto polys = curv.getPolys();
-                 for(auto p : polys) {
-                   std::cout << p[0] << std::endl;
-                 }
-                 std::cout << polys.back()(knots.back() - knots[knots.size() - 2]) << '\n' << '\n';
-                 factory_params[1] = param;
-                 auto ys = factory4.createYinSet(factory_params);
-                 std::cout << ys.getHasseString() << std::endl;
-                 std::ofstream of(of_name, std::ios_base::binary);
-                 ys.dump(of);
-               };
-  outYS(inJordanCurve1, "../result/resultOrientedJordanCurve1.dat");
+int main(int argc, char* argv[])
+{
+  string inJordanCurve1 = "OrientedJordanCurve 4 1 0 0 1 -1 0 0 -1 1 0";
+  string inJordanCurve2 = "OrientedJordanCurve 4 0 0 1 0 1 2 0 2 0 0 0 1 2 3 4";
+  string inJordanCurve3 = "OrientedJordanCurve 4 0 0 0 1 -2 1 -2 0 0 0 0 1 2 3 4";
+  string inCircle1 = "Circle 0 0 1 1 1";
+  string inCircle2 = "Circle 10 10 1 1 0.2";
+  string inCircle3 = "Circle 15 15 1 1 0.2";
+  string inRectangle1 = "Rectangle 0 0 1 2 0 1 0.5";
+  string inRectangle2 = "Rectangle 0 0 1 2 " + std::to_string(0.5*M_PI) + " 1 0.5";
+  string inRectangle3 = "Rectangle 4 4 10 10 0 1 2";
+  Real tol = 1e-8;
+  CurveFactory<2, 4> factory4;
+  //CurveFactory<2, 2> factory2;
+
+
+  auto cur = *factory4.createCurve(inCircle1);
+  //std::cout << verifySpline(cur.getPolys(), cur.getKnots(), true, tol) << std::endl;
+  auto polys = cur.getPolys();
+  auto knots = cur.getKnots();
+  drawCurve(cur, 10, "drawCircle2.m");
+
+  string input_name("../../test/data/testOrientedJordanCurve");
+  int testcase;
+  std::cout << "Input test case number:" << std::endl;
+  std::cin >> testcase;
+  //0.one closed circle.
+  //1.unclosed circle.
+  //2.two equivalent curves.
+  //3.two intersected curves.
+  std::cout << "TestCase: " << testcase << std::endl;
+  std::ifstream input(input_name + std::to_string(testcase) + ".input");
+  std::vector<string> factory_params(1);
+  factory_params[0] = std::to_string(tol);
+  std::string s;
+  getline(input, s);
+  while(!input.fail()) {
+    factory_params.push_back(s);
+      getline(input, s);
+  }
+  auto ys = factory4.createYinSet(factory_params);
+  std::cout << ys.getHasseString() << std::endl;
+  std::ofstream of("result/resultOrientedJordanCurve" + std::to_string(testcase) + ".dat", std::ios_base::binary);
+  ys.dump(of);
   //outYS(inCircle, "../result/resultCircle1.dat");
   //outYS(inRectangle2, "../result/resultRectangle2.dat");
-  auto compareYS = [tol, &factory2, &factory_params](string param1, string param2) {
+  /*  auto compareYS = [tol, &factory2, &factory_params](string param1, string param2) {
                      factory_params[1] = param1;
                      auto ys1 = factory2.createYinSet(factory_params);
                      factory_params[1] = param2;
@@ -120,4 +131,5 @@ int main(int argc, char* argv[])
   compareYS(inJordanCurve1, inCircle1);
   compareYS(inJordanCurve2, inRectangle1);
   compareYS(inJordanCurve3, inRectangle2);
+  */
 };

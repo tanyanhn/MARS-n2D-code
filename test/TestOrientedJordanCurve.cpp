@@ -21,7 +21,8 @@ bool TestOrientedJordanCurve::verifySpline(const std::vector<Polynomial<4, rVec>
     if(pt_cmp.compare(Mn, {0, 0}) != 0)
       return false;
   }
-  for(size_t i = 0; i != polys.size(); i++) {
+  //!!! unverify the start knot.
+  for(size_t i = 1; i != polys.size(); i++) {
     if(i == 0) {
       if(!periodic)
         continue;
