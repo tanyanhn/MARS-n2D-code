@@ -261,7 +261,7 @@ SegmentedRealizableSpadjor<4>::SegmentedRealizableSpadjor(
   // *******************************************************
   // The implementation of the Boolean algebra for Yin sets
   // represented by cubic splines shoud go here.
-  assert(tolForSegmentation == 0.0);
+  // assert(tolForSegmentation == 0.0);
   // *******************************************************
   segmentedCurves = aSpadjor;
 }
