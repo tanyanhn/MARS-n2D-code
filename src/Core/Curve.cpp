@@ -3,7 +3,7 @@
 #include "Wrapper_LAPACKE.h"
 #include "Curve.h"
 #include "Tensor.h"
-#include "SolvePeriodicTri.h"
+#include "SolveTri.h"
 
 template <int Dim, int Order>
 int Curve<Dim, Order>::locatePiece(Real t) const
@@ -370,7 +370,7 @@ Curve<Dim, Order - 1> der(const Curve<Dim, Order> &c)
 }
 
 //=================================================
-
+/*
 template <>
 Curve<2, 2> fitCurve(const std::vector<Vec<Real, 2>> &knots, bool)
 {
@@ -388,7 +388,7 @@ Curve<2, 2> fitCurve(const std::vector<Vec<Real, 2>> &knots, bool)
   }
   return res;
 }
-
+*/
 /*
 template <>
 Curve<2,4> fitCurve(const std::vector<Vec<Real,2>> &vertices, bool periodic)
@@ -454,6 +454,7 @@ Curve<2,4> fitCurve(const std::vector<Vec<Real,2>> &vertices, bool periodic)
   return res;
 }
 */
+/*
 template <>
 Curve<2, 4> fitCurve(const std::vector<Vec<Real, 2>> &vertices, bool periodic)
 {
@@ -516,6 +517,205 @@ Curve<2, 4> fitCurve(const std::vector<Vec<Real, 2>> &vertices, bool periodic)
   res.polys[k][3] = Point{resx[0] - resx[k], resy[0] - resy[k]} / (t[k + 1] - t[k]) / 6.0;
   return res;
 }
+*/
+
+template <>
+Curve<2, 2> fitCurve(const std::vector<Vec<Real, 2>> &knots, BCType,
+                     const Vec<Real,2>& , const Vec<Real,2>&)
+{
+  const int Order = 2;
+  auto numKnots = knots.size();
+  assert(numKnots >= 2);
+  Curve<2, Order> res;
+  for (std::size_t i = 0; i < numKnots - 1; ++i)
+  {
+    Polynomial<2, Vec<Real, 2>> p;
+    Real l = norm(knots[i + 1] - knots[i], 2);
+    p[0] = knots[i];
+    p[1] = (knots[i + 1] - knots[i]) / l;
+    res.concat(p, l);
+  }
+  return res;
+}
+
+template <>
+Curve<2, 4> fitCurve(const std::vector<Vec<Real, 2>> &vertices, BCType
+                     type, const Vec<Real,2>& start, const Vec<Real,2>& end)
+{
+  //using Point = Vec<Real, 2>;
+  const int Order = 4;
+  const int numPiece = vertices.size() - 1;
+  int k;
+  // calculate the accumulated chordal length
+  std::vector<Real> t(numPiece + 1);
+  t[0] = 0.0;
+  for (k = 1; k <= numPiece; ++k)
+    t[k] = t[k - 1] + norm(vertices[k] - vertices[k - 1], 2);
+  if (type == periodic){
+    // prepare the coefficient matrix
+    std::vector<Real> a(numPiece), b(numPiece, 2.0), c(numPiece);
+    a[0] = t[1] / (t[1] + t[numPiece] - t[numPiece - 1]);
+    c[0] = (t[numPiece] - t[numPiece - 1]) / (t[1] + t[numPiece] - t[numPiece - 1]);
+    for (k = 1; k < numPiece; ++k)
+      {
+        a[k] = (t[k + 1] - t[k]) / (t[k + 1] - t[k - 1]);
+        c[k] = (t[k] - t[k - 1]) / (t[k + 1] - t[k - 1]); 
+      }
+    // prepare the RHS
+    std::vector<Real> rhsx(numPiece), rhsy(numPiece);
+    const auto &verts = vertices;
+    rhsx[0] = 3*((t[numPiece] - t[numPiece-1])/(t[1] + t[numPiece]-
+              t[numPiece-1]))*((verts[1][0]-verts[0][0])/t[1])+3*(t[1]/(t[1]+t[numPiece]
+            - t[numPiece-1]))*((verts[0][0]-verts[numPiece-1][0])/(t[numPiece]-t[numPiece-1]));
+    rhsy[0] = 3*((t[numPiece] - t[numPiece-1])/(t[1] + t[numPiece]-
+              t[numPiece-1]))*((verts[1][1]-verts[0][1])/t[1])+3*(t[1]/(t[1]+t[numPiece]
+            - t[numPiece-1]))*((verts[0][1]-verts[numPiece-1][1])/(t[numPiece]-t[numPiece-1]));              
+    for (int k = 1; k < numPiece; ++k)
+      {
+       rhsx[k] = 3*((t[k] - t[k-1])/(t[k+1] -
+                                   t[k-1]))*((verts[k+1][0]-verts[k][0])/(t[k+1]-t[k]))+3*((t[k+1]
+                                   - t[k])/(t[k+1] -
+                                   t[k-1]))*((verts[k][0]-verts[k-1][0])/(t[k]-t[k-1]));
+      rhsy[k] = 3*((t[k] - t[k-1])/(t[k+1] -
+                                   t[k-1]))*((verts[k+1][1]-verts[k][1])/(t[k+1]-t[k]))+3*((t[k+1]
+                                   - t[k])/(t[k+1] -
+                                   t[k-1]))*((verts[k][1]-verts[k-1][1])/(t[k]-t[k-1]));
+      }
+    // solve the linear system :use LUD decomposition to solve the periodic-tridiagonal system
+    std::vector<Real> resx = solvePeriodicTri(a, b, c, rhsx);
+    std::vector<Real> resy = solvePeriodicTri(a, b, c, rhsy);
+    
+    // assemble the spline
+    Curve<2, Order> res;
+    res.knots = std::vector<Real>(t.begin(), t.end());
+    res.polys.resize(numPiece);
+    for (k = 0; k < numPiece - 1; ++k)
+      {
+        Vec<Real,2> K({(verts[k+1][0]-verts[k][0])/(t[k+1]-t[k]),(verts[k+1][1]-verts[k][1])/(t[k+1]-t[k])});
+        Vec<Real,2> m1({resx[k],resy[k]});
+        Vec<Real,2> m2({resx[k+1],resy[k+1]});
+        res.polys[k][3] = (m1 + m2 - (K * 2))/((t[k+1] - t[k])*(t[k+1]
+                                                                - t[k]));
+        res.polys[k][2] = (K * 3 - (m1 * 2) - m2)/(t[k+1] - t[k]);
+        res.polys[k][1] = m1;
+        res.polys[k][0] = Vec<Real,2>{verts[k][0],verts[k][1]};
+      }
+    Vec<Real,2> K({(verts[numPiece][0]-verts[numPiece-1][0])/(t[numPiece]-t[numPiece-1]),(verts[numPiece][1]-verts[numPiece-1][1])/(t[numPiece]-t[numPiece-1])});
+    Vec<Real,2> m1({resx[numPiece-1],resy[numPiece-1]});
+    Vec<Real,2> m2({resx[0],resy[0]});                                                              
+    res.polys[numPiece-1][3] = (m1 + m2 - (K * 2))/((t[numPiece] -
+    t[numPiece-1])*(t[numPiece] - t[numPiece-1]));
+    res.polys[numPiece-1][2] = (K * 3 - (m1 * 2) - m2)/(t[numPiece] -
+    t[numPiece-1]);
+    res.polys[numPiece-1][1] = m1;                                
+    res.polys[numPiece-1][0] =
+    Vec<Real,2>{verts[numPiece-1][0],verts[numPiece-1][1]};
+    return res;
+  }
+  else if (type == notAknot || type == complete || type == second ||
+    type == nature){
+    // prepare the coefficient matrix
+    std::vector<Real> a(numPiece), b(numPiece+1, 2.0),
+    c(numPiece);
+    Real d = 0,e = 0,tmp;
+    if (type == notAknot){
+      tmp = (t[1] - t[0])*(t[1] - t[0])/((t[2] - t[1])*(t[2] - t[1]));
+      b[0] = 1.0;
+      c[0] = 1.0 - tmp;
+      d = -tmp;
+      tmp = (t[numPiece] - t[numPiece-1])*(t[numPiece] -
+             t[numPiece-1])/((t[numPiece-1] - t[numPiece-2])*(t[numPiece-1] - t[numPiece-2]));
+      b[numPiece] = 1.0;
+      a[numPiece - 1] = 1.0 - tmp;
+      e = -tmp;
+    }
+    else if (type == complete){
+      b[0] = 1.0;
+      c[0] = 0.0;
+      b[numPiece] = 1.0;
+      a[numPiece-1] = 0.0;
+    }
+    else if (type == second || type == nature){
+      c[0] = 1.0;
+      a[numPiece-1] = 1.0;
+    }
+    for (k = 1; k < numPiece ; ++k){
+        a[k-1] = (t[k + 1] - t[k]) / (t[k + 1] - t[k - 1]);
+        c[k] = (t[k] - t[k - 1]) / (t[k + 1] - t[k - 1]);
+    }
+    // prepare the RHS
+    std::vector<Real> rhsx(numPiece+1), rhsy(numPiece+1);
+    const auto &verts = vertices;
+    if (type == notAknot){
+      tmp = (t[1] - t[0])*(t[1] - t[0])/((t[2] - t[1])*(t[2] - t[1]));
+      rhsx[0] = -2*tmp*((verts[2][0]-verts[1][0])/(t[2]-t[1]))+2*((verts[1][0]-verts[0][0])/(t[1]-t[0]));
+      rhsy[0] = -2*tmp*((verts[2][1]-verts[1][1])/(t[2]-t[1]))+2*((verts[1][1]-verts[0][1])/(t[1]-t[0]));
+      tmp = (t[numPiece] - t[numPiece-1])*(t[numPiece] - t[numPiece-1])/((t[numPiece-1] -
+            t[numPiece-2])*(t[numPiece-1] - t[numPiece-2]));
+      rhsx[numPiece] = -2*tmp*((verts[numPiece-1][0]-verts[numPiece-2][0])/(t[numPiece-1]-t[numPiece-2]))+2*((verts[numPiece][0]-verts[numPiece-1][0])/(t[numPiece]-t[numPiece-1]));
+      rhsy[numPiece] = -2*tmp*((verts[numPiece-1][1]-verts[numPiece-2][1])/(t[numPiece-1]-t[numPiece-2]))+2*((verts[numPiece][1]-verts[numPiece-1][1])/(t[numPiece]-t[numPiece-1]));
+    }
+    else if (type == complete){
+      rhsx[0] = start[0];
+      rhsy[0] = start[1];
+      rhsx[numPiece] = end[0];
+      rhsy[numPiece] = end[1];
+    }
+    else if (type == nature){
+      rhsx[0] = 3*((verts[1][0]-verts[0][0])/(t[1]-t[0]));
+      rhsy[0] = 3*((verts[1][1]-verts[0][1])/(t[1]-t[0]));
+      rhsx[numPiece] = 3*((verts[numPiece][0]-verts[numPiece-1][0])/(t[numPiece]-t[numPiece-1]));
+      rhsy[numPiece] = 3*((verts[numPiece][1]-verts[numPiece-1][1])/(t[numPiece]-t[numPiece-1]));
+    }
+    else if (type == second){
+      rhsx[0] = 3*((verts[1][0]-verts[0][0])/(t[1]-t[0]))-0.5*start[0]*(t[1]-t[0]);
+      rhsy[0] = 3*((verts[1][1]-verts[0][1])/(t[1]-t[0]))-0.5*start[1]*(t[1]-t[0]);
+      rhsx[numPiece] = 3*((verts[numPiece][0]-verts[numPiece-1][0])/(t[numPiece]-t[numPiece-1]))-0.5*end[0]*(t[numPiece]-t[numPiece-1]);
+      rhsy[numPiece] = 3*((verts[numPiece][1]-verts[numPiece-1][1])/(t[numPiece]-t[numPiece-1]))-0.5*end[1]*(t[numPiece]-t[numPiece-1]);
+    }
+    for (int k = 1; k < numPiece; ++k){
+      rhsx[k] = 3*((t[k] - t[k-1])/(t[k+1] -
+                                   t[k-1]))*((verts[k+1][0]-verts[k][0])/(t[k+1]-t[k]))+3*((t[k+1]
+                                   - t[k])/(t[k+1] -
+                                   t[k-1]))*((verts[k][0]-verts[k-1][0])/(t[k]-t[k-1]));
+      rhsy[k] = 3*((t[k] - t[k-1])/(t[k+1] -
+                                   t[k-1]))*((verts[k+1][1]-verts[k][1])/(t[k+1]-t[k]))+3*((t[k+1]
+                                   - t[k])/(t[k+1] -
+                                   t[k-1]))*((verts[k][1]-verts[k-1][1])/(t[k]-t[k-1]));
+    }
+    // solve the linear system
+    std::vector<Real> resx;
+    std::vector<Real> resy;
+    if (type == notAknot){
+      resx = solveTrisp(a, b, c, d, e, rhsx);
+      resy = solveTrisp(a, b, c, d, e, rhsy);
+    }
+    else{
+      resx = solveTri(a, b, c, rhsx);
+      resy = solveTri(a, b, c, rhsy);
+    }
+
+    // assemble the spline
+    Curve<2, Order> res;
+    res.knots = std::vector<Real>(t.begin(), t.end());
+    res.polys.resize(numPiece);
+    for (k = 0; k < numPiece ; ++k)
+      {
+        Vec<Real,2> K({(verts[k+1][0]-verts[k][0])/(t[k+1]-t[k]),(verts[k+1][1]-verts[k][1])/(t[k+1]-t[k])});
+        Vec<Real,2> m1({resx[k],resy[k]});
+        Vec<Real,2> m2({resx[k+1],resy[k+1]});
+        res.polys[k][3] = (m1 + m2 - (K * 2))/((t[k+1] - t[k])*(t[k+1] -
+                                   t[k]));
+        res.polys[k][2] = (K * 3 - (m1 * 2) - m2)/(t[k+1] - t[k]);
+        res.polys[k][1] = m1;
+        res.polys[k][0] = Vec<Real,2>{verts[k][0],verts[k][1]};
+      }
+    return res;
+  }
+  else
+    exit(-1);
+}
+
 
 //=================================================
 // explicit instantiation of the followings

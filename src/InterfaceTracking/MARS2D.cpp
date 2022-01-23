@@ -21,6 +21,8 @@ using Crv = Curve<2, 4>;
 template <class T>
 using Vector = vector<T>;
 
+// VectorFunction version
+
 template <int Order>
 void MARS2D<Order, VectorFunction>::discreteFlowMap(const VectorFunction<2> &v, Vector<Point> &pts, Real tn, Real dt)
 {
@@ -40,6 +42,9 @@ bool removeMarkers(Vector<unsigned int> &ids, Vector<Point> &pts, Real lowBound)
 {
     //set distances
     int num = ids.size();
+    if(num == 2)
+    return false;
+
     Vector<Real> dist(num - 1);
     auto pit = pts.begin();
     Point prept = *pit;
@@ -153,91 +158,6 @@ Vector<unsigned int> MARS2D<Order, VectorFunction>::removeSmallEdges(Vector<Poin
     return rids;
 }
 
-/*
-template <int Order>
-bool splitMarkers(Vector<bool> &ids, Vector<Point> &oldpts, const Curve<2, Order> &crv, const Vector<Real> &dist, Real highBound)
-{
-    int num = oldpts.size();
-    Vector<Polynomial<Order, Point>> polys = crv.getPolys();
-    Polynomial<Order, Point> lpoly;
-    Vector<Real> knots = crv.getKnots();
-
-    auto it = oldpts.begin();
-    auto idit = ids.begin();
-    ++it;
-    ++idit;
-    Point opt;
-    int n;
-    Real dt;
-
-    for (int i = 0; i < num - 1; i++)
-    {
-        if (dist[i] <= highBound)
-        {
-            ++it;
-            ++idit;
-            continue;
-        }
-
-        lpoly = polys[i];
-        n = ceil(dist[i] / highBound);
-        dt = (knots[i + 1] - knots[i]) / n;
-
-        for (int j = n - 1; j >= 1; j--)
-        {
-            opt = lpoly(dt * j);
-            it = oldpts.emplace(it, opt);
-            idit = ids.emplace(idit, true);
-        }
-        std::advance(it, n);
-        std::advance(idit, n);
-    }
-    return num != (int)oldpts.size();
-}
-
-template <int Order>
-Vector<unsigned int> MARS2D<Order>::splitLongEdges(const VectorFunction<2> &v, Vector<Point> &pts, const Crv &crv, Real tn, Real dt)
-{
-    int num = pts.size();
-    auto polys = crv.getPolys();
-    Vector<Point> oldpts(num);
-
-    for (int i = 0; i < num - 1; i++)
-    {
-        oldpts[i] = polys[i][0];
-    }
-    oldpts[num - 1] = polys[0][0];
-
-    Vector<bool> ids(num, false);
-    Vector<Real> dist(num - 1);
-
-    while (true)
-    {
-        for (int i = 0; i < (int)dist.size(); i++)
-        {
-            dist[i] = norm(pts[i + 1] - pts[i], 2);
-        }
-        if (!splitMarkers(ids, oldpts, crv, dist, (chdLenRange.hi())[0]))
-            break;
-        pts = oldpts;
-        Base::TI->timeStep(v, pts, tn, dt);
-        dist.resize(pts.size() - 1);
-    }
-
-    Vector<unsigned int> aids(ids.size() - num);
-    int count = 0;
-    for (int i = 0; i < (int)ids.size(); i++)
-    {
-        if (ids[i] == true)
-        {
-            aids[count] = i;
-            count++;
-        }
-    }
-    return aids;
-}
-*/
-
 template <int Order>
 Vector<unsigned int> MARS2D<Order, VectorFunction>::splitLongEdges(const VectorFunction<2> &v, Vector<Point> &pts, const Crv &crv, Real tn, Real dt)
 {
@@ -347,7 +267,7 @@ void MARS2D<Order, VectorFunction>::timeStep(const VectorFunction<2> &v, YS &ys,
         {
             dist[i] = norm(pts[i + 1] - pts[i], 2);
         }
-        crv = fitCurve<Order>(pts, true);
+        crv = fitCurve<Order>(pts, periodic);
 
         auto maxp = max_element(dist.begin(), dist.end());
         auto minp = min_element(dist.begin(), dist.end());
@@ -363,5 +283,194 @@ void MARS2D<Order, VectorFunction>::timeStep(const VectorFunction<2> &v, YS &ys,
     return;
 }
 
+// VectorOnHypersurface version, with unique difference in
+// splitLongEdges.
+
+template <int Order>
+void MARS2D<Order, VectorOnHypersurface>::discreteFlowMap(const VectorOnHypersurface<2> &v, Vector<Point> &pts, Real tn, Real dt)
+{
+    Base::TI->timeStep(v, pts, tn, dt);
+    return;
+}
+
+template <int Order>
+Vector<unsigned int> MARS2D<Order, VectorOnHypersurface>::removeSmallEdges(Vector<Point> &pts)
+{
+    int num = pts.size();
+    Vector<unsigned int> ids(num);
+    for (int i = 0; i < num; i++)
+    {
+        ids[i] = i;
+    }
+
+    while (true)
+    {
+        if (!removeMarkers(ids, pts, (chdLenRange.lo())[0]))
+            break;
+    }
+
+    Vector<unsigned int> rids(num - ids.size());
+    int it = 0;
+    unsigned int allid = 0;
+    int count = 0;
+    while (count < (int)rids.size() - 1)
+    {
+        if (ids[it] != allid)
+        {
+            rids[count] = allid;
+            count++;
+            allid++;
+        }
+        else
+        {
+            it++;
+            allid++;
+        }
+    }
+    return rids;
+}
+
+
+template <int Order>
+bool splitMarkers(Vector<bool> &ids, Vector<Point> &oldpts, const Curve<2, Order> &crv, const Vector<Real> &dist, Real highBound)
+{
+    int num = oldpts.size();
+    Vector<Polynomial<Order, Point>> polys = crv.getPolys();
+    Polynomial<Order, Point> lpoly;
+    Vector<Real> knots = crv.getKnots();
+
+    auto it = oldpts.begin();
+    auto idit = ids.begin();
+    ++it;
+    ++idit;
+    Point opt;
+    int n;
+    Real dt;
+
+    for (int i = 0; i < num - 1; i++)
+    {
+        if (dist[i] <= highBound)
+        {
+            ++it;
+            ++idit;
+            continue;
+        }
+
+        lpoly = polys[i];
+        n = ceil(dist[i] / highBound);
+        dt = (knots[i + 1] - knots[i]) / n;
+
+        for (int j = n - 1; j >= 1; j--)
+        {
+            opt = lpoly(dt * j);
+            it = oldpts.emplace(it, opt);
+            idit = ids.emplace(idit, true);
+        }
+        std::advance(it, n);
+        std::advance(idit, n);
+    }
+    return num != (int)oldpts.size();
+}
+
+template <int Order>
+Vector<unsigned int> MARS2D<Order, VectorOnHypersurface>::splitLongEdges(const VectorOnHypersurface<2> &v, Vector<Point> &pts, const Crv &crv, Real tn, Real dt)
+{
+    int num = pts.size();
+    auto polys = crv.getPolys();
+    Vector<Point> oldpts(num);
+
+    for (int i = 0; i < num - 1; i++)
+    {
+        oldpts[i] = polys[i][0];
+    }
+    oldpts[num - 1] = polys[0][0];
+
+    Vector<bool> ids(num, false);
+    Vector<Real> dist(num - 1);
+
+    while (true)
+    {
+        for (int i = 0; i < (int)dist.size(); i++)
+        {
+            dist[i] = norm(pts[i + 1] - pts[i], 2);
+        }
+        if (!splitMarkers(ids, oldpts, crv, dist, (chdLenRange.hi())[0]))
+            break;
+        pts = oldpts;
+        Base::TI->timeStep(v, pts, tn, dt);
+        dist.resize(pts.size() - 1);
+    }
+
+    Vector<unsigned int> aids(ids.size() - num);
+    int count = 0;
+    for (int i = 0; i < (int)ids.size(); i++)
+    {
+        if (ids[i] == true)
+        {
+            aids[count] = i;
+            count++;
+        }
+    }
+    return aids;
+}
+
+
+template <int Order>
+void MARS2D<Order, VectorOnHypersurface>::timeStep(const VectorOnHypersurface<2> &v, YS &ys, Real tn, Real dt)
+{
+    Vector<Crv> vcrv = ys.getBoundaryCycles();
+    int id = 1;
+    for (auto &crv : vcrv)
+    {
+        assert(crv.isClosed(tol));
+
+        //pts: now's points
+        Vector<Polynomial<Order, Point>> polys = crv.getPolys();
+        Vector<Point> pts(polys.size() + 1);
+        for (int i = 0; i < (int)polys.size(); i++)
+        {
+            pts[i] = polys[i][0];
+        }
+        pts[(int)polys.size()] = polys[0][0];
+
+        //get the points after discrete flow map
+        discreteFlowMap(v, pts, tn, dt);
+
+        //split long edges
+        Vector<unsigned int> splitids = splitLongEdges(v, pts, crv, tn, dt);
+
+        //remove small edges
+        Vector<unsigned int> removeids = removeSmallEdges(pts);
+
+        //
+        int num = pts.size();
+        Vector<Real> dist(num - 1);
+
+        //use Container<Point> pts to generate the Vector<Point> pts
+        //fitCurve only support Vector<Point> version
+        for (int i = 0; i < num - 1; i++)
+        {
+            dist[i] = norm(pts[i + 1] - pts[i], 2);
+        }
+        crv = fitCurve<Order>(pts, periodic);
+
+        auto maxp = max_element(dist.begin(), dist.end());
+        auto minp = min_element(dist.begin(), dist.end());
+
+        cout << "Curve " << id
+             << ":  Add " << splitids.size() << " Points,"
+             << " remove " << removeids.size() << " Points."
+             << " Max chdlength: " << *maxp
+             << " Min chdlength: " << *minp << endl;
+        id++;
+    }
+    ys = YS(SegmentedRealizableSpadjor<Order>(vcrv), tol);
+    return;
+}
+
+
 template class MARS2D<2, VectorFunction>;
 template class MARS2D<4, VectorFunction>;
+
+template class MARS2D<2, VectorOnHypersurface>;
+template class MARS2D<4, VectorOnHypersurface>;

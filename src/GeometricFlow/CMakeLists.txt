@@ -1,0 +1,10 @@
+set(GeometricFlow_Files
+    GeometricFlow/FlowHelper.h
+    GeometricFlow/FlowHelper.cpp
+    GeometricFlow/VectorOnHypersurface.h
+    GeometricFlow/VectorForCurvatureFlow.h
+    GeometricFlow/VectorForSurfaceDiffusionFlow.h
+    GeometricFlow/VectorForSurfaceDiffusionFlowNew.h
+    GeometricFlow/VelocityTest.h
+    PARENT_SCOPE
+)

@@ -1,0 +1,387 @@
+\documentclass[a4paper,twoside]{ctexart}
+\usepackage{geometry}
+\geometry{margin=1cm,vmargin={0pt,1cm}}
+\setlength{\topmargin}{-2cm}
+\setlength{\paperheight}{23cm}
+\setlength{\paperwidth}{18cm}
+\setlength{\textheight}{19.6cm}
+\setlength{\textwidth}{15cm}
+\usepackage{makecell}
+\usepackage{fancyhdr}
+\usepackage{siunitx}
+\usepackage{amssymb}
+\usepackage{indentfirst}
+\setlength{\parindent}{0.5em}
+
+\pagenumbering{arabic}
+
+% useful packages.
+\usepackage{multirow}
+\usepackage{caption}
+\usepackage{mathrsfs}
+\usepackage{amsfonts}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{enumerate}
+\usepackage{xcolor,graphicx,float}
+\usepackage{epstopdf}
+\usepackage{multicol}
+\usepackage{fancyhdr}
+\usepackage{layout}
+\usepackage{listings}
+\lstset{language=Matlab}
+\lstset{breaklines}
+\lstset{extendedchars=false}
+\usepackage[colorlinks,linkcolor=blue]{hyperref}
+\usepackage{xcolor}
+\usepackage{cite}
+\usepackage[numbers,sort&compress]{natbib} 
+\setcitestyle{open={},close={}}
+%\usepackage{natbibspacing}
+%\renewcommand{\refname}{}
+\usepackage{anyfontsize}
+\usepackage{ulem}
+
+
+% some common command
+\newcommand{\dif}{\mathrm{d}}
+\newcommand{\avg}[1]{\left\langle #1 \right\rangle}
+\newcommand{\pdfrac}[2]{\frac{\partial #1}{\partial #2}}
+\newcommand{\op}{\odot}
+\newcommand{\Eabs}{E_{\mathrm{abs}}}
+\newcommand{\Erel}{E_{\mathrm{rel}}}
+\newcommand{\Ediv}{\mathrm{div}}%\div是除号
+\newcommand{\lrq}[1]{\left( #1 \right)}
+\newcommand{\avint}[1]{\frac{1}{\left|#1\right|}\int_{#1}}
+
+\newcommand{\upcite}[1]{\textsuperscript{\textsuperscript{\cite{#1}}}} 
+
+\makeatletter
+\newcommand\sixteen{\@setfontsize\sixteen{17pt}{6}}
+\renewcommand{\maketitle}{\bgroup\setlength{\parindent}{0pt}
+\begin{flushleft}
+\sixteen\bfseries \@title
+\medskip
+\end{flushleft}
+\textit{\@author}
+\egroup}
+\makeatother
+
+\CTEXsetup[format={\Large\bfseries}]{section}
+
+\title{MARS2D \&几何流 程序设计文档}
+
+
+\begin{document}
+\maketitle
+\noindent 下文中 \texttt{Vector} 表示 \texttt{std::vector}，
+\texttt{Point} 表示 \texttt{Vec<Real, Dim>}。根据测试结果，我们的两种
+容器备选方案是\texttt{Vector}和IMV，所以不再需要\texttt{Container}模板，
+统一用\texttt{Vector}来存储点列。\textcolor{red}{\sout{并且由于修改后的算法中离散流映射和预
+处理算子都是调用的对点列整体的\texttt{timeStep}，所以删掉了单点版本的
+\texttt{timeStep}}}。\textcolor{red}{此外，为了实现对每个点分别映射和对点列整体映射两个
+版本的界面追踪，在\texttt{MARS2D}的相关函数中添加了一个模板参数
+\texttt{T}来统一表示速度场，并通过模板参数特例化来选择使用
+对每个点分别操作的版本或对点列整体操作的版本。}
+
+\section{class VectorFunction}
+\begin{itemize}
+    \item 函数$\mathbb{R}^{\texttt{Dim}}\times\mathbb{R}\rightarrow\mathbb{R}^{\texttt{Dim}}$的基类，可以作为速度场的基类使用。
+    \item \textbf{模板：}\texttt{template<int Dim>}：\\\texttt{Dim} 表示空间维数。
+    \item \textbf{成员函数：}
+            \begin{enumerate}[(1)]
+                \item \texttt{virtual const Point operator()(Point pt, Real t) const=0}\\
+                \textbf{Private 成员函数}\\
+                \textbf{输入：}\texttt{pt}表示\texttt{Dim}维空间中的一个点，\texttt{t}表示当前时间。\\
+                \textbf{输出：}\texttt{pt}点处对应的速度场。\\
+                \textbf{作用：}作为一个helper function使用。当速度场是给定的时，每个点对应的速度场函数都是相同的，所以没有必要去重载点列版本的速度场，只需要重载一个单点版本就可以满足。
+                \item \texttt{virtual const Vector<Point> operator()(const Vector<Point> \&pts, Real t=0) const;}\\
+                \textbf{输入：}\texttt{pts}表示一列\texttt{Point}，\texttt{t}为当前时间。\\
+                \textbf{输出：}点列中每个点对应的速度场。\\
+                \textbf{作用：}提供一个默认的调用单点\texttt{operator()()}实现的版本，便于给定速度场的使用。
+                \item \texttt{virtual const Vector<Real> getJacobi(Point pt, Real t) const;}\\
+                \textbf{Private 成员函数}\\
+                \textbf{输入：}\texttt{pt}表示\texttt{Dim}维空间中的一个点，\texttt{t}表示当前时间。\\
+                \textbf{输出：}一个包含\texttt{Dim*Dim}个元素的\texttt{Vector}。\texttt{Dim}为$2$时四个元素分别对应了$\partial f_x/\partial x, \\\partial f_x/\partial y, \partial f_y/\partial x, \partial f_y/\partial y$。\\
+                \textbf{作用：}同样作为一个helper function使用。当速度场是给定的时，每个点对应的雅克比矩阵中的表达式都是一样的，所以只需要重载一个单点版本就可以满足。在基类中提供一个什么都不做的默认版本。
+                \item \texttt{virtual const Tensor<Real, 2> getJacobi(const Vector<Point> \&pts, Real t=0) const;}\\
+                \textbf{输入：}\texttt{pts}表示一列\texttt{Point}，\texttt{t}为当前时间。\\
+                \textbf{输出：}用\texttt{Tensor<Real, 2>}表示的雅克比矩阵。\\
+                \textbf{作用：}求点列在对应速度场下的雅克比矩阵，用于
+                隐式时间积分方法的使用。提供一个默认的调用单点
+                \texttt{getJacobi()}实现的版本，便于给定速度场的使用。
+                \textcolor{red}{\sout{暂时先调用LAPACKE来进行隐式方法
+                    的求解。先得到一个正确的结果之后再寻找高效的求解分
+                    块循环多对角线性方程组的算法，并根据算法的需要调整
+                    本函数的输出。}在进行隐式方法的求解时，将会分
+                  别调用每个点\texttt{getJacobi()}的单点版本。因此这个
+                 函数的实现不会被用到。}
+            \end{enumerate}
+\end{itemize}
+
+\section{class DiscreteVecCoDimOne}
+\begin{itemize}
+    \item 描述嵌入在\texttt{Dim}维空间中余维数是$1$的超曲面上的离散点列处的速度场，且在每个离散点处的速度场是依赖于其他离散点的。
+    \item \textbf{模板：}\texttt{template<int Dim>}:\\
+    \texttt{Dim}表示空间维数。
+    \item \textbf{继承：}\texttt{class DiscreteVecCoDimOne: public VectorFunction<Dim>}。
+    \item \textbf{成员函数：}
+            \begin{enumerate}[(1)]
+                \item \texttt{virtual const Point operator()(Point pt, Real t) const\\
+                \{throw pt;\}}\\
+                \textbf{Private 成员函数}\\
+                \textbf{输入输出：}同基类一致。\\
+                \textbf{作用：}对于余维数是$1$的超曲面上的离散点列，求一个孤立的点处的速度场是错误的，因为每个点的速度场是依赖于其他离散点的，所以要抛出一个异常。
+                \item \texttt{virtual const Vector<Point> operator()(const Vector<Point> \&pts, Real t=0) const=0;}\\
+                \textbf{输入输出：}同基类一致。\\
+                \textbf{作用：}重新定义为纯虚函数。
+                \item \texttt{virtual const Vector<Real> getJacobi(Point pt, Real t) const\\
+                \{throw pt;\}}\\
+                \textbf{Private 成员函数}\\
+                \textbf{输入：}同基类一致。\\
+                \textbf{输出：}空的\texttt{Vector}。\\
+                \textbf{作用：}同样抛出一个异常。
+                \item \texttt{virtual const Tensor<Real, 2> getJacobi(const Vector<Point> \&pts, Real t=0) const;}\\
+                \textbf{输入输出：}同基类一致。\\
+                \textbf{作用：}提供一个什么都不做的默认版本，因为可能
+                有些情况下是不需要雅克比矩阵的。\textcolor{red}{在其派
+                  生类中，若需要使用隐式方法进行界面追踪问题的求解，则
+                  必须重载这一点列版本的\texttt{getJacobi}。暂时先调用LAPACKE来进行隐式方法
+                    的求解。先得到一个正确的结果之后再寻找高效的求解分
+                    块循环多对角线性方程组的算法。}
+            \end{enumerate}
+\end{itemize}
+
+\section{class DiscreteVecCurvature}
+\begin{itemize}
+    \item 曲率流的速度场类。
+    \item \textbf{模板：}\texttt{template<int Dim, int Order>}:\\
+    \texttt{Dim}表示空间维数，\texttt{Order}表示空间离散的阶数。
+    \item \textbf{继承：}\texttt{class DiscreteVecCurvature: public DiscreteVecCoDimOne<Dim>}。
+    \item \textbf{成员函数：}
+        \begin{enumerate}[(1)]
+            \item \texttt{const Vector<Point> operator()(const Vector<Point> \&pts, Real t=0) const;}\\
+            \textbf{输入输出：}同基类一致。\\
+            \textbf{作用：}根据曲率流对应阶数的空间离散方法，计算出示踪点列速度场的近似值。
+            \item \texttt{const Tensor<Real, 2> getJacobi(const Vector<Point> \&pts, Real t=0) const;}\\
+            \textbf{输入输出：}同基类一致。\\
+            \textbf{作用：}根据曲率流对应阶数的空间离散方法，计算出示踪点列速度场对应的雅克比矩阵。
+        \end{enumerate}
+\end{itemize}
+
+\section{class DiscreteVecCurvatureLaplacian}
+\begin{itemize}
+    \item 表面扩散流的速度场类。
+    \item \textbf{模板：}\texttt{template<int Dim, int Order>}:\\
+    \texttt{Dim}表示空间维数，\texttt{Order}表示空间离散的阶数。
+    \item \textbf{继承：}\texttt{class DiscreteVecCurvatureLaplacian: public DiscreteVecCoDimOne<Dim>}。
+    \item \textbf{成员函数：}
+        \begin{enumerate}[(1)]
+            \item \texttt{const Vector<Point> operator()(const Vector<Point> \&pts, Real t=0) const;}\\
+            \textbf{输入输出：}同基类一致。\\
+            \textbf{作用：}根据表面扩散流对应阶数的空间离散方法，计算出示踪点列速度场的近似值。
+            \item \texttt{const Tensor<Real, 2> getJacobi(const Vector<Point> \&pts, Real t=0) const;}\\
+            \textbf{输入输出：}同基类一致。\\
+            \textbf{作用：}根据表面扩散流对应阶数的空间离散方法，计算出示踪点列速度场对应的雅克比矩阵。
+        \end{enumerate}
+\end{itemize}
+
+
+\section{class TimeIntegrator}
+\begin{itemize}
+    \item 时间积分方法的基类。
+    \item \textbf{模板：}\texttt{template<int Dim>}：\\\texttt{Dim} 表示空间维数。
+    \item \textbf{成员函数：}
+      \begin{enumerate}[(1)]
+       \item \textcolor{red}{
+           \texttt{virtual const Point timeStep(VectorFunction<Dim>* v,
+            const Point \&pt, Real tn, Real k)=0：}\\
+          \textbf{输入：}\texttt{v} 为速度场\textcolor{red}{基类指
+                  针}，\texttt{pt} 表示当前点，\texttt{tn} 为当前时间，\texttt{k} 为时间步长。\\
+                \textbf{输出：}\texttt{pt} 在速度场 \texttt{v} 作用\texttt{k}时间后
+                得到的新点。\\
+                \textbf{作用：}函数使得 \texttt{pt} 在速度场 \texttt{v} 的作用下运动 \texttt{k} 时间。需要在继承类中进行实现。
+          }
+                \item \texttt{virtual void timeStep(}\textcolor{red}{\texttt{VectorFunction<Dim>* v}}\texttt{, Vector<Point> \&pts, Real tn, Real k)=0：}\\
+                \textbf{输入：}\texttt{v} 为速度场\textcolor{red}{基类指
+                  针}，\texttt{pts} 表示一列\texttt{Point}，\texttt{tn} 为当前时间，\texttt{k} 为时间步长。\\
+                \textbf{输出：}\texttt{void}，原址更改 \texttt{pts}。\\
+                \textbf{作用：}函数使得 \texttt{pts} 中的一列点在速度场 \texttt{v} 的作用下运动 \texttt{k} 时间。需要在继承类中进行实现。
+            \end{enumerate}
+\end{itemize}
+
+\section{ButcherTableau}
+\subsection{namespace RK}
+定义名字空间，不然\texttt{enum}中的\texttt{ERK}等会和\texttt{class ERK}等冲突。
+\subsubsection{enum Type\_Major}
+\begin{itemize}
+    \item \texttt{enum Type\_Major\{ERK=0, DIRK, ARK, nRK\_Major\}}。
+    \item \textbf{作用：}表示 RK 方法的一般类型。
+\end{itemize}
+
+\subsubsection{enum Type\_Minor}
+\begin{itemize}
+    \item \texttt{enum Type\_Minor\{ForwardEuler=0, ClassicRK4, SDIRK2, ESDIRK4, nRK\_Minor\}}。
+    \item \textbf{作用：}表示 RK 方法的细分类型。
+\end{itemize}
+
+\subsection{struct ButcherTableau}
+\begin{itemize}
+    \item \textbf{模板：}\texttt{template<RK::Type\_Major Type1, RK::Type\_Minor Type2>}：\\\texttt{Type1} 表示 RK 的一般类型，如 ERK, DIRK, ARK 等；\texttt{Type2} 表示 RK 的细分类型，如 \texttt{Type1}是\texttt{ERK} 时，\texttt{Type2} 可以是 \texttt{ForwardEuler}，\texttt{ClassicRK4}等；\texttt{Type2}是\texttt{DIRK}时，\texttt{Type2}可以是\texttt{SDIRK2}，\texttt{ESDIRK4}等。对于给定的 \texttt{RK::Type\_Major} 中的一般类型，其数据结构是固定的。
+    \item \textbf{特例化：}
+            \begin{enumerate}[(1)]
+                \item \texttt{template <>\\
+                struct ButcherTableau<ERK, ForwardEuler>\\
+                \{\\
+                \hspace*{4pt} static constexpr int order = 1;\\
+                \hspace*{4pt} static constexpr int nStages = 1;\\
+                \hspace*{4pt} static constexpr Real a[nStages][nStages] = ...;\\
+                \hspace*{4pt} static constexpr Real b[nStages] = ...;\\
+                \hspace*{4pt} static constexpr Real c[nStages] = ...;\\
+                \};}
+            \item \texttt{template <>\\
+                struct ButcherTableau<ERK, ClassicRK4>\\
+                \{...\};}
+            \item \texttt{template <>\\
+                struct ButcherTableau<DIRK, SDIRK2>\\
+                \{...\};}
+            \item \texttt{template <>\\
+                struct ButcherTableau<DIRK, ESDIRK4>\\
+                \{...\};}
+            \end{enumerate} 
+\end{itemize}
+
+\section{class ERK}
+\begin{itemize}
+    \item 继承自 \texttt{TimeIntegrator<Dim>}，用于实现所有 ERK 方法。
+    \item \textbf{模板：}\texttt{template<int Dim, RK::Type\_Minor Type>}：\\\texttt{Dim} 表示空间维数，\texttt{Type} 是 ERK 方法的某个子方法。这里可以这么做是因为所有 ERK 方法的数据结构都是一致的，所以在 \texttt{class ERK} 中，只需要知道所用的是哪种子方法就可以建立对应的 Butcher 表，进而实现对应的 ERK 方法。
+    \item \texttt{using ButcherTab = ButcherTableau<RK::ERK, Type>;\\
+    const int order = ButcherTab::order;}
+    \item \textbf{成员函数：}
+      \begin{enumerate}[(1)]
+      \item \textcolor{red}{
+          \texttt{const Point timeStep(VectorFunction<Dim>* v,
+            const Point \&pt, Real tn, Real k)：}\\
+          \textbf{输入输出：}同基类一致\\
+                \textbf{作用：}调用 \texttt{ButcherTab} 中的成员常量以
+                及\texttt{v}的单点版本速度场实现对应的ERK方法，进一步实现基类中的纯虚函数。
+          }
+                \item \texttt{void timeStep(}\textcolor{red}{\texttt{VectorFunction<Dim>* v}}\texttt{, Vector<Point> \&pts, Real tn, Real k)：}\\
+                \textbf{输入输出：}同基类一致。\\
+                \textbf{作用：}调用 \texttt{ButcherTab} 中的成员常量以及\texttt{v}的点列版本速度场实现对应的ERK方法，进一步实现基类中的纯虚函数。
+            \end{enumerate}
+\end{itemize}
+
+\section{class DIRK}
+\begin{itemize}
+    \item 继承自 \texttt{TimeIntegrator<Dim>}，用于实现所有 DIRK 方法。
+    \item \textbf{模板：}\texttt{template<int Dim, RK::Type\_Minor Type>}：\\\texttt{Dim} 表示空间维数，\texttt{Type} 是 DIRK 方法的某个子方法。这里可以这么做是因为所有 DIRK 方法的数据结构都是一致的，系数矩阵\texttt{a}都是下三角的，所以在 \texttt{class DIRK} 中，只需要知道所用的是哪种子方法就可以建立对应的 Butcher 表，进而实现对应的 DIRK 方法。
+    \item \texttt{using ButcherTab = ButcherTableau<RK::DIRK, Type>;\\
+    const int order = ButcherTab::order;}
+    \item \textbf{成员函数：}
+      \begin{enumerate}[(1)]
+        \item \textcolor{red}{
+          \texttt{const Point timeStep(VectorFunction<Dim>* v,
+            const Point \&pt, Real tn, Real k)：}\\
+          \textbf{输入输出：}同基类一致。\\
+                \textbf{作用：}调用 \texttt{ButcherTab} 中的成员常量以
+                及\texttt{v}的单点版本速度场和\texttt{getJaocbi}函数的
+                单点版本实现对应的DIRK方法，进一步实现基类中的纯虚函数。
+          }
+                \item \texttt{void timeStep(}\textcolor{red}{\texttt{VectorFunction<Dim>* v}}\texttt{, Vector<Point> \&pts, Real tn, Real k)：}\\
+                \textbf{输入输出：}同基类一致。\\
+                \textbf{作用：}调用 \texttt{ButcherTab} 中的成员常量以
+                及\texttt{v}的点列版本速度场和\texttt{getJaocbi}函数\textcolor{red}{的点列版本}实现对应的DIRK方法，进一步实现基类中的纯虚函数。过程中需要使用牛顿迭代求解非线性方程组。
+            \end{enumerate}
+\end{itemize}
+
+
+\section{class MARS}
+\begin{itemize}
+    \item 殷集界面追踪方法的基类。
+    \item \textbf{模板：}\texttt{template<int Dim, int Order>}：\\
+    其中 \texttt{Dim} 表示维数，\texttt{Order} 表示殷集边界表示的阶数。
+    \item \textbf{成员变量：}
+        \begin{enumerate}[(1)]
+            \item \texttt{TimeIntegrator<Dim> *TI：}\textbf{\texttt{Protected}  成员变量}，时间积分方法基类指针。
+        \end{enumerate}
+    \item \textbf{成员函数：}
+        \begin{enumerate}[(1)]
+            \item \texttt{MARS(TimeIntegrator<Dim> *\_TI):TI(\_TI)\{\}：}\\构造函数。
+            \item \texttt{virtual void timeStep(}\textcolor{red}{\texttt{VectorFunction<Dim>* v}}\texttt{, YinSet<Dim, Order> \&ys, Real tn, Real k) = 0：}\\
+            \textbf{输入：}\texttt{v} 为速度场\textcolor{red}{基类指
+                  针}，\texttt{ys} 为殷集，\texttt{tn} 和 \texttt{k} 的定义同时间积分方法中一致\\
+            \textbf{输出：}\texttt{void}，原址更改 \texttt{ys}。\\
+            \textbf{作用：}纯虚函数，作为二维和三维 MARS 方法 \texttt{timeStep} 的公共接口，在继承类中进行实现。函数将 \texttt{tn} 时刻的殷集映射到 \texttt{k} 时间后的殷集并赋值给 \texttt{ys}。
+            \item \texttt{void trackInterface(}\textcolor{red}{\texttt{VectorFunction<Dim>* v}}\texttt{, YinSet<Dim,Order> \&ys, Real startTime, Real k, Real endTime)：}\\
+            \textbf{输入：}\texttt{v} 为速度场\textcolor{red}{基类指
+                  针}，\texttt{ys} 为殷集，\texttt{startTime} 和 \texttt{endTime} 表示 MARS 方法作用的起止时间，\texttt{k} 为时间步长。\\
+            \textbf{输出：}\texttt{void}，原址更改 \texttt{ys}。\\
+            \textbf{作用：}在速度场 \texttt{v} 的作用下，将 \texttt{startTime} 时刻的殷集 \texttt{ys} 通过时间步长为 \texttt{k} 的 MARS 方法映射到 \texttt{endTime} 时刻的殷集并赋值给 \texttt{ys}。调用 \texttt{timeStep} 在此基类中进行实现。
+        \end{enumerate}
+\end{itemize}
+
+
+\section{class MARS2D}
+\begin{itemize}
+    \item 二维殷集的界面追踪方法。
+    \item \textbf{模板：}\texttt{template<int Order>}:\\
+    其中 \texttt{Order} 表示二维殷集边界所用样条曲线的阶数。
+    \item \textbf{继承：}\texttt{class MARS2D: public MARS<2, Order>}。\\
+    \texttt{using Base = MARS<2, Order>。}
+    \item \textbf{成员变量：}
+            \begin{enumerate}[(1)]
+                \item \texttt{Interval<1> chdLenRange：}殷集边界上相邻节点间弦长取值范围。
+            \end{enumerate}
+    \item \textbf{成员函数：}
+            \begin{enumerate}[(1)]
+                \item \texttt{MARS2D(TimeIntegrator<2> *\_TI, Real hL, Real rtiny=0.1):Base(\_TI)\{...\}：}\\
+                构造函数，使 \texttt{chdLenRange} 为\texttt{[rtiny*hL,hL]}，\texttt{rtiny} 默认值为 0.1。
+                \item \textcolor{red}{\texttt{template<class T>}}\\\texttt{void discreteFlowMap(}\textcolor{red}{\texttt{T* v}}\texttt{, Vector<Point> \&pts, Real tn, Real k)：}\\
+                  \textbf{Private 成员函数}\\
+                  \textcolor{red}{\textbf{模板：}\texttt{T}对
+                    \texttt{VectorFunction}和
+                    \texttt{DiscreteVecCoDimOne}提供不同的特例化，分别
+                    实现对每个点分别映射和对点列整体映射。}\\
+                \textbf{输入：}\texttt{v} 为速度场\textcolor{red}{指
+                  针}，\texttt{pts} 为示踪点列，\texttt{tn} 和 \texttt{k} 的定义同时间积分方法中的一致。\\
+                \textbf{输出：}\texttt{void}，原址更改 \texttt{pts}。\\
+                \textbf{作用：}函数调用 \texttt{Base::TI->timeStep} \textcolor{red}{\sout{的点列版本}}将 \texttt{pts} 映射到 \texttt{k} 时间后的示踪点列。
+                \item \textcolor{red}{\texttt{template<class T>}}\\\texttt{Vector<unsigned int> splitLongEdges(}\textcolor{red}{\texttt{T* v}}\texttt{, Vector<Point> \&pts,\\ const Curve<2, Order> \&crvtn, Real tn, Real k)：}\\
+                  \textbf{Private 成员函数}\\
+                  \textcolor{red}{\textbf{模板：}\texttt{T}对
+                    \texttt{VectorFunction}和
+                    \texttt{DiscreteVecCoDimOne}提供不同的特例化，分别
+                    对点列进行局部多次加点和整体加点。}\\
+                \textbf{输入：}\texttt{v} 为速度场\textcolor{red}{指
+                  针}，\texttt{pts} 为下一时刻的示踪点列，\texttt{crvtn} 为当前时刻对应的样条曲线，\texttt{tn} 和 \texttt{k} 的定义同时间积分方法中的一致。\\
+                \textbf{输出：}\texttt{pts} 中新加入点的序号。\\
+                \textbf{作用：}函数首先从\texttt{crvtn}中提取出当前时刻对应的示踪点列\texttt{oldpts}，之后在\texttt{pts}中寻找相邻点间距离过长的弦，并在\texttt{crvtn}中对应的曲线段上加点得到加点后\texttt{oldpts}，利用 \texttt{Base::TI->timeStep} \textcolor{red}{\sout{的点列版本}}将新加入的点映射到下一时刻得到新的\texttt{pts}。\textcolor{red}{\sout{这里为了保证统一性都使用先在\texttt{oldpts}中加点之后整体映射的方式，并且无法一次性加完所有的点，需要循环调用子函数直到不再加点为止。}}
+                \item \texttt{Vector<unsigned int> removeSmallEdges(Vector<Point> \&pts)：}\\
+                \textbf{Private 成员函数}\\
+                \textbf{输入：}\texttt{pts} 为下一时刻的示踪点列。\\
+                \textbf{输出：}删除的节点在原 pts 中的序号。\\
+                \textbf{作用：}函数将 \texttt{pts} 中相邻点间弦长过小的点在原址进行删除，满足不删除首尾两点、不连续删点的条件。
+                \item \texttt{void timeStep(}\textcolor{red}{\texttt{VectorFunction<2>* v}}\texttt{, YinSet<2,Order> \&ys, Real tn, Real k)：}\\
+                \textbf{输入：}同基类一致。\\
+                \textbf{输出：}同基类一致。\\
+                \textbf{作用：}实现基类中的纯虚函数，函数依次调用
+                discreteFlowMap, splitLongEdges， removeSmallEdges 和
+                fitCurve 实现二维 MARS 方法中的一个时间步，即预处理、
+                流映射、后处理的复合，将当前时刻的殷集映射到
+                \texttt{k} 时间后的殷集并赋值给 \texttt{ys}。\textcolor{red}{使用
+                \texttt{dynamic\_cast}来选择调用哪个版本的
+                discreteFlowMap 和 splitLongEdges 函数。}
+            \end{enumerate}
+          \end{itemize}
+
+
+
+
+%\begin{figure}[!htbp]
+%  \centering
+%  \includegraphics[angle=90,wikh = 0.6\textwikh]{2DMARS}
+%  \caption{2DMARS框架}
+%\end{figure}
+
+\end{document}
