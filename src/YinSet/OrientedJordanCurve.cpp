@@ -3,6 +3,7 @@
 #include <cmath>
 #include <cstddef>
 #include <initializer_list>
+#include <iterator>
 #include <memory>
 #include <sstream>
 #include <string>
@@ -22,7 +23,7 @@ void OrientedJordanCurve<Dim, Order>::define(const string& parameters) {
   std::vector<Vec<Real, Dim>> points(nPolys + 1);
   // std::vector<unsigned int> kinks;
   SimplicialComplex kinks;
-  for (int i = 0; i <= nPolys; i++) {
+  for (size_t i = 0; i <= nPolys; i++) {
     // Real buf[Dim];
     // Real* pbuf = buf;
     // iss.read((char*)buf, sizeof(Real) * Dim);
@@ -42,20 +43,20 @@ void OrientedJordanCurve<Dim, Order>::define(
     const std::vector<Vec<Real, Dim>>& points,
     const SimplicialComplex& kinks) {
   if (kinks.getSimplexes().size() == 0) {
-    Curve<Dim, Order> res = fitCurve<Order>(points);
+    Curve<Dim, Order> res = fitCurve<Order>(points, periodic);
     this->knots = res.getKnots();
     this->polys = res.getPolys();
   } else {
-    int pre = -1, pos = -1;
+    int pre = -1, pos = -1, last = -1;
     for (auto& simplex : kinks.getSimplexes()[0]) {
       if (pre == -1) {
         pre = *simplex.vertices.begin();
+        last = pre;
       } else {
         pos = *simplex.vertices.begin();
         vector<Vec<Real, Dim>> subPoints(std::next(points.begin(), pre),
                                          std::next(points.begin(), pos + 1));
-        // TODO need use new fitCurve for natural boundary condition.
-        Curve<Dim, Order> res = fitCurve<Order>(subPoints);
+        Curve<Dim, Order> res = fitCurve<Order>(subPoints, nature);
         Real startT;
         if (this->knots.empty()) {
           startT = 0;
@@ -71,7 +72,26 @@ void OrientedJordanCurve<Dim, Order>::define(
         pre = pos;
       }
     }
+    vector<Vec<Real, Dim>> subPoints(std::next(points.begin(), pre),
+                                     points.end());
+    if (last != 0)
+      subPoints.insert(subPoints.end(), std::next(points.begin(), 1),
+                       std::next(points.begin(), last + 1));
+    Curve<Dim, Order> res = fitCurve<Order>(subPoints, nature);
+    Real startT;
+    if (this->knots.empty()) {
+      startT = 0;
+    } else {
+      startT = this->knots.back();
+      this->knots.pop_back();
+    }
+    for (auto t : res.getKnots()) {
+      this->knots.push_back(startT + t);
+    }
+    this->polys.insert(this->polys.end(), res.getPolys().begin(),
+                       res.getPolys().end());
   }
+  return;
 }
 
 template <int Order>
@@ -88,7 +108,7 @@ void Circle<Order>::define(const std::string& parameters) {
   // iss.read((char*)&(hL), sizeof(Real));
   iss >> center[0] >> center[1] >> radius >> orientation >> hL;
   int sign = orientation ? 1 : -1;
-  int nPolys = radius * 2 * M_PI / hL + 1;
+  size_t nPolys = radius * 2 * M_PI / hL + 1;
   Real dtheta = 2 * M_PI / nPolys;
   std::vector<Vec<Real, 2>> points(nPolys + 1);
   for (size_t i = 0; i <= nPolys; ++i) {
@@ -114,8 +134,8 @@ void Rectangle<Order>::define(const std::string& parameters) {
   // iss.read((char*)&(hL), sizeof(Real));
   iss >> smallEnd[0] >> smallEnd[1] >> bigEnd[0] >> bigEnd[1] >> theta >>
       orientation >> hL;
-  int rowPolys = (bigEnd[0] - smallEnd[0]) / hL + 1,
-      colPolys = (bigEnd[1] - smallEnd[1]) / hL + 1;
+  size_t rowPolys = (bigEnd[0] - smallEnd[0]) / hL + 1,
+         colPolys = (bigEnd[1] - smallEnd[1]) / hL + 1;
   Real dx = (bigEnd[0] - smallEnd[0]) / rowPolys,
        dy = (bigEnd[1] - smallEnd[1]) / colPolys;
 
@@ -183,9 +203,9 @@ YinSet<2, Order> CurveFactory<2, Order>::createYinSet(
 
 template class OrientedJordanCurve<2, 2>;
 template class OrientedJordanCurve<2, 4>;
-template class Circle<2>;
-template class Circle<4>;
-template class Rectangle<2>;
-template class Rectangle<4>;
-template class CurveFactory<2, 2>;
-template class CurveFactory<2, 4>;
+template struct Circle<2>;
+template struct Circle<4>;
+template struct Rectangle<2>;
+template struct Rectangle<4>;
+template struct CurveFactory<2, 2>;
+template struct CurveFactory<2, 4>;
