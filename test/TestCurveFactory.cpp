@@ -94,7 +94,7 @@ int main(int argc, char* argv[]) {
   CurveFactory<2, 2> factory2;
 
   auto cur = *factory4.createCurve(inCircle1);
-  std::cout << verifySpline(cur.getPolys(), cur.getKnots(), true, tol) << std::endl;
+  //std::cout << verifySpline(cur.getPolys(), cur.getKnots(), true, tol) << std::endl;
   auto polys = cur.getPolys();
   auto knots = cur.getKnots();
   drawCurve(cur, 10, "drawCircle.m");
