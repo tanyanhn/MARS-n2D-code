@@ -126,13 +126,14 @@ int main(int argc, char* argv[]) {
       "result/resultOrientedJordanCurveFactory2_" + std::to_string(testcase) + ".dat",
       std::ios_base::binary);
   ys2.dump(of2);
-  std::cout << "Test Order=4:" << std::endl;
+  /*std::cout << "Test Order=4:" << std::endl;
   auto ys4 = factory4.createYinSet(factory_params);
   std::cout << ys4.getHasseString() << std::endl;
   std::ofstream of4(
       "result/resultOrientedJordanCurveFactory4_" + std::to_string(testcase) + ".dat",
       std::ios_base::binary);
   ys4.dump(of4);
+  */
   // outYS(inCircle, "../result/resultCircle1.dat");
   // outYS(inRectangle2, "../result/resultRectangle2.dat");
   /*  auto compareYS = [tol, &factory2, &factory_params](string param1, string
