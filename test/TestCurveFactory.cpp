@@ -128,6 +128,16 @@ int main(int argc, char* argv[]) {
                         std::to_string(testcase) + ".dat",
                     std::ios_base::binary);
   ys2.dump(of2);
+  std::vector<std::string> params(2);
+  params[0] = factory_params[0];
+  params[1] = inRectangle1;
+  auto ys = factory2.createYinSet(params);
+  auto intersect_ys = intersect(ys, ys2, tol);
+  std::cout << "Intersect test:" << std::endl;
+  std::cout << intersect_ys.getHasseString() << std::endl;
+  auto complement_ys = ys2.complement(tol);
+  std::cout << "Complement test:" << std::endl;
+  std::cout << complement_ys.getHasseString() << std::endl;
   /*std::cout << "Test Order=4:" << std::endl;
   auto ys4 = factory4.createYinSet(factory_params);
   std::cout << ys4.getHasseString() << std::endl;
