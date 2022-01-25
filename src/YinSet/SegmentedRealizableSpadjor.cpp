@@ -127,7 +127,7 @@ void SegmentedRealizableSpadjor<2>::applySegmentation(
       }
     } else {
       assert(incident.size() == 2);
-      if (incident[0] != incident[1])
+      if (incident[idxOfCurve[0]] != incident[idxOfCurve[1]])
         assert(
             !"Invalid input of Yin set : may contain proper intersections. ");
     }
