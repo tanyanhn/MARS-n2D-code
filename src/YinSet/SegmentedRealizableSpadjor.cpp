@@ -135,6 +135,7 @@ void SegmentedRealizableSpadjor<2>::applySegmentation(
     }
   }
   // split the curves
+  Curves.clear();
   for (std::size_t k = 0; k < aSpadjor.size(); ++k) {
     std::sort(brks[k].begin(), brks[k].end());
     aSpadjor[k].split(brks[k], Curves, tolForSegmentation);
