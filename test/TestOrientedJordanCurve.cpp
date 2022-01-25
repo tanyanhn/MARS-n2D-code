@@ -22,7 +22,7 @@ bool TestOrientedJordanCurve::verifySpline(
       return false;
   }
   //!!! unverify the start knot.
-  for (size_t i = 1; i != polys.size(); i++) {
+  for (size_t i = 0; i != polys.size(); i++) {
     if (i == 0) {
       if (!periodic)
         continue;

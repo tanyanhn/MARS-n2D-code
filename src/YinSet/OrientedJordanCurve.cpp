@@ -3,6 +3,7 @@
 #include <cmath>
 #include <cstddef>
 #include <initializer_list>
+#include <istream>
 #include <iterator>
 #include <memory>
 #include <sstream>
@@ -16,13 +17,25 @@ using std::string;
 
 template <int Dim, int Order>
 void OrientedJordanCurve<Dim, Order>::define(const string& parameters) {
+  SimplicialComplex kinks;
+  define(parameters, kinks);
+}
+
+template <int Dim, int Order>
+void OrientedJordanCurve<Dim, Order>::define(const string& parameters,
+                                             SimplicialComplex& kinks) {
+  assert(kinks.getNSim() == -1);
   std::stringstream iss(parameters);
+  define(iss, kinks);
+}
+
+template <int Dim, int Order>
+void OrientedJordanCurve<Dim, Order>::define(std::istream& iss,
+                                             SimplicialComplex& kinks) {
   unsigned int nPolys;
   // iss.read((char*)&nPolys, sizeof(unsigned int));
   iss >> nPolys;
   std::vector<Vec<Real, Dim>> points(nPolys + 1);
-  // std::vector<unsigned int> kinks;
-  SimplicialComplex kinks;
   for (size_t i = 0; i <= nPolys; i++) {
     // Real buf[Dim];
     // Real* pbuf = buf;
@@ -96,7 +109,20 @@ void OrientedJordanCurve<Dim, Order>::define(
 
 template <int Order>
 void Circle<Order>::define(const std::string& parameters) {
+  SimplicialComplex kinks;
+  define(parameters, kinks);
+}
+
+template <int Order>
+void Circle<Order>::define(const std::string& parameters,
+                           SimplicialComplex& kinks) {
+  assert(kinks.getNSim() == -1);
   std::stringstream iss(parameters);
+  define(iss, kinks);
+}
+
+template <int Order>
+void Circle<Order>::define(std::istream& iss, SimplicialComplex& kinks) {
   Vec<Real, 2> center;
   Real radius;
   bool orientation;
@@ -115,12 +141,25 @@ void Circle<Order>::define(const std::string& parameters) {
     points[i][0] = center[0] + radius * std::cos(sign * i * dtheta);
     points[i][1] = center[1] + radius * std::sin(sign * i * dtheta);
   }
-  OrientedJordanCurve<2, Order>::define(points, SimplicialComplex());
+  OrientedJordanCurve<2, Order>::define(points, kinks);
 }
 
 template <int Order>
 void Rectangle<Order>::define(const std::string& parameters) {
+  SimplicialComplex kinks;
+  define(parameters, kinks);
+}
+
+template <int Order>
+void Rectangle<Order>::define(const std::string& parameters,
+                              SimplicialComplex& kinks) {
+  assert(kinks.getNSim() == -1);
   std::stringstream iss(parameters);
+  define(iss, kinks);
+}
+
+template <int Order>
+void Rectangle<Order>::define(std::istream& iss, SimplicialComplex& kinks) {
   Vec<Real, 2> smallEnd, bigEnd;
   Real theta;
   bool orientation;
@@ -140,7 +179,6 @@ void Rectangle<Order>::define(const std::string& parameters) {
        dy = (bigEnd[1] - smallEnd[1]) / colPolys;
 
   std::vector<Vec<Real, 2>> points;
-  SimplicialComplex kinks;
   kinks.insert(Simplex{std::initializer_list<unsigned long>{points.size()}});
   for (size_t i = 0; i < rowPolys; ++i)
     points.push_back(Vec<Real, 2>{smallEnd[0] + i * dx, smallEnd[1]});
@@ -168,19 +206,28 @@ void Rectangle<Order>::define(const std::string& parameters) {
 template <int Order>
 std::unique_ptr<OrientedJordanCurve<2, Order>>
 CurveFactory<2, Order>::createCurve(const std::string& parameters) {
+  SimplicialComplex kinks;
+  return createCurve(parameters, kinks);
+}
+
+template <int Order>
+std::unique_ptr<OrientedJordanCurve<2, Order>>
+CurveFactory<2, Order>::createCurve(const std::string& parameters,
+                                    SimplicialComplex& kinks) {
+  assert(kinks.getNSim() == -1);
   std::stringstream iss(parameters);
   string type;
   iss >> type;
   std::unique_ptr<OrientedJordanCurve<2, Order>> ret(nullptr);
   if (type == "OrientedJordanCurve") {
     ret.reset(new OrientedJordanCurve<2, Order>());
-    ret->define(parameters.substr(20));
+    ret->define(iss, kinks);
   } else if (type == "Circle") {
     ret.reset(new Circle<Order>());
-    ret->define(parameters.substr(7));
+    ret->define(iss, kinks);
   } else if (type == "Rectangle") {
     ret.reset(new Rectangle<Order>());
-    ret->define(parameters.substr(10));
+    ret->define(iss, kinks);
   } else {
     assert(false && "undefined type.");
   }

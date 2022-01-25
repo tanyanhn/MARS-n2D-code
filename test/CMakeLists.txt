@@ -15,8 +15,8 @@ add_executable(UnitTest UnitTest.cpp
         #TestSegmentsIntersector.cpp
         #TestLocater.h
         #TestLocater.cpp
-        #TestYinSetsBooleanOps.cpp
-        #TestYinSetsBooleanOps.H
+        TestYinSetsBooleanOps.cpp
+        TestYinSetsBooleanOps.H
         TestOrientedJordanCurve.h 
         TestOrientedJordanCurve.cpp)
 target_link_libraries(UnitTest ${CPPUNIT_LIBRARIES} bays)

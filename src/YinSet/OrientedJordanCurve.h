@@ -3,10 +3,10 @@
 
 #include <memory>
 #include <sstream>
+#include <string>
 #include <vector>
 #include "Core/Curve.h"
 #include "SimplicialComplex.h"
-#include "YinSet/YinSet.h"
 
 template <int Dim, int Order>
 class YinSet;
@@ -18,6 +18,8 @@ class OrientedJordanCurve : public Curve<Dim, Order> {
   OrientedJordanCurve() = default;
 
   virtual void define(const std::string& parameters);
+  virtual void define(const std::string& parameters, SimplicialComplex& kinks);
+  virtual void define(std::istream& is, SimplicialComplex& kinks);
 
  protected:
   void define(const std::vector<Vec<Real, Dim>>& points,
@@ -30,6 +32,8 @@ struct Circle : public OrientedJordanCurve<2, Order> {
   Circle() = default;
 
   void define(const std::string& parameters);
+  void define(const std::string& parameters, SimplicialComplex& kinks);
+  void define(std::istream& is, SimplicialComplex& kinks);
 };
 
 template <int Order>
@@ -38,6 +42,8 @@ struct Rectangle : public OrientedJordanCurve<2, Order> {
   Rectangle() = default;
 
   void define(const std::string& parameters);
+  void define(const std::string& parameters, SimplicialComplex& kinks);
+  void define(std::istream& is, SimplicialComplex& kinks);
 };
 
 template <int Dim, int Order>
@@ -54,6 +60,14 @@ struct CurveFactory<2, Order> {
   CurveFactory() = default;
   std::unique_ptr<OrientedJordanCurve<2, Order>> createCurve(
       const std::string& parameters);
+
+  std::unique_ptr<OrientedJordanCurve<2, Order>> createCurve(
+      const std::string& parameters,
+      SimplicialComplex& kinks);
+
+  std::unique_ptr<OrientedJordanCurve<2, Order>> createCurve(
+      std::istream& is,
+      SimplicialComplex& kinks);
   YinSet<2, Order> createYinSet(const std::vector<std::string>& parameters);
 };
 

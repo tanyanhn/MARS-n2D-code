@@ -4,6 +4,7 @@
 #include <sstream>
 #include "Core/VecCompare.h"
 #include "YinSet/OrientedJordanCurve.h"
+#include "YinSet/YinSet.h"
 using std::string;
 using rVec = Vec<Real, 2>;
 
@@ -91,14 +92,14 @@ int main(int argc, char* argv[]) {
   string inRectangle3 = "Rectangle 4 4 10 10 0 1 2";
   Real tol = 1e-8;
   CurveFactory<2, 4> factory4;
-  // CurveFactory<2, 2> factory2;
+  CurveFactory<2, 2> factory2;
 
   auto cur = *factory4.createCurve(inCircle1);
   // std::cout << verifySpline(cur.getPolys(), cur.getKnots(), true, tol) <<
   // std::endl;
   auto polys = cur.getPolys();
   auto knots = cur.getKnots();
-  drawCurve(cur, 10, "drawCircle2.m");
+  drawCurve(cur, 10, "drawCircle.m");
 
   string input_name("../../test/data/testOrientedJordanCurve");
   int testcase;
@@ -120,12 +121,20 @@ int main(int argc, char* argv[]) {
     factory_params.push_back(s);
     getline(input, s);
   }
-  auto ys = factory4.createYinSet(factory_params);
-  std::cout << ys.getHasseString() << std::endl;
-  std::ofstream of(
-      "result/resultOrientedJordanCurve" + std::to_string(testcase) + ".dat",
-      std::ios_base::binary);
-  ys.dump(of);
+  std::cout << "Test Order=2:" << std::endl;
+  auto ys2 = factory2.createYinSet(factory_params);
+  std::cout << ys2.getHasseString() << std::endl;
+  std::ofstream of2("result/resultOrientedJordanCurveFactory2_" +
+                        std::to_string(testcase) + ".dat",
+                    std::ios_base::binary);
+  ys2.dump(of2);
+  /*std::cout << "Test Order=4:" << std::endl;
+  auto ys4 = factory4.createYinSet(factory_params);
+  std::cout << ys4.getHasseString() << std::endl;
+  std::ofstream of4(
+      "result/resultOrientedJordanCurveFactory4_" + std::to_string(testcase) +
+  ".dat", std::ios_base::binary); ys4.dump(of4);
+  */
   // outYS(inCircle, "../result/resultCircle1.dat");
   // outYS(inRectangle2, "../result/resultRectangle2.dat");
   /*  auto compareYS = [tol, &factory2, &factory_params](string param1, string
