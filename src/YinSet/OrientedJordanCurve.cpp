@@ -180,16 +180,17 @@ void Rectangle<Order>::define(std::istream& iss, SimplicialComplex& kinks) {
        dy = (bigEnd[1] - smallEnd[1]) / colPolys;
 
   std::vector<Vec<Real, 2>> points;
-  kinks.insert(Simplex{std::initializer_list<unsigned long>{points.size()}});
+  vector<unsigned int> kinks1;
+  kinks1.push_back(points.size());
   for (size_t i = 0; i < rowPolys; ++i)
     points.push_back(Vec<Real, 2>{smallEnd[0] + i * dx, smallEnd[1]});
-  kinks.insert(Simplex{std::initializer_list<unsigned long>{points.size()}});
+  kinks1.push_back(points.size());
   for (size_t i = 0; i < colPolys; ++i)
     points.push_back(Vec<Real, 2>{bigEnd[0], smallEnd[1] + i * dy});
-  kinks.insert(Simplex{std::initializer_list<unsigned long>{points.size()}});
+  kinks1.push_back(points.size());
   for (size_t i = 0; i < rowPolys; ++i)
     points.push_back(Vec<Real, 2>{bigEnd[0] - i * dx, bigEnd[1]});
-  kinks.insert(Simplex{std::initializer_list<unsigned long>{points.size()}});
+  kinks1.push_back(points.size());
   for (size_t i = 0; i < colPolys; ++i)
     points.push_back(Vec<Real, 2>{smallEnd[0], bigEnd[1] - i * dy});
   points.push_back(smallEnd);
@@ -200,8 +201,20 @@ void Rectangle<Order>::define(std::istream& iss, SimplicialComplex& kinks) {
     y = s * p[0] + c * p[1];
     p[0] = x, p[1] = y;
   }
-  if (!orientation)
+  if (!orientation) {
     std::reverse(points.begin(), points.end());
+    unsigned int size = points.size() - 1;
+    for (auto& simplex : kinks1) {
+      unsigned int j = size - simplex;
+      j = (j != size ? j : 0);
+      kinks.insert(Simplex{std::initializer_list<unsigned int>{j}});
+    }
+  } else {
+    for (auto& simplex : kinks1) {
+      unsigned int j = simplex;
+      kinks.insert(Simplex{std::initializer_list<unsigned int>{j}});
+    }
+  }
 
   OrientedJordanCurve<2, Order>::define(points, kinks);
 }
