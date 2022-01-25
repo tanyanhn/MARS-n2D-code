@@ -2,6 +2,7 @@
 #include <limits>
 #include "PointsLocater.h"
 #include "SegmentsIntersector.h"
+#include "YinSet/OrientedJordanCurve.h"
 
 template <class T>
 bool checkIsBounded(const T& iterator, Real tol) {
@@ -82,9 +83,10 @@ std::vector<Segment<2>> collapseToSeg(const Curve<2, Order>& polygon) {
 template std::vector<Segment<2>> collapseToSeg(const Curve<2, 2>&);
 template std::vector<Segment<2>> collapseToSeg(const Curve<2, 4>&);
 
-std::vector<Segment<2>> collapseToSeg(const std::vector<Curve<2, 2>>& bdries,
-                                      std::vector<int>& cIdx,
-                                      std::vector<int>& pIdx) {
+std::vector<Segment<2>> collapseToSeg(
+    const std::vector<OrientedJordanCurve<2, 2>>& bdries,
+    std::vector<int>& cIdx,
+    std::vector<int>& pIdx) {
   std::vector<Segment<2>> segs;
   for (std::size_t c = 0; c < bdries.size(); ++c) {
     const auto& gamma = bdries[c];
@@ -104,7 +106,7 @@ std::vector<Segment<2>> collapseToSeg(const std::vector<Curve<2, 2>>& bdries,
 
 template <>
 void SegmentedRealizableSpadjor<2>::applySegmentation(
-    const vector<Curve<Dim, 2>>& aSpadjor,
+    const vector<OrientedJordanCurve<Dim, 2>>& aSpadjor,
     Real tolForSegmentation) {
   std::vector<int> idxOfCurve;
   std::vector<int> idxOfPiece;
@@ -127,7 +129,7 @@ void SegmentedRealizableSpadjor<2>::applySegmentation(
       }
     } else {
       assert(incident.size() == 2);
-      if (incident[idxOfCurve[0]] != incident[idxOfCurve[1]])
+      if (idxOfCurve[incident[0]] != idxOfCurve[incident[1]])
         assert(
             !"Invalid input of Yin set : may contain proper intersections. ");
     }
@@ -135,7 +137,7 @@ void SegmentedRealizableSpadjor<2>::applySegmentation(
   // split the curves
   for (std::size_t k = 0; k < aSpadjor.size(); ++k) {
     std::sort(brks[k].begin(), brks[k].end());
-    aSpadjor[k].split(brks[k], segmentedCurves, tolForSegmentation);
+    aSpadjor[k].split(brks[k], Curves, tolForSegmentation);
   }
 }
 
@@ -148,7 +150,7 @@ SegmentedRealizableSpadjor<2> meet(const SegmentedRealizableSpadjor<2>& lhs,
   using std::pair;
   using std::vector;
   const SegmentedRealizableSpadjor<Order>* operands[] = {&lhs, &rhs};
-  const std::vector<Curve<Dim, Order>>* bdriesOfOperands[] = {
+  const std::vector<OrientedJordanCurve<Dim, Order>>* bdriesOfOperands[] = {
       &(lhs.segmentedCurves), &(rhs.segmentedCurves)};
   SegmentedRealizableSpadjor<Order> result;
   // group all the line segments
@@ -218,7 +220,7 @@ SegmentedRealizableSpadjor<2> meet(const SegmentedRealizableSpadjor<2>& lhs,
     locs[m] = locater(segs[1 - m], midBeta[m], operands[1 - m]->isBounded(tol));
     for (std::size_t i = 0; i < beta[m].size(); ++i)
       if (locs[m][i] == 1)
-        result.segmentedCurves.push_back(std::move(beta[m][i]));
+        result.Curves.push_back(std::move(beta[m][i]));
   }
 
   // deal with the overlapping edges
@@ -235,7 +237,7 @@ SegmentedRealizableSpadjor<2> meet(const SegmentedRealizableSpadjor<2>& lhs,
       int k = mid2idx[q];
       // is of same orientation ?
       if (norm(beta[0][i].startpoint() - beta[1][k].startpoint()) < tol)
-        result.segmentedCurves.push_back(std::move(beta[0][i]));
+        result.Curves.push_back(std::move(beta[0][i]));
     }
   }
   return result;
@@ -245,7 +247,7 @@ SegmentedRealizableSpadjor<2> meet(const SegmentedRealizableSpadjor<2>& lhs,
 
 template <>
 SegmentedRealizableSpadjor<2>::SegmentedRealizableSpadjor(
-    const vector<Curve<Dim, 2>>& aSpadjor,
+    const vector<OrientedJordanCurve<Dim, 2>>& aSpadjor,
     Real tolForSegmentation) {
   if (tolForSegmentation == 0.0) {
     segmentedCurves = aSpadjor;
@@ -256,7 +258,7 @@ SegmentedRealizableSpadjor<2>::SegmentedRealizableSpadjor(
 
 template <>
 SegmentedRealizableSpadjor<4>::SegmentedRealizableSpadjor(
-    const vector<Curve<Dim, 4>>& aSpadjor,
+    const vector<OrientedJordanCurve<Dim, 4>>& aSpadjor,
     Real tolForSegmentation) {
   // *******************************************************
   // The implementation of the Boolean algebra for Yin sets
@@ -270,11 +272,11 @@ template <>
 SegmentedRealizableSpadjor<2>::SegmentedRealizableSpadjor(
     std::istream& is,
     Real tolForSegmentation) {
-  vector<Curve<Dim, 2>> content;
+  vector<OrientedJordanCurve<Dim, 2>> content;
   int N;
   is.read((char*)&N, sizeof(int));
   for (int i = 0; i < N; ++i)
-    content.push_back(Curve<Dim, 2>::load(is));
+    content.push_back((OrientedJordanCurve<Dim, 2>(Curve<Dim, 2>::load(is))));
   if (tolForSegmentation == 0.0) {
     segmentedCurves = std::move(content);
   } else {
@@ -286,11 +288,11 @@ template <>
 SegmentedRealizableSpadjor<4>::SegmentedRealizableSpadjor(
     std::istream& is,
     Real tolForSegmentation) {
-  vector<Curve<Dim, 4>> content;
+  vector<OrientedJordanCurve<Dim, 4>> content;
   int N;
   is.read((char*)&N, sizeof(int));
   for (int i = 0; i < N; ++i)
-    content.push_back(Curve<Dim, 4>::load(is));
+    content.push_back((OrientedJordanCurve<Dim, 4>(Curve<Dim, 4>::load(is))));
   // *******************************************************
   // The implementation of the Boolean algebra for Yin sets
   // represented by cubic splines shoud go here.

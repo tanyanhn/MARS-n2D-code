@@ -8,6 +8,7 @@
 #include <memory>
 #include <sstream>
 #include <string>
+#include <utility>
 #include "Core/Curve.h"
 #include "SimplicialComplex.h"
 #include "YinSet.h"
@@ -238,14 +239,33 @@ template <int Order>
 YinSet<2, Order> CurveFactory<2, Order>::createYinSet(
     const std::vector<std::string>& parameters) {
   size_t nCurves = parameters.size() - 1;
-  std::vector<Curve<2, Order>> curves(nCurves);
+  std::vector<OrientedJordanCurve<2, Order>> curves(nCurves);
   Real tol = stod(parameters[0]);
+  SimplicialComplex kinks;
+  unordered_map<unsigned int, std::pair<unsigned int, unsigned int>>
+      mVertex2Point;
+  std::map<std::pair<unsigned int, unsigned int>, unsigned int> mPoint2Vertex;
+  unsigned int id = 0;
   for (size_t i = 0; i < nCurves; ++i) {
-    curves[i] = *createCurve(parameters[i + 1]);
+    SimplicialComplex tmp;
+    curves[i] = *createCurve(parameters[i + 1], tmp);
+    if (tmp.getNSim() == 0) {
+      for (auto& simplex : tmp.getSimplexes()[0]) {
+        unsigned int j = *simplex.vertices.begin();
+        auto index = std::make_pair(i, j);
+        kinks.insert(Simplex{std::initializer_list<unsigned int>{id}});
+        mVertex2Point[id] = index;
+        mPoint2Vertex[index] = id;
+        ++id;
+      }
+    }
   }
   SegmentedRealizableSpadjor<Order> segmentedSpadjor(curves, tol);
 
-  return YinSet<2, Order>(segmentedSpadjor, tol);
+  YinSet<2, Order> ret(segmentedSpadjor, tol);
+  ret.setSimplexes(kinks, mVertex2Point, mPoint2Vertex);
+
+  return ret;
 }
 
 template class OrientedJordanCurve<2, 2>;

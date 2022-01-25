@@ -7,14 +7,14 @@ target_link_libraries(TestCurveFactory bays)
 #add_executable(TestIT TestIT.cpp)
 #target_link_libraries(TestIT bays)
 
-add_executable(TestFL TestFL.cpp)
-target_link_libraries(TestFL bays)
+# add_executable(TestFL TestFL.cpp)
+# target_link_libraries(TestFL bays)
 
 add_executable(UnitTest UnitTest.cpp
-        #TestSegmentsIntersector.H
-        #TestSegmentsIntersector.cpp
-        #TestLocater.h
-        #TestLocater.cpp
+        TestSegmentsIntersector.H
+        TestSegmentsIntersector.cpp
+        TestLocater.h
+        TestLocater.cpp
         TestYinSetsBooleanOps.cpp
         TestYinSetsBooleanOps.H
         TestOrientedJordanCurve.h 
