@@ -138,9 +138,9 @@ void Circle<Order>::define(std::istream& iss, SimplicialComplex& kinks) {
   size_t nPolys = radius * 2 * M_PI / hL + 1;
   Real dtheta = 2 * M_PI / nPolys;
   std::vector<Vec<Real, 2>> points(nPolys + 1);
-  for (size_t i = 0; i <= nPolys; ++i) {
-    points[i][0] = center[0] + radius * std::cos(sign * i * dtheta);
-    points[i][1] = center[1] + radius * std::sin(sign * i * dtheta);
+  for (size_t i = 0; (size_t)i <= nPolys; ++i) {
+    points[i][0] = center[0] + radius * std::cos(sign * (int)i * dtheta);
+    points[i][1] = center[1] + radius * std::sin(sign * (int)i * dtheta);
   }
   OrientedJordanCurve<2, Order>::define(points, kinks);
 }
@@ -200,6 +200,8 @@ void Rectangle<Order>::define(std::istream& iss, SimplicialComplex& kinks) {
     y = s * p[0] + c * p[1];
     p[0] = x, p[1] = y;
   }
+  if (!orientation)
+    std::reverse(points.begin(), points.end());
 
   OrientedJordanCurve<2, Order>::define(points, kinks);
 }
