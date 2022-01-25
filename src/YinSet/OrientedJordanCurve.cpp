@@ -249,13 +249,15 @@ YinSet<2, Order> CurveFactory<2, Order>::createYinSet(
   for (size_t i = 0; i < nCurves; ++i) {
     SimplicialComplex tmp;
     curves[i] = *createCurve(parameters[i + 1], tmp);
-    for (auto& simplex : tmp.getSimplexes()[0]) {
-      unsigned int j = *simplex.vertices.begin();
-      auto index = std::make_pair(i, j);
-      kinks.insert(Simplex{std::initializer_list<unsigned int>{id}});
-      mVertex2Point[id] = index;
-      mPoint2Vertex[index] = id;
-      ++id;
+    if (tmp.getNSim() == 0) {
+      for (auto& simplex : tmp.getSimplexes()[0]) {
+        unsigned int j = *simplex.vertices.begin();
+        auto index = std::make_pair(i, j);
+        kinks.insert(Simplex{std::initializer_list<unsigned int>{id}});
+        mVertex2Point[id] = index;
+        mPoint2Vertex[index] = id;
+        ++id;
+      }
     }
   }
   SegmentedRealizableSpadjor<Order> segmentedSpadjor(curves, tol);
