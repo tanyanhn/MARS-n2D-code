@@ -16,6 +16,8 @@ class OrientedJordanCurve : public Curve<Dim, Order> {
  public:
   // constructors
   OrientedJordanCurve() = default;
+  OrientedJordanCurve(const Curve<Dim, Order>& curve)
+      : Curve<Dim, Order>(curve) {}
 
   virtual void define(const std::string& parameters);
   virtual void define(const std::string& parameters, SimplicialComplex& kinks);
