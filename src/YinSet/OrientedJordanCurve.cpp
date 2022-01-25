@@ -117,13 +117,13 @@ void Circle<Order>::define(const std::string& parameters) {
 template <int Order>
 void Circle<Order>::define(const std::string& parameters,
                            SimplicialComplex& kinks) {
-  assert(kinks.getNSim() == -1);
   std::stringstream iss(parameters);
   define(iss, kinks);
 }
 
 template <int Order>
 void Circle<Order>::define(std::istream& iss, SimplicialComplex& kinks) {
+  assert(kinks.getNSim() == -1 && "output kinks should be empty.");
   Vec<Real, 2> center;
   Real radius;
   bool orientation;
@@ -154,13 +154,13 @@ void Rectangle<Order>::define(const std::string& parameters) {
 template <int Order>
 void Rectangle<Order>::define(const std::string& parameters,
                               SimplicialComplex& kinks) {
-  assert(kinks.getNSim() == -1);
   std::stringstream iss(parameters);
   define(iss, kinks);
 }
 
 template <int Order>
 void Rectangle<Order>::define(std::istream& iss, SimplicialComplex& kinks) {
+  assert(kinks.getNSim() == -1 && "output kinks should be empty.");
   Vec<Real, 2> smallEnd, bigEnd;
   Real theta;
   bool orientation;

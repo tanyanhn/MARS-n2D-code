@@ -314,8 +314,8 @@ auto SegmentedRealizableSpadjor<Order>::translate(const rVec& delta) const
 template <int Order>
 auto SegmentedRealizableSpadjor<Order>::complement() const -> SRS {
   SRS result;
-  for (const auto& j : segmentedCurves)
-    result.segmentedCurves.push_back(j.reverse());
+  for (const auto& j : Curves)
+    result.Curves.push_back(j.reverse());
   return result;
 }
 

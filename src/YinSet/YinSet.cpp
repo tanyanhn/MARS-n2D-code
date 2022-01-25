@@ -31,6 +31,7 @@ YinSet<2, Order>::YinSet(const SRS& segmentedSpadjor, Real tol) {
     builder.addEdge(gamma);
   vector<Curve<2, Order>> res;
   builder.formClosedLoops(res);
+  segmentedCurves.clear();
   for (auto&& crv : res) {
     segmentedCurves.push_back(std::move(crv));
   }
