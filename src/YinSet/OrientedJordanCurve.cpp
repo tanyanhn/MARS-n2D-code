@@ -56,6 +56,8 @@ template <int Dim, int Order>
 void OrientedJordanCurve<Dim, Order>::define(
     const std::vector<Vec<Real, Dim>>& points,
     const SimplicialComplex& kinks) {
+  this->knots.clear();
+  this->polys.clear();
   if (kinks.getSimplexes().size() == 0) {
     Curve<Dim, Order> res = fitCurve<Order>(points, periodic);
     this->knots = res.getKnots();
@@ -257,8 +259,7 @@ YinSet<2, Order> CurveFactory<2, Order>::createYinSet(
   std::vector<OrientedJordanCurve<2, Order>> curves(nCurves);
   Real tol = stod(parameters[0]);
   SimplicialComplex kinks;
-  unordered_map<unsigned int, std::pair<unsigned int, unsigned int>>
-      mVertex2Point;
+  std::map<unsigned int, std::pair<unsigned int, unsigned int>> mVertex2Point;
   std::map<std::pair<unsigned int, unsigned int>, unsigned int> mPoint2Vertex;
   unsigned int id = 0;
   for (size_t i = 0; i < nCurves; ++i) {
@@ -278,7 +279,7 @@ YinSet<2, Order> CurveFactory<2, Order>::createYinSet(
   SegmentedRealizableSpadjor<Order> segmentedSpadjor(curves, tol);
 
   YinSet<2, Order> ret(segmentedSpadjor, tol);
-  ret.setSimplexes(kinks, mVertex2Point, mPoint2Vertex);
+  ret.setKinks(kinks, mVertex2Point, mPoint2Vertex);
 
   return ret;
 }

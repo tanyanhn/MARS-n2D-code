@@ -2,6 +2,7 @@
 #include <iomanip>
 #include <iostream>
 #include <sstream>
+#include <utility>
 #include "Core/VecCompare.h"
 #include "YinSet/OrientedJordanCurve.h"
 #include "YinSet/YinSet.h"
@@ -123,6 +124,8 @@ int main(int argc, char* argv[]) {
   }
   std::cout << "Test Order=2:" << std::endl;
   auto ys2 = factory2.createYinSet(factory_params);
+  auto vertex = ys2.insertKinks(std::make_pair(1, 2));
+  ys2.eraseKinks(vertex);
   std::cout << ys2.getHasseString() << std::endl;
   std::ofstream of2("result/resultOrientedJordanCurveFactory2_" +
                         std::to_string(testcase) + ".dat",

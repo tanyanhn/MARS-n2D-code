@@ -83,40 +83,29 @@ class YinSet<2, Order> : public SegmentedRealizableSpadjor<Order> {
   // YinSet Factory
   friend struct CurveFactory<2, Order>;
 
-  const SimplicialComplex& getSimplexes() const { return kinks; }
-  void setSimplexes(
+  // kinks related.
+  const SimplicialComplex& getKinks() const { return kinks; }
+  void setKinks(
       const SimplicialComplex& sims,
-      const unordered_map<unsigned int, std::pair<unsigned int, unsigned int>>&
-          mVP,
-      std::map<std::pair<unsigned int, unsigned int>, unsigned int>& mPV) {
-    kinks = sims;
-    mVertex2Point = mVP;
-    mPoint2Vertex = mPV;
-  }
-  void vertex2Point(unsigned int vertex,
-                    std::pair<unsigned int, unsigned int>& index) const {
-    index = mVertex2Point.at(vertex);
-  }
-  void vertex2Point(unsigned int vertex, rVec& point) const {
-    std::pair<unsigned int, unsigned int> index;
-    vertex2Point(vertex, index);
-    point = segmentedCurves[index.first](
-        segmentedCurves[index.first].getKnots()[index.second]);
-  }
-  void point2Vertex(const std::pair<unsigned int, unsigned int>& index,
-                    unsigned int& vertex) const {
-    vertex = mPoint2Vertex.at(index);
-  }
+      const std::map<unsigned int, std::pair<unsigned int, unsigned int>>& mVP,
+      const std::map<std::pair<unsigned int, unsigned int>, unsigned int>& mPV);
+  int vertex2Point(unsigned int vertex,
+                   std::pair<unsigned int, unsigned int>& index) const;
+  int vertex2Point(unsigned int vertex, rVec& point) const;
+  int point2Vertex(const std::pair<unsigned int, unsigned int>& index,
+                   unsigned int& vertex) const;
   // void point2Vertex(const rVec& point, unsigned int& vertex) const;
+  int insertKinks(const std::pair<unsigned int, unsigned int>& index);
+  int eraseKinks(unsigned int vertex);
 
  protected:
   ///
   void buildHasse(Real tol);
+  void reFitCurve(unsigned int i);
 
   int bettiNumbers[2];
   SimplicialComplex kinks;
-  unordered_map<unsigned int, std::pair<unsigned int, unsigned int>>
-      mVertex2Point;
+  std::map<unsigned int, std::pair<unsigned int, unsigned int>> mVertex2Point;
   std::map<std::pair<unsigned int, unsigned int>, unsigned int> mPoint2Vertex;
   using SRS::segmentedCurves;
 };
