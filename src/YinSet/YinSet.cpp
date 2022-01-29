@@ -270,12 +270,25 @@ void YinSet<2, Order>::dump(std::ostream& os) const {
 
 template <int Order>
 void YinSet<2, Order>::setKinks(
-    const SimplicialComplex& sims,
-    const std::map<unsigned int, std::pair<unsigned int, unsigned int>>& mVP,
-    const std::map<std::pair<unsigned int, unsigned int>, unsigned int>& mPV) {
-  kinks = sims;
-  mVertex2Point = mVP;
-  mPoint2Vertex = mPV;
+    std::vector<std::pair<unsigned int, unsigned int>> vertices) {
+  sort(vertices.begin(), vertices.end());
+  mPoint2Vertex.clear();
+  mVertex2Point.clear();
+  kinks = SimplicialComplex();
+  unsigned int vertex = 0;
+  auto start = vertices.begin(), end = start;
+  while (start != vertices.end()) {
+    end = std::lower_bound(
+        vertices.begin(), vertices.end(),
+        std::make_pair<unsigned int, unsigned int>(start->first + 1, 0));
+    for (auto Iter = start; Iter != end; ++Iter) {
+      mPoint2Vertex[*start] = vertex;
+      mVertex2Point[vertex] = *start;
+      kinks.insert(Simplex{std::initializer_list<unsigned int>{vertex}});
+    }
+    reFitCurve(start->first);
+    start = end;
+  }
 }
 
 template <int Order>
@@ -329,6 +342,7 @@ int YinSet<2, Order>::insertKinks(
     vertex = mVertex2Point.rbegin()->first + 1;
   mPoint2Vertex[index] = vertex;
   mVertex2Point[vertex] = index;
+  kinks.insert(Simplex{std::initializer_list<unsigned int>{vertex}});
   reFitCurve(i);
   return vertex;
 }
@@ -341,6 +355,7 @@ int YinSet<2, Order>::eraseKinks(unsigned int vertex) {
   auto i = index.first;
   mPoint2Vertex.erase(index);
   mVertex2Point.erase(vertex);
+  kinks.erase(Simplex{std::initializer_list<unsigned int>{vertex}});
   reFitCurve(i);
   return vertex;
 }

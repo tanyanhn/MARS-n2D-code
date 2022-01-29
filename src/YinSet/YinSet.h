@@ -3,6 +3,7 @@
 
 #include <map>
 #include <utility>
+#include <vector>
 #include "Core/VecCompare.h"
 #include "SegmentedRealizableSpadjor.h"
 #include "YinSet/OrientedJordanCurve.h"
@@ -85,10 +86,7 @@ class YinSet<2, Order> : public SegmentedRealizableSpadjor<Order> {
 
   // kinks related.
   const SimplicialComplex& getKinks() const { return kinks; }
-  void setKinks(
-      const SimplicialComplex& sims,
-      const std::map<unsigned int, std::pair<unsigned int, unsigned int>>& mVP,
-      const std::map<std::pair<unsigned int, unsigned int>, unsigned int>& mPV);
+  void setKinks(std::vector<std::pair<unsigned int, unsigned int>> vertices);
   int vertex2Point(unsigned int vertex,
                    std::pair<unsigned int, unsigned int>& index) const;
   int vertex2Point(unsigned int vertex, rVec& point) const;

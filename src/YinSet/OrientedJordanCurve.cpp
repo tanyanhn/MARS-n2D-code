@@ -65,6 +65,8 @@ void OrientedJordanCurve<Dim, Order>::define(
   } else {
     int pre = -1, pos = -1, last = -1;
     for (auto& simplex : kinks.getSimplexes()[0]) {
+      assert(*simplex.vertices.begin() < points.size() &&
+             "kinks value should be points index.");
       if (pre == -1) {
         pre = *simplex.vertices.begin();
         last = pre;
@@ -279,7 +281,9 @@ YinSet<2, Order> CurveFactory<2, Order>::createYinSet(
   SegmentedRealizableSpadjor<Order> segmentedSpadjor(curves, tol);
 
   YinSet<2, Order> ret(segmentedSpadjor, tol);
-  ret.setKinks(kinks, mVertex2Point, mPoint2Vertex);
+  ret.kinks = kinks;
+  ret.mVertex2Point = mVertex2Point;
+  ret.mPoint2Vertex = mPoint2Vertex;
 
   return ret;
 }

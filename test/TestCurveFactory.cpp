@@ -126,6 +126,9 @@ int main(int argc, char* argv[]) {
   auto ys2 = factory2.createYinSet(factory_params);
   auto vertex = ys2.insertKinks(std::make_pair(1, 2));
   ys2.eraseKinks(vertex);
+  ys2.setKinks(std::vector<std::pair<unsigned int, unsigned int>>());
+  ys2.setKinks(std::vector<std::pair<unsigned int, unsigned int>>(
+      {{0, 1}, {0, 2}, {2, 3}}));
   std::cout << ys2.getHasseString() << std::endl;
   std::ofstream of2("result/resultOrientedJordanCurveFactory2_" +
                         std::to_string(testcase) + ".dat",
