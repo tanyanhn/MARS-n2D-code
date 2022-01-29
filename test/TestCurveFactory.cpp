@@ -1,8 +1,10 @@
+#include <cassert>
 #include <fstream>
 #include <iomanip>
 #include <iostream>
 #include <sstream>
 #include <utility>
+#include "Core/Curve.h"
 #include "Core/VecCompare.h"
 #include "YinSet/OrientedJordanCurve.h"
 #include "YinSet/YinSet.h"
@@ -60,7 +62,7 @@ bool verifySpline(const std::vector<Polynomial<4, rVec>>& polys,
 };
 
 template <int Order>
-void drawCurve(Curve<2, Order>& cur, size_t num_piece, string of_name) {
+void drawCurve(const Curve<2, Order>& cur, size_t num_piece, string of_name) {
   auto polys = cur.getPolys();
   auto knots = cur.getKnots();
   std::ofstream Curve_build_out(of_name);
@@ -76,7 +78,14 @@ void drawCurve(Curve<2, Order>& cur, size_t num_piece, string of_name) {
     }
   }
   Curve_build_out << "];" << std::endl;
-  Curve_build_out << "hold on; plot(X(:, 1), X(:, 2), '-b');" << std::endl;
+  Curve_build_out << "hold on; plot(X(:, 1), X(:, 2)); figure(1)" << std::endl;
+}
+template <int Order>
+void drawCurve(const OrientedJordanCurve<2, Order>& cur,
+               size_t num_piece,
+               string of_name) {
+  Curve<2, Order> cu = cur;
+  drawCurve(cu, num_piece, of_name);
 }
 
 int main(int argc, char* argv[]) {
@@ -124,11 +133,6 @@ int main(int argc, char* argv[]) {
   }
   std::cout << "Test Order=2:" << std::endl;
   auto ys2 = factory2.createYinSet(factory_params);
-  auto vertex = ys2.insertKinks(std::make_pair(1, 2));
-  ys2.eraseKinks(vertex);
-  ys2.setKinks(std::vector<std::pair<unsigned int, unsigned int>>());
-  ys2.setKinks(std::vector<std::pair<unsigned int, unsigned int>>(
-      {{0, 1}, {0, 2}, {2, 3}}));
   std::cout << ys2.getHasseString() << std::endl;
   std::ofstream of2("result/resultOrientedJordanCurveFactory2_" +
                         std::to_string(testcase) + ".dat",
@@ -163,4 +167,50 @@ int main(int argc, char* argv[]) {
   compareYS(inJordanCurve2, inRectangle1);
   compareYS(inJordanCurve3, inRectangle2);
   */
+
+  std::cout << "Input kinks test case number:" << std::endl;
+  // std::cin >> testcase;
+  testcase = 2;
+  std::cout << "kinks TestCase: " << testcase << std::endl;
+  std::ifstream input2(input_name + std::to_string(testcase) + ".input");
+  std::vector<string> factory_params2(1);
+  factory_params2[0] = oss.str();
+  getline(input2, s);
+  while (!input2.fail()) {
+    factory_params2.push_back(s);
+    getline(input2, s);
+  }
+  std::pair<unsigned int, unsigned int> index, indexres;
+  std::cout << "Test Order=4:" << std::endl;
+  auto ys4 = factory4.createYinSet(factory_params2);
+  auto sims = ys4.getKinks();
+  assert(sims.getSimplexes()[0].size() == 8);
+  ys4.vertex2Point(5, index);
+  indexres = std::make_pair<unsigned int, unsigned int>(1, 3);
+  assert(index == indexres);
+  drawCurve(ys4.getBoundaryCycles()[0], 10, "kinks0.m");
+  ys4.setKinks(std::vector<std::pair<unsigned int, unsigned int>>());
+  sims = ys4.getKinks();
+  assert(sims.getSimplexes().size() == 0);
+  drawCurve(ys4.getBoundaryCycles()[0], 10, "kinks1.m");
+  auto vertex = ys4.insertKinks(std::make_pair(0, 8));
+  sims = ys4.getKinks();
+  assert(sims.getSimplexes()[0].size() == 1);
+  ys4.vertex2Point(0, index);
+  indexres = std::make_pair<unsigned int, unsigned int>(0, 8);
+  assert(index == indexres);
+  drawCurve(ys4.getBoundaryCycles()[0], 10, "kinks2.m");
+  ys4.eraseKinks(vertex);
+  sims = ys4.getKinks();
+  assert(sims.getSimplexes().size() == 0);
+  drawCurve(ys4.getBoundaryCycles()[0], 10, "kinks3.m");
+  ys4.setKinks(std::vector<std::pair<unsigned int, unsigned int>>(
+      {{0, 0}, {0, 8}, {1, 9}}));
+  sims = ys4.getKinks();
+  assert(sims.getSimplexes()[0].size() == 3);
+  ys4.vertex2Point(2, index);
+  indexres = std::make_pair<unsigned int, unsigned int>(1, 9);
+  assert(index == indexres);
+  drawCurve(ys4.getBoundaryCycles()[0], 10, "kinks40.m");
+  drawCurve(ys4.getBoundaryCycles()[1], 10, "kinks41.m");
 };

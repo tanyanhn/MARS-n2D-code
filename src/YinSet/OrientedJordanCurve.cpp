@@ -58,12 +58,12 @@ void OrientedJordanCurve<Dim, Order>::define(
     const SimplicialComplex& kinks) {
   this->knots.clear();
   this->polys.clear();
+  int pre = -1, pos = -1, last = -1;
   if (kinks.getSimplexes().size() == 0) {
     Curve<Dim, Order> res = fitCurve<Order>(points, periodic);
     this->knots = res.getKnots();
     this->polys = res.getPolys();
   } else {
-    int pre = -1, pos = -1, last = -1;
     for (auto& simplex : kinks.getSimplexes()[0]) {
       assert(*simplex.vertices.begin() < points.size() &&
              "kinks value should be points index.");
@@ -92,9 +92,12 @@ void OrientedJordanCurve<Dim, Order>::define(
     }
     vector<Vec<Real, Dim>> subPoints(std::next(points.begin(), pre),
                                      points.end());
-    if (last != 0)
+    size_t cut;
+    if (last != 0) {
+      cut = this->knots.size() - 1 + subPoints.size();
       subPoints.insert(subPoints.end(), std::next(points.begin(), 1),
                        std::next(points.begin(), last + 1));
+    }
     Curve<Dim, Order> res = fitCurve<Order>(subPoints, nature);
     Real startT;
     if (this->knots.empty()) {
@@ -108,6 +111,12 @@ void OrientedJordanCurve<Dim, Order>::define(
     }
     this->polys.insert(this->polys.end(), res.getPolys().begin(),
                        res.getPolys().end());
+    if (last != 0) {
+      vector<Curve<Dim, Order>> curs;
+      this->split(vector<Real>{this->knots[cut]}, curs, 1e-10);
+      this->knots = curs[0].getKnots();
+      this->polys = curs[0].getPolys();
+    }
   }
   return;
 }

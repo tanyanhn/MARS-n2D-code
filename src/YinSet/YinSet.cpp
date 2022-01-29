@@ -1,5 +1,6 @@
 #include "YinSet.h"
 #include <algorithm>
+#include <cstddef>
 #include <iomanip>
 #include <limits>
 #include <queue>
@@ -29,14 +30,18 @@ YinSet<2, Order>::YinSet(std::istream& is, Real tol) : SRS(is, 0.0) {
 
 template <int Order>
 YinSet<2, Order>::YinSet(const SRS& segmentedSpadjor, Real tol) {
-  PastingMap<Order> builder(tol);
-  for (const auto& gamma : segmentedSpadjor.Curves)
-    builder.addEdge(gamma);
-  vector<Curve<2, Order>> res;
-  builder.formClosedLoops(res);
-  segmentedCurves.clear();
-  for (auto&& crv : res) {
-    segmentedCurves.push_back(std::move(crv));
+  if (segmentedSpadjor.segmentedCurves.empty()) {
+    PastingMap<Order> builder(tol);
+    for (const auto& gamma : segmentedSpadjor.Curves)
+      builder.addEdge(gamma);
+    vector<Curve<2, Order>> res;
+    builder.formClosedLoops(res);
+    segmentedCurves.clear();
+    for (auto&& crv : res) {
+      segmentedCurves.push_back(std::move(crv));
+    }
+  } else {
+    this->segmentedCurves = segmentedSpadjor.segmentedCurves;
   }
   buildHasse(tol);
 }
@@ -277,17 +282,20 @@ void YinSet<2, Order>::setKinks(
   kinks = SimplicialComplex();
   unsigned int vertex = 0;
   auto start = vertices.begin(), end = start;
-  while (start != vertices.end()) {
-    end = std::lower_bound(
-        vertices.begin(), vertices.end(),
-        std::make_pair<unsigned int, unsigned int>(start->first + 1, 0));
+  auto numCurves = segmentedCurves.size();
+  for (size_t i = 0; i < numCurves; ++i) {
+    start = std::lower_bound(vertices.begin(), vertices.end(),
+                             std::make_pair<unsigned int, unsigned int>(i, 0));
+    end =
+        std::lower_bound(vertices.begin(), vertices.end(),
+                         std::make_pair<unsigned int, unsigned int>(i + 1, 0));
     for (auto Iter = start; Iter != end; ++Iter) {
-      mPoint2Vertex[*start] = vertex;
-      mVertex2Point[vertex] = *start;
+      mPoint2Vertex[*Iter] = vertex;
+      mVertex2Point[vertex] = *Iter;
       kinks.insert(Simplex{std::initializer_list<unsigned int>{vertex}});
+      ++vertex;
     }
-    reFitCurve(start->first);
-    start = end;
+    reFitCurve(i);
   }
 }
 
@@ -367,7 +375,8 @@ void YinSet<2, Order>::reFitCurve(unsigned int i) {
   SimplicialComplex sims;
   vector<Vec<Real, 2>> points;
   while (start != end) {
-    sims.insert(Simplex{std::initializer_list<unsigned int>{start->second}});
+    sims.insert(
+        Simplex{std::initializer_list<unsigned int>{start->first.second}});
     start++;
   }
   for (auto t : segmentedCurves[i].getKnots())
