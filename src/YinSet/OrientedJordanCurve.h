@@ -23,7 +23,7 @@ class OrientedJordanCurve : public Curve<Dim, Order> {
   virtual void define(const std::string& parameters, SimplicialComplex& kinks);
   virtual void define(std::istream& is, SimplicialComplex& kinks);
 
- protected:
+  //  protected:
   void define(const std::vector<Vec<Real, Dim>>& points,
               const SimplicialComplex& kinks);
 };

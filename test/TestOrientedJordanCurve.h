@@ -11,11 +11,15 @@ public:
   void setUp() {}
   void tearDown() {}
 
-  void doTest();
-  void test1() { doTest(); }
+  void doTest(int num);
+  void test1() { doTest(1); }
+  void test2() { doTest(2); }
+  void test3() { doTest(3); }
 
   CPPUNIT_TEST_SUITE(TestOrientedJordanCurve);
   CPPUNIT_TEST(test1);
+  CPPUNIT_TEST(test2);
+  CPPUNIT_TEST(test3);
   CPPUNIT_TEST_SUITE_END();
 public:
   using rVec = Vec<Real,2>;
