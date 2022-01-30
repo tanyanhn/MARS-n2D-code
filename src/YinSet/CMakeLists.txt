@@ -10,5 +10,6 @@ set(YinSet_Files
     YinSet/PastingMap.h
     YinSet/YinSet.cpp
     YinSet/YinSet.h
+    YinSet/SimplicialComplex.h
     PARENT_SCOPE
     )
