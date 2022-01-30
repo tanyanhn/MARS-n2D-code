@@ -213,4 +213,13 @@ int main(int argc, char* argv[]) {
   assert(index == indexres);
   drawCurve(ys4.getBoundaryCycles()[0], 10, "kinks40.m");
   drawCurve(ys4.getBoundaryCycles()[1], 10, "kinks41.m");
+  drawCurve(ys4.getBoundaryCycles()[2], 10, "kinks50.m");
+  ys4.setKinks(std::vector<std::pair<unsigned int, unsigned int>>(
+      {{2, 2}, {2, 3}, {2, 4}}));
+  drawCurve(ys4.getBoundaryCycles()[2], 10, "kinks51.m");
+  ys4.insertKinks(std::make_pair(2, 0));
+  drawCurve(ys4.getBoundaryCycles()[2], 10, "kinks52.m");
+  unsigned int v;
+  ys4.point2Vertex(std::make_pair<unsigned int, unsigned int>(2, 4), v);
+  assert(v == 2);
 };
