@@ -74,6 +74,7 @@ void OrientedJordanCurve<Dim, Order>::define(
         pos = *simplex.vertices.begin();
         vector<Vec<Real, Dim>> subPoints(std::next(points.begin(), pre),
                                          std::next(points.begin(), pos + 1));
+        assert(subPoints.size() > 1 && "fitCurve Point num < 2.");
         Curve<Dim, Order> res = fitCurve<Order>(subPoints, nature);
         Real startT;
         if (this->knots.empty()) {
@@ -98,6 +99,7 @@ void OrientedJordanCurve<Dim, Order>::define(
       subPoints.insert(subPoints.end(), std::next(points.begin(), 1),
                        std::next(points.begin(), last + 1));
     }
+    assert(subPoints.size() > 1 && "fitCurve Point num < 2.");
     Curve<Dim, Order> res = fitCurve<Order>(subPoints, nature);
     Real startT;
     if (this->knots.empty()) {
