@@ -10,5 +10,8 @@ set(YinSet_Files
     YinSet/PastingMap.h
     YinSet/YinSet.cpp
     YinSet/YinSet.h
+    YinSet/OrientedJordanCurve.h 
+    YinSet/OrientedJordanCurve.cpp 
+    YinSet/SimplicialComplex.h
     PARENT_SCOPE
     )
