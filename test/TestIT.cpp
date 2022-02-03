@@ -56,7 +56,7 @@ void testIT()
     Real radio = test.radio;
     Point center = test.center;
     Vector<Curve<2, 4>> crvs;
-    Curve<2, 4> crv;
+    OrientedJordanCurve<2, 4> crv;
 
     ERK<2, RK::ClassicRK4, VectorFunction> ERK;
     DIRK<2, RK::ESDIRK4, VectorFunction> ESDIRK4;
@@ -82,12 +82,12 @@ void testIT()
             }
             pts.push_back({center[0] + radio, center[1]});
             crv = fitCurve<4>(pts, periodic);
-            Vector<Curve<2, 4>> vcrv{crv};
+            Vector<OrientedJordanCurve<2, 4>> vcrv{crv};
             YinSet<2, 4> YS(SegmentedRealizableSpadjor<4>(vcrv), tol);
 
             //set the CubicMARS method
-            //MARS2DIMV<4, VectorFunction> CM(&ERK, 4 * M_PI * radio / n, test.rtiny);
-            MARS2DIMV<4, VectorFunction> CM(&ESDIRK4, 4 * M_PI * radio / n, test.rtiny);
+            MARS2DIMV<4, VectorFunction> CM(&ERK, 4 * M_PI * radio / n, test.rtiny);
+            //MARS2DIMV<4, VectorFunction> CM(&ESDIRK4, 4 * M_PI * radio / n, test.rtiny);
             //MARS2DIMV<4, VectorFunction> CM(&SDIRK2, 4 * M_PI * radio / n, test.rtiny);
 
             ostringstream tmps;
