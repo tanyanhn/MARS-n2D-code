@@ -351,7 +351,7 @@ void MARS2DIMV<Order, VectorFunction>::timeStep(const VectorFunction<2> &v, YS &
                 respts.insert(respts.end(), localpts.begin(), localpts.end());
 
                 back += localpts.size() - 1;
-                if (back != (unsigned int)n)
+                if (back != (unsigned int)(n-1))
                 {
                     reskinks.insert(Simplex{std::initializer_list<unsigned int>{back}});
                     newkinks.push_back(std::make_pair((unsigned int)id, back));
@@ -371,6 +371,7 @@ void MARS2DIMV<Order, VectorFunction>::timeStep(const VectorFunction<2> &v, YS &
                 reskinks.insert(Simplex{std::initializer_list<unsigned int>{back}});
                 newkinks.push_back(std::make_pair((unsigned int)id, back));
             }
+
             pre = vbrk[id][0];
             int i = 1;
             while (i < nks)
@@ -380,8 +381,9 @@ void MARS2DIMV<Order, VectorFunction>::timeStep(const VectorFunction<2> &v, YS &
                 pre = pos;
                 i++;
             }
-            pos = n;
+            pos = n - 1;
             localtimestep(pre, pos, back);
+
             crv.define(respts, reskinks);
         }
     }

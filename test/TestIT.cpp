@@ -67,9 +67,9 @@ void testIT()
     clock_t begin, end;
     for (int lp = 0; lp < loop; lp++)
     {
-        
-        n = test.n;//
-        dt = test.dt;//
+
+        n = test.n;   //
+        dt = test.dt; //
         opstride = test.opstride;
         for (int k = 0; k < stages; k++)
         {
@@ -108,7 +108,7 @@ void testIT()
             opstride *= 2;
             dt /= 2;
         }
-        
+
         //crvs[0] = output(crv, center, radio);
         /*
         n = test.n;
@@ -153,7 +153,7 @@ void testIT()
         */
     }
 
-    //get the approx solution    
+    //get the approx solution
     n *= 8; //ensure that the chdlength is smaller than computational solutions'
     Vector<Point> rpts;
     rpts.push_back({center[0] + radio, center[1]});
@@ -198,8 +198,8 @@ void testIT()
 
     for (int i = 0; i < stages - 1; i++)
     {
-        time1[2 * i + 1] = log(time1[2 * i + 2]/time1[2 * i]) / log(2);
-        time2[2 * i + 1] = log(time2[2 * i + 2]/time2[2 * i]) / log(2);
+        time1[2 * i + 1] = log(time1[2 * i + 2] / time1[2 * i]) / log(2);
+        time2[2 * i + 1] = log(time2[2 * i + 2] / time2[2 * i]) / log(2);
     }
     cout << "method1 time: ";
     for (auto &i : time1)
@@ -217,9 +217,90 @@ void testIT()
     */
 }
 
+void testKinks()
+{
+    bool plot = false;
+    Real tol = 1e-15;
+    int stages = 5;
+    cout << setiosflags(ios::scientific) << setprecision(2);
+
+    //set the initial curve
+    Real dt;
+    int opstride;
+    Vector<Curve<2, 4>> crvs;
+    OrientedJordanCurve<2, 4> crv;
+
+    ERK<2, RK::ClassicRK4, VectorFunction> ERK;
+    DIRK<2, RK::ESDIRK4, VectorFunction> ESDIRK4;
+    DIRK<2, RK::SDIRK2, VectorFunction> SDIRK2;
+
+    //get the initial curve
+    Vector<Point> pts;
+    SimplicialComplex kinks;
+    std::vector<std::pair<unsigned int, unsigned int>> kps;
+    for (int i = 0; i < 5; i++)
+    {
+        pts.push_back({0.2 * i, -1});
+    }
+    kinks.insert(Simplex{std::initializer_list<unsigned int>{5}});
+    kps.push_back(std::make_pair(0, 5));
+    for (int i = 0; i < 10; i++)
+    {
+        pts.push_back({1, -1 + 0.2 * i});
+    }
+    kinks.insert(Simplex{std::initializer_list<unsigned int>{15}});
+    kps.push_back(std::make_pair(0, 15));
+    for (int i = 0; i < 10; i++)
+    {
+        pts.push_back({1 - 0.2 * i, 1});
+    }
+    kinks.insert(Simplex{std::initializer_list<unsigned int>{25}});
+    kps.push_back(std::make_pair(0, 25));
+    for (int i = 0; i < 10; i++)
+    {
+        pts.push_back({-1, 1 - 0.2 * i});
+    }
+    kinks.insert(Simplex{std::initializer_list<unsigned int>{35}});
+    kps.push_back(std::make_pair(0, 35));
+    for (int i = 0; i <= 5; i++)
+    {
+        pts.push_back({-1 + 0.2 * i, -1});
+    }
+    crv.define(pts, kinks);
+    /*
+    auto knots = crv.getKnots();
+    auto polys = crv.getPolys();
+    int ln = polys.size();
+    for(int i=0; i<ln; i++)
+    {
+        cout << crv(knots[i]) << "  " << crv((knots[i]+knots[i+1])/2) << "  ";
+    }
+    cout << endl;
+    */
+
+    Vector<OrientedJordanCurve<2, 4>> vcrv{crv};
+    YinSet<2, 4> YS(SegmentedRealizableSpadjor<4>(vcrv), tol);
+    YS.setKinks(kps);
+
+    //set the CubicMARS method
+    MARS2DIMV<4, VectorFunction> CM(&ERK, 0.3, 0.1);
+    CM.trackInterface(*translation, YS, 0, 1, 2);
+    crv = (YS.getBoundaryCycles())[0];
+    auto knots = crv.getKnots();
+    auto polys = crv.getPolys();
+    int ln = polys.size();
+    
+    for(int i=0; i<ln; i++)
+    {
+        cout << crv(knots[i]) << "  " << crv((knots[i]+knots[i+1])/2) << "  ";
+    }
+    cout << endl;
+    
+}
+
 int main()
 {
-    testIT();
-
+    //testIT();
+    testKinks();
     return 0;
 }
