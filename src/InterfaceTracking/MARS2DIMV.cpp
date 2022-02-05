@@ -17,7 +17,7 @@ using Point = Vec<Real, 2>;
 template <class T>
 using Vector = vector<T>;
 
-static Real tol = 1e-15;
+static Real tol = 1e-12;
 
 //VectorFunction version
 
@@ -282,10 +282,10 @@ void MARS2DIMV<Order, VectorFunction>::timeStep(const VectorFunction<2> &v, YS &
         //get polys and knots
         const Vector<Polynomial<Order, Point>> &polys = crv.getPolys();
         const Vector<Real> &knots = crv.getKnots();
-        int n = knots.size();
+        unsigned int n = knots.size();
         //get present pts
         Vector<Point> pts(n);
-        for (int i = 0; i < n - 1; i++)
+        for (unsigned int i = 0; i < n - 1; i++)
         {
             pts[i] = polys[i][0];
         }
@@ -329,12 +329,14 @@ void MARS2DIMV<Order, VectorFunction>::timeStep(const VectorFunction<2> &v, YS &
             Vector<Point> respts;
             SimplicialComplex reskinks;
             int pre, pos;
+            unsigned int supn = n;
 
             auto localtimestep = [&](const int pre, const int pos, unsigned int &back)
             {
                 Vector<Point> localpts(std::next(pts.begin(), pre), std::next(pts.begin(), pos + 1));
                 const Vector<Polynomial<Order, Point>> localpolys(std::next(polys.begin(), pre), std::next(polys.begin(), pos));
                 const Vector<Real> localknots(std::next(knots.begin(), pre), std::next(knots.begin(), pos + 1));
+                unsigned int localn = localpts.size();
 
                 //get the points after discrete flow map
                 discreteFlowMap(v, localpts, tn, dt);
@@ -350,8 +352,10 @@ void MARS2DIMV<Order, VectorFunction>::timeStep(const VectorFunction<2> &v, YS &
 
                 respts.insert(respts.end(), localpts.begin(), localpts.end());
 
+                supn += localpts.size() - localn;
+
                 back += localpts.size() - 1;
-                if (back != (unsigned int)(n-1))
+                if (back != supn-1)
                 {
                     reskinks.insert(Simplex{std::initializer_list<unsigned int>{back}});
                     newkinks.push_back(std::make_pair((unsigned int)id, back));

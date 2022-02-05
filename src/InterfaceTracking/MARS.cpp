@@ -24,19 +24,6 @@ void MARS<Dim, Order, VelocityField>::trackInterface(const VelocityField<Dim> &v
 
         timeStep(v, ys, T, k);
 
-        //
-        auto crv = (ys.getBoundaryCycles())[0];
-        auto knots = crv.getKnots();
-        auto polys = crv.getPolys();
-        int ln = polys.size();
-
-        for (int i = 0; i < ln; i++)
-        {
-            cout << crv(knots[i]) << "  " << crv((knots[i] + knots[i + 1]) / 2) << "  ";
-        }
-        cout << endl;
-        //
-
         cout << endl;
         T += k;
 

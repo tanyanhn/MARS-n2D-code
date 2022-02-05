@@ -219,14 +219,10 @@ void testIT()
 
 void testKinks()
 {
-    bool plot = false;
     Real tol = 1e-15;
-    int stages = 5;
     cout << setiosflags(ios::scientific) << setprecision(2);
 
     //set the initial curve
-    Real dt;
-    int opstride;
     Vector<Curve<2, 4>> crvs;
     OrientedJordanCurve<2, 4> crv;
 
@@ -262,29 +258,21 @@ void testKinks()
     }
     kinks.insert(Simplex{std::initializer_list<unsigned int>{35}});
     kps.push_back(std::make_pair(0, 35));
-    for (int i = 0; i <= 5; i++)
+    for (int i = 0; i < 5; i++)
     {
         pts.push_back({-1 + 0.2 * i, -1});
     }
+    pts.push_back(pts[0]);
     crv.define(pts, kinks);
-    /*
-    auto knots = crv.getKnots();
-    auto polys = crv.getPolys();
-    int ln = polys.size();
-    for(int i=0; i<ln; i++)
-    {
-        cout << crv(knots[i]) << "  " << crv((knots[i]+knots[i+1])/2) << "  ";
-    }
-    cout << endl;
-    */
 
     Vector<OrientedJordanCurve<2, 4>> vcrv{crv};
     YinSet<2, 4> YS(SegmentedRealizableSpadjor<4>(vcrv), tol);
     YS.setKinks(kps);
 
     //set the CubicMARS method
-    MARS2DIMV<4, VectorFunction> CM(&ERK, 0.3, 0.1);
-    CM.trackInterface(*translation, YS, 0, 1, 2);
+    MARS2DIMV<4, VectorFunction> CM(&ERK, 0.3, 0.5);
+    CM.trackInterface(*squareshrink, YS, 0, 0.1, 0.6);
+    //CM.trackInterface(*translation, YS, 0, 0.1, 1);
     crv = (YS.getBoundaryCycles())[0];
     auto knots = crv.getKnots();
     auto polys = crv.getPolys();
@@ -292,8 +280,9 @@ void testKinks()
     
     for(int i=0; i<ln; i++)
     {
-        cout << crv(knots[i]) << "  " << crv((knots[i]+knots[i+1])/2) << "  ";
+        cout << crv(knots[i]) << "  ";
     }
+    cout << crv(knots[ln]);
     cout << endl;
     
 }
