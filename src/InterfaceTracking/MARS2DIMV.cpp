@@ -330,6 +330,7 @@ void MARS2DIMV<Order, VectorFunction>::timeStep(const VectorFunction<2> &v, YS &
             SimplicialComplex reskinks;
             int pre, pos;
             unsigned int supn = n;
+            int splitnum = 0, removenum = 0;
 
             auto localtimestep = [&](const int pre, const int pos, unsigned int &back)
             {
@@ -343,9 +344,11 @@ void MARS2DIMV<Order, VectorFunction>::timeStep(const VectorFunction<2> &v, YS &
 
                 //split long edges
                 Vector<unsigned int> splitids = splitLongEdges(v, localpts, localknots, localpolys, tn, dt);
+                splitnum += splitids.size();
 
                 //remove small edges
                 Vector<unsigned int> removeids = removeSmallEdges(localpts);
+                removenum += removeids.size();
 
                 if (!respts.empty())
                     respts.pop_back();
@@ -387,6 +390,23 @@ void MARS2DIMV<Order, VectorFunction>::timeStep(const VectorFunction<2> &v, YS &
             }
             pos = n - 1;
             localtimestep(pre, pos, back);
+            
+            int num = respts.size();
+            Vector<Real> dist(num - 1);
+
+            for (int i = 0; i < num - 1; i++)
+            {
+                dist[i] = norm(respts[i + 1] - respts[i], 2);
+            }
+
+            auto maxp = max_element(dist.begin(), dist.end());
+            auto minp = min_element(dist.begin(), dist.end());
+
+            cout << "Curve " << id
+                 << ":  Add " << splitnum << " Points,"
+                 << " remove " << removenum << " Points."
+                 << " Max chdlength: " << *maxp
+                 << " Min chdlength: " << *minp << endl;
 
             crv.define(respts, reskinks);
         }

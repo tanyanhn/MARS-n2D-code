@@ -217,7 +217,7 @@ void testIT()
     */
 }
 
-void testKinks()
+void testKinks_0nk()
 {
     Real tol = 1e-15;
     cout << setiosflags(ios::scientific) << setprecision(2);
@@ -271,6 +271,72 @@ void testKinks()
 
     //set the CubicMARS method
     MARS2DIMV<4, VectorFunction> CM(&ERK, 0.3, 0.5);
+    CM.trackInterface(*squareshrink, YS, 0, 0.1, 0.4);
+    //CM.trackInterface(*translation, YS, 0, 0.1, 1);
+    crv = (YS.getBoundaryCycles())[0];
+    auto knots = crv.getKnots();
+    auto polys = crv.getPolys();
+    int ln = polys.size();
+    
+    for(int i=0; i<ln; i++)
+    {
+        cout << crv(knots[i]) << "  ";
+    }
+    cout << crv(knots[ln]);
+    cout << endl;
+    
+}
+
+void testKinks_0k()
+{
+    Real tol = 1e-15;
+    cout << setiosflags(ios::scientific) << setprecision(2);
+
+    //set the initial curve
+    Vector<Curve<2, 4>> crvs;
+    OrientedJordanCurve<2, 4> crv;
+
+    ERK<2, RK::ClassicRK4, VectorFunction> ERK;
+    DIRK<2, RK::ESDIRK4, VectorFunction> ESDIRK4;
+    DIRK<2, RK::SDIRK2, VectorFunction> SDIRK2;
+
+    //get the initial curve
+    Vector<Point> pts;
+    SimplicialComplex kinks;
+    std::vector<std::pair<unsigned int, unsigned int>> kps;
+    for (int i = 0; i < 10; i++)
+    {
+        pts.push_back({-1 + 0.2 * i, -1});
+    }
+    kinks.insert(Simplex{std::initializer_list<unsigned int>{0}});
+    kps.push_back(std::make_pair(0, 0));
+    for (int i = 0; i < 10; i++)
+    {
+        pts.push_back({1, -1 + 0.2 * i});
+    }
+    kinks.insert(Simplex{std::initializer_list<unsigned int>{10}});
+    kps.push_back(std::make_pair(0, 10));
+    for (int i = 0; i < 10; i++)
+    {
+        pts.push_back({1 - 0.2 * i, 1});
+    }
+    kinks.insert(Simplex{std::initializer_list<unsigned int>{20}});
+    kps.push_back(std::make_pair(0, 20));
+    for (int i = 0; i < 10; i++)
+    {
+        pts.push_back({-1, 1 - 0.2 * i});
+    }
+    kinks.insert(Simplex{std::initializer_list<unsigned int>{30}});
+    kps.push_back(std::make_pair(0, 30));
+    pts.push_back(pts[0]);
+    crv.define(pts, kinks);
+
+    Vector<OrientedJordanCurve<2, 4>> vcrv{crv};
+    YinSet<2, 4> YS(SegmentedRealizableSpadjor<4>(vcrv), tol);
+    YS.setKinks(kps);
+
+    //set the CubicMARS method
+    MARS2DIMV<4, VectorFunction> CM(&ERK, 0.3, 0.5);
     CM.trackInterface(*squareshrink, YS, 0, 0.1, 0.6);
     //CM.trackInterface(*translation, YS, 0, 0.1, 1);
     crv = (YS.getBoundaryCycles())[0];
@@ -290,6 +356,7 @@ void testKinks()
 int main()
 {
     //testIT();
-    testKinks();
+    //testKinks_0nk();
+    testKinks_0k();
     return 0;
 }
