@@ -289,59 +289,68 @@ void testKinks_0nk()
 void testKinks_0k()
 {
     Real tol = 1e-15;
-    cout << setiosflags(ios::scientific) << setprecision(2);
-    TestIT test = getTest(6);
-    int n = 80;
-
-    Point center = test.center;
-    Real h = 2.0 * test.radio / n;
-    //set the initial curve
-    Vector<Curve<2, 4>> crvs;
-    OrientedJordanCurve<2, 4> crv;
-
+    int stage = 4;
+    std::cout << setiosflags(ios::scientific) << setprecision(2);
     ERK<2, RK::ClassicRK4, VectorFunction> ERK;
     DIRK<2, RK::ESDIRK4, VectorFunction> ESDIRK4;
     DIRK<2, RK::SDIRK2, VectorFunction> SDIRK2;
+    TestIT test = getTest(0);
+    int n = 80;
+    Point center = test.center;
+    Real h = 2.0 * test.radio / n;
+    Real dt = test.dt;
+    Vector<YinSet<2, 4>> vys;
 
-    //get the initial curve
-    Vector<Point> pts;
-    SimplicialComplex kinks;
-    std::vector<std::pair<unsigned int, unsigned int>> kps;
-    for (int i = 0; i < n; i++)
+    for (int k = 0; k < stage; k++)
     {
-        pts.push_back({center[0] - test.radio + h * i, center[1] - test.radio});
-    }
-    kinks.insert(Simplex{std::initializer_list<unsigned int>{0}});
-    kps.push_back(std::make_pair(0, 0));
-    for (int i = 0; i < n; i++)
-    {
-        pts.push_back({center[0] + test.radio, center[1] - test.radio + h * i});
-    }
-    kinks.insert(Simplex{std::initializer_list<unsigned int>{(unsigned int)n}});
-    kps.push_back(std::make_pair(0, n));
-    for (int i = 0; i < n; i++)
-    {
-        pts.push_back({center[0] + test.radio - h * i, center[1] + test.radio});
-    }
-    kinks.insert(Simplex{std::initializer_list<unsigned int>{2 * (unsigned int)n}});
-    kps.push_back(std::make_pair(0, 2 * n));
-    for (int i = 0; i < n; i++)
-    {
-        pts.push_back({center[0] - test.radio, center[1] + test.radio - h * i});
-    }
-    kinks.insert(Simplex{std::initializer_list<unsigned int>{3 * (unsigned int)n}});
-    kps.push_back(std::make_pair(0, 3 * n));
-    pts.push_back(pts[0]);
-    crv.define(pts, kinks);
+        //set the initial curve
+        Vector<Curve<2, 4>> crvs;
+        OrientedJordanCurve<2, 4> crv;
+        Vector<Point> pts;
+        SimplicialComplex kinks;
+        std::vector<std::pair<unsigned int, unsigned int>> kps;
+        for (int i = 0; i < n; i++)
+        {
+            pts.push_back({center[0] - test.radio + h * i, center[1] - test.radio});
+        }
+        kinks.insert(Simplex{std::initializer_list<unsigned int>{0}});
+        kps.push_back(std::make_pair(0, 0));
+        for (int i = 0; i < n; i++)
+        {
+            pts.push_back({center[0] + test.radio, center[1] - test.radio + h * i});
+        }
+        kinks.insert(Simplex{std::initializer_list<unsigned int>{(unsigned int)n}});
+        kps.push_back(std::make_pair(0, n));
+        for (int i = 0; i < n; i++)
+        {
+            pts.push_back({center[0] + test.radio - h * i, center[1] + test.radio});
+        }
+        kinks.insert(Simplex{std::initializer_list<unsigned int>{2 * (unsigned int)n}});
+        kps.push_back(std::make_pair(0, 2 * n));
+        for (int i = 0; i < n; i++)
+        {
+            pts.push_back({center[0] - test.radio, center[1] + test.radio - h * i});
+        }
+        kinks.insert(Simplex{std::initializer_list<unsigned int>{3 * (unsigned int)n}});
+        kps.push_back(std::make_pair(0, 3 * n));
+        pts.push_back(pts[0]);
+        crv.define(pts, kinks);
 
-    Vector<OrientedJordanCurve<2, 4>> vcrv{crv};
-    YinSet<2, 4> YS(SegmentedRealizableSpadjor<4>(vcrv), tol);
-    YS.setKinks(kps);
+        Vector<OrientedJordanCurve<2, 4>> vcrv{crv};
+        YinSet<2, 4> YS(SegmentedRealizableSpadjor<4>(vcrv), tol);
+        YS.setKinks(kps);
 
-    //set the CubicMARS method
-    MARS2DIMV<4, VectorFunction> CM(&ERK, 2 * h, 0.5);
-    CM.trackInterface(*test.velocity, YS, 0, test.dt, test.T);
-    //CM.trackInterface(*translation, YS, 0, 0.1, 1);
+        //set the CubicMARS method
+        MARS2DIMV<4, VectorFunction> CM(&ERK, 2 * h, 0.01);
+        //CM.trackInterface(*test.velocity, YS, 0, dt, test.T);
+        //CM.trackInterface(*translation, YS, 0, 0.1, 1);
+        vys.push_back(YS);
+
+        n *= 2;
+        h /= 2;
+        dt /= 2;
+    }
+    /*
     crv = (YS.getBoundaryCycles())[0];
     auto knots = crv.getKnots();
     auto polys = crv.getPolys();
@@ -349,10 +358,17 @@ void testKinks_0k()
 
     for (int i = 0; i < ln; i++)
     {
-        cout << crv(knots[i]) << "  ";
+        std::cout << crv(knots[i]) << "  ";
     }
-    cout << crv(knots[ln]);
-    cout << endl;
+    std::cout << crv(knots[ln]);
+    std::cout << endl;
+    */
+   Vector<Real> result = squarerror(vys, center, test.radio);
+   for(auto &i : result)
+   {
+       cout << i << "  ";
+   }
+   cout << endl;
 }
 
 void testKinks_circle()
