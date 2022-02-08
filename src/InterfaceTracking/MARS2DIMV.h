@@ -3,6 +3,7 @@
 
 #include "MARS.h"
 #include "Core/Curve.h"
+#include "YinSet/OrientedJordanCurve.h"
 #include "Core/Interval.h"
 #include <vector>
 #include <list>
@@ -17,7 +18,7 @@ class MARS2DIMV : public MARS<2, Order, VelocityField>
 
     using Point = Vec<Real, 2>;
 
-    using Crv = Curve<2, Order>;
+    using Crv = OrientedJordanCurve<2, Order>;
 
     using Base = MARS<2, Order, VelocityField>;
 
@@ -35,7 +36,7 @@ private:
 
     Vector<unsigned int> removeSmallEdges(Vector<Point> &pts);
 
-    Vector<unsigned int> splitLongEdges(const VelocityField<2> &v, Vector<Point> &pts, const Crv &crv, Real tn, Real dt);
+    Vector<unsigned int> splitLongEdges(const VelocityField<2> &v, Vector<Point> &pts, const Vector<Real> &knots, const Vector<Polynomial<Order, Point>> &polys, Real tn, Real dt);
 
 private:
     Interval<1> chdLenRange;
@@ -52,7 +53,7 @@ class MARS2DIMV<Order, VectorFunction>:public MARS<2, Order, VectorFunction>
 
     using Point = Vec<Real, 2>;
 
-    using Crv = Curve<2, Order>;
+    using Crv = OrientedJordanCurve<2, Order>;
 
     using Base = MARS<2, Order, VectorFunction>;
 
@@ -70,7 +71,7 @@ private:
 
     Vector<unsigned int> removeSmallEdges(Vector<Point> &pts);
 
-    Vector<unsigned int> splitLongEdges(const VectorFunction<2> &v, Vector<Point> &pts, const Crv &crv, Real tn, Real dt);
+    Vector<unsigned int> splitLongEdges(const VectorFunction<2> &v, Vector<Point> &pts, const Vector<Real> &knots, const Vector<Polynomial<Order, Point>> &polys, Real tn, Real dt);
 
 private:
     Interval<1> chdLenRange;
@@ -89,7 +90,7 @@ class MARS2DIMV<Order, VectorOnHypersurface>:public MARS<2, Order, VectorOnHyper
 
     using Point = Vec<Real, 2>;
 
-    using Crv = Curve<2, Order>;
+    using Crv = OrientedJordanCurve<2, Order>;
 
     using Base = MARS<2, Order, VectorOnHypersurface>;
 
@@ -107,7 +108,7 @@ private:
 
     Vector<unsigned int> removeSmallEdges(Vector<Point> &pts);
 
-    Vector<unsigned int> splitLongEdges(const VectorOnHypersurface<2> &v, Vector<Point> &pts, const Crv &crv, Real tn, Real dt);
+    Vector<unsigned int> splitLongEdges(const VectorOnHypersurface<2> &v, Vector<Point> &pts, const Vector<Real> &knots, Vector<Polynomial<Order, Point>> &polys, Real tn, Real dt);
 
 private:
     Interval<1> chdLenRange;
