@@ -294,7 +294,7 @@ void testKinks_0k()
     ERK<2, RK::ClassicRK4, VectorFunction> ERK;
     DIRK<2, RK::ESDIRK4, VectorFunction> ESDIRK4;
     DIRK<2, RK::SDIRK2, VectorFunction> SDIRK2;
-    TestIT test = getTest(0);
+    TestIT test = getTest(9);
     int n = 80;
     Point center = test.center;
     Real h = 2.0 * test.radio / n;
@@ -341,8 +341,8 @@ void testKinks_0k()
         YS.setKinks(kps);
 
         //set the CubicMARS method
-        MARS2DIMV<4, VectorFunction> CM(&ERK, 2 * h, 0.01);
-        //CM.trackInterface(*test.velocity, YS, 0, dt, test.T);
+        MARS2DIMV<4, VectorFunction> CM(&ESDIRK4, 2 * h, test.rtiny);
+        CM.trackInterface(*test.velocity, YS, 0, dt, test.T);
         //CM.trackInterface(*translation, YS, 0, 0.1, 1);
         vys.push_back(YS);
 
@@ -377,7 +377,7 @@ void testKinks_circle()
     Real tol = 1e-15;
     int stages = 5;
     cout << setiosflags(ios::scientific) << setprecision(2);
-    TestIT test = getTest(0);
+    TestIT test = getTest(8);
 
     //set the initial curve
     int n;
@@ -421,7 +421,7 @@ void testKinks_circle()
         YS.setKinks(kinks);
 
         //set the CubicMARS method
-        MARS2DIMV<4, VectorFunction> CM(&ERK, 4 * M_PI * radio / n, test.rtiny);
+        MARS2DIMV<4, VectorFunction> CM(&SDIRK2, 4 * M_PI * radio / n, test.rtiny);
 
         ostringstream tmps;
         tmps << k;

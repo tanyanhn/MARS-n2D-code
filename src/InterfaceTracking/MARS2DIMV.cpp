@@ -255,6 +255,7 @@ Vector<unsigned int> MARS2DIMV<Order, VectorFunction>::splitLongEdges(const Vect
 template <int Order>
 void MARS2DIMV<Order, VectorFunction>::timeStep(const VectorFunction<2> &v, YS &ys, Real tn, Real dt)
 {
+
     Vector<Crv> vcrv = ys.getBoundaryCycles();
     int N = vcrv.size();
     //get kinks index
