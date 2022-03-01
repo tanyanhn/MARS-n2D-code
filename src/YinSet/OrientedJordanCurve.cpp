@@ -1,14 +1,8 @@
 #include "OrientedJordanCurve.h"
 #include <cassert>
 #include <cmath>
-#include <cstddef>
-#include <initializer_list>
-#include <istream>
-#include <iterator>
-#include <memory>
 #include <sstream>
 #include <string>
-#include <utility>
 #include "Core/Curve.h"
 #include "SimplicialComplex.h"
 #include "YinSet.h"
