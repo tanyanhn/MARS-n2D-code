@@ -1,6 +1,8 @@
 #include "MARS2DIMV.h"
 #include "Core/Polynomial.h"
+#include "YinSet/SimplicialComplex.h"
 #include <fstream>
+#include <utility>
 #include <sstream>
 #include <list>
 #include <iomanip>
@@ -15,7 +17,7 @@ using Point = Vec<Real, 2>;
 template <class T>
 using Vector = vector<T>;
 
-static Real tol = 1e-15;
+static Real tol = 1e-12;
 
 //VectorFunction version
 
@@ -175,16 +177,14 @@ Vector<unsigned int> MARS2DIMV<Order, VectorFunction>::removeSmallEdges(Vector<P
 }
 
 template <int Order>
-Vector<unsigned int> MARS2DIMV<Order, VectorFunction>::splitLongEdges(const VectorFunction<2> &v, Vector<Point> &pts, const Crv &crv, Real tn, Real dt)
+Vector<unsigned int> MARS2DIMV<Order, VectorFunction>::splitLongEdges(const VectorFunction<2> &v, Vector<Point> &pts, const Vector<Real> &knots, const Vector<Polynomial<Order, Point>> &polys, Real tn, Real dt)
 {
-    assert(crv.isClosed(tol));
+    //assert(crv.isClosed(tol));
 
     int num = pts.size();
     Vector<Point> res(2 * num);
     Vector<unsigned int> ids;
-    Vector<Polynomial<Order, Point>> polys = crv.getPolys();
     Polynomial<Order, Point> lpoly;
-    Vector<Real> knots = crv.getKnots();
     function<void(Real, Real, Vector<Real> &)> split;
 
     //lambda: split between two points
@@ -255,53 +255,165 @@ Vector<unsigned int> MARS2DIMV<Order, VectorFunction>::splitLongEdges(const Vect
 template <int Order>
 void MARS2DIMV<Order, VectorFunction>::timeStep(const VectorFunction<2> &v, YS &ys, Real tn, Real dt)
 {
-    Vector<Crv> vcrv = ys.getBoundaryCycles();
-    int id = 1;
-    for (auto &crv : vcrv)
-    {
-        assert(crv.isClosed(tol));
 
-        //pts: now's points
-        Vector<Polynomial<Order, Point>> polys = crv.getPolys();
-        Vector<Point> pts(polys.size() + 1);
-        for (int i = 0; i < (int)polys.size(); i++)
+    Vector<Crv> vcrv = ys.getBoundaryCycles();
+    int N = vcrv.size();
+    //get kinks index
+    SimplicialComplex kinks = ys.getKinks();
+    Vector<Vector<unsigned int>> vbrk(N);
+    if (kinks.getSimplexes().size() != 0)
+    {
+        for (auto &simplex : kinks.getSimplexes()[0])
+        {
+            unsigned int index = *simplex.vertices.begin();
+            std::pair<unsigned int, unsigned int> id;
+            int info = ys.vertex2Point(index, id);
+            if (info == 0)
+                throw std::runtime_error("cannot find kink's id");
+            vbrk[id.first].push_back(id.second);
+        }
+    }
+
+    Vector<std::pair<unsigned int, unsigned int>> newkinks;
+
+    for (int id = 0; id < N; id++)
+    {
+        Crv &crv = vcrv[id];
+        assert(crv.isClosed(tol));
+        //get polys and knots
+        const Vector<Polynomial<Order, Point>> &polys = crv.getPolys();
+        const Vector<Real> &knots = crv.getKnots();
+        unsigned int n = knots.size();
+        //get present pts
+        Vector<Point> pts(n);
+        for (unsigned int i = 0; i < n - 1; i++)
         {
             pts[i] = polys[i][0];
         }
-        pts[polys.size()] = polys[0][0];
+        pts[n - 1] = polys[0][0];
 
-        //get the points after discrete flow map
-        discreteFlowMap(v, pts, tn, dt);
-
-        //split long edges
-        Vector<unsigned int> splitids = splitLongEdges(v, pts, crv, tn, dt);
-
-        //remove small edges
-        Vector<unsigned int> removeids = removeSmallEdges(pts);
-
-        //
-        int num = pts.size();
-        Vector<Real> dist(num - 1);
-
-        //use Container<Point> pts to generate the Vector<Point> pts
-        //fitCurve only support Vector<Point> version
-        for (int i = 0; i < num - 1; i++)
+        if (vbrk[id].empty())
         {
-            dist[i] = norm(pts[i + 1] - pts[i], 2);
+            //get the points after discrete flow map
+            discreteFlowMap(v, pts, tn, dt);
+
+            //split long edges
+            Vector<unsigned int> splitids = splitLongEdges(v, pts, knots, polys, tn, dt);
+
+            //remove small edges
+            Vector<unsigned int> removeids = removeSmallEdges(pts);
+
+            //
+            int num = pts.size();
+            Vector<Real> dist(num - 1);
+
+            //use Container<Point> pts to generate the Vector<Point> pts
+            //fitCurve only support Vector<Point> version
+            for (int i = 0; i < num - 1; i++)
+            {
+                dist[i] = norm(pts[i + 1] - pts[i], 2);
+            }
+            crv = fitCurve<Order>(pts, periodic);
+
+            auto maxp = max_element(dist.begin(), dist.end());
+            auto minp = min_element(dist.begin(), dist.end());
+
+            cout << "Curve " << id
+                 << ":  Add " << splitids.size() << " Points,"
+                 << " remove " << removeids.size() << " Points."
+                 << " Max chdlength: " << *maxp
+                 << " Min chdlength: " << *minp << endl;
         }
-        crv = fitCurve<Order>(pts, periodic);
+        else
+        {
+            int nks = vbrk[id].size();
+            Vector<Point> respts;
+            SimplicialComplex reskinks;
+            int pre, pos;
+            unsigned int supn = n;
+            int splitnum = 0, removenum = 0;
 
-        auto maxp = max_element(dist.begin(), dist.end());
-        auto minp = min_element(dist.begin(), dist.end());
+            auto localtimestep = [&](const int pre, const int pos, unsigned int &back)
+            {
+                Vector<Point> localpts(std::next(pts.begin(), pre), std::next(pts.begin(), pos + 1));
+                const Vector<Polynomial<Order, Point>> localpolys(std::next(polys.begin(), pre), std::next(polys.begin(), pos));
+                const Vector<Real> localknots(std::next(knots.begin(), pre), std::next(knots.begin(), pos + 1));
+                unsigned int localn = localpts.size();
 
-        cout << "Curve " << id
-             << ":  Add " << splitids.size() << " Points,"
-             << " remove " << removeids.size() << " Points."
-             << " Max chdlength: " << *maxp
-             << " Min chdlength: " << *minp << endl;
-        id++;
+                //get the points after discrete flow map
+                discreteFlowMap(v, localpts, tn, dt);
+
+                //split long edges
+                Vector<unsigned int> splitids = splitLongEdges(v, localpts, localknots, localpolys, tn, dt);
+                splitnum += splitids.size();
+
+                //remove small edges
+                Vector<unsigned int> removeids = removeSmallEdges(localpts);
+                removenum += removeids.size();
+
+                if (!respts.empty())
+                    respts.pop_back();
+
+                respts.insert(respts.end(), localpts.begin(), localpts.end());
+
+                supn += localpts.size() - localn;
+
+                back += localpts.size() - 1;
+                if (back != supn-1)
+                {
+                    reskinks.insert(Simplex{std::initializer_list<unsigned int>{back}});
+                    newkinks.push_back(std::make_pair((unsigned int)id, back));
+                }
+                return;
+            };
+
+            unsigned int back = 0;
+            pre = 0;
+            if (vbrk[id][0] != 0)
+            {
+                pos = vbrk[id][0];
+                localtimestep(pre, pos, back);
+            }
+            else
+            {
+                reskinks.insert(Simplex{std::initializer_list<unsigned int>{back}});
+                newkinks.push_back(std::make_pair((unsigned int)id, back));
+            }
+
+            pre = vbrk[id][0];
+            int i = 1;
+            while (i < nks)
+            {
+                pos = vbrk[id][i];
+                localtimestep(pre, pos, back);
+                pre = pos;
+                i++;
+            }
+            pos = n - 1;
+            localtimestep(pre, pos, back);
+            
+            int num = respts.size();
+            Vector<Real> dist(num - 1);
+
+            for (int i = 0; i < num - 1; i++)
+            {
+                dist[i] = norm(respts[i + 1] - respts[i], 2);
+            }
+
+            auto maxp = max_element(dist.begin(), dist.end());
+            auto minp = min_element(dist.begin(), dist.end());
+
+            cout << "Curve " << id
+                 << ":  Add " << splitnum << " Points,"
+                 << " remove " << removenum << " Points."
+                 << " Max chdlength: " << *maxp
+                 << " Min chdlength: " << *minp << endl;
+
+            crv.define(respts, reskinks);
+        }
     }
     ys = YS(SegmentedRealizableSpadjor<Order>(vcrv), tol);
+    ys.setKinks(newkinks);
     return;
 }
 
@@ -362,11 +474,9 @@ Vector<unsigned int> MARS2DIMV<Order, VectorOnHypersurface>::removeSmallEdges(Ve
 }
 
 template <int Order>
-bool splitIMV(Vector<bool> &ids, Vector<Point> &oldpts, const Curve<2, Order> &crv, const Vector<Real> &dist, Real highBound)
+bool splitIMV(Vector<bool> &ids, Vector<Point> &oldpts, const Vector<Real> &knots, Vector<Polynomial<Order, Point>> &polys, const Vector<Real> &dist, Real highBound)
 {
     int num = oldpts.size();
-    auto polys = crv.getPolys();
-    auto knots = crv.getKnots();
     Vector<Point> res(2 * num);
     Vector<bool> resid(2 * num);
     Polynomial<Order, Point> lpoly;
@@ -413,12 +523,12 @@ bool splitIMV(Vector<bool> &ids, Vector<Point> &oldpts, const Curve<2, Order> &c
 }
 
 template <int Order>
-Vector<unsigned int> MARS2DIMV<Order, VectorOnHypersurface>::splitLongEdges(const VectorOnHypersurface<2> &v, Vector<Point> &pts, const Crv &crv, Real tn, Real dt)
+Vector<unsigned int> MARS2DIMV<Order, VectorOnHypersurface>::splitLongEdges(const VectorOnHypersurface<2> &v, Vector<Point> &pts, const Vector<Real> &knots, Vector<Polynomial<Order, Point>> &polys, Real tn, Real dt)
 {
     int num = pts.size();
-    auto polys = crv.getPolys();
-    Vector<Point> oldpts(num);
+    assert(num == (int)knots.size() && num == (int)polys.size() + 1);
 
+    Vector<Point> oldpts(num);
     for (int i = 0; i < num - 1; i++)
     {
         oldpts[i] = polys[i][0];
@@ -434,7 +544,7 @@ Vector<unsigned int> MARS2DIMV<Order, VectorOnHypersurface>::splitLongEdges(cons
         {
             dist[i] = norm(pts[i + 1] - pts[i], 2);
         }
-        if (!splitIMV(ids, oldpts, crv, dist, (chdLenRange.hi())[0]))
+        if (!splitIMV(ids, oldpts, knots, polys, dist, (chdLenRange.hi())[0]))
             break;
         pts = oldpts;
         Base::TI->timeStep(v, pts, tn, dt);
@@ -465,6 +575,7 @@ void MARS2DIMV<Order, VectorOnHypersurface>::timeStep(const VectorOnHypersurface
 
         //pts: now's points
         Vector<Polynomial<Order, Point>> polys = crv.getPolys();
+        Vector<Real> knots = crv.getKnots();
         Vector<Point> pts(polys.size() + 1);
         for (int i = 0; i < (int)polys.size(); i++)
         {
@@ -476,7 +587,7 @@ void MARS2DIMV<Order, VectorOnHypersurface>::timeStep(const VectorOnHypersurface
         discreteFlowMap(v, pts, tn, dt);
 
         //split long edges
-        Vector<unsigned int> splitids = splitLongEdges(v, pts, crv, tn, dt);
+        Vector<unsigned int> splitids = splitLongEdges(v, pts, knots, polys, tn, dt);
 
         //remove small edges
         Vector<unsigned int> removeids = removeSmallEdges(pts);

@@ -32,6 +32,7 @@ VectorFunction<2> *translation = new Translation(1, 1);
 VectorFunction<2> *rotation = new Rotation(0, 0, M_PI);
 VectorFunction<2> *revrotation = new RevRotation(0, 0, M_PI, 2);
 VectorFunction<2> *circleshrink = new CircleShrink(1);
+VectorFunction<2> *squareshrink = new SquareShrink();
 
 TestIT getTest(int i)
 {

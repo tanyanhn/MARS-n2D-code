@@ -41,6 +41,32 @@ private:
     Real v;
 };
 
+class SquareShrink : public VectorFunction<2>
+{
+private:
+    using Point = Vec<Real, 2>;
+
+    template <class T>
+    using Vector = std::vector<T>;
+
+public:
+
+    const Point operator()(const Point &pt, Real t) const
+    {
+        Real l = std::max(abs(pt[0]), abs(pt[1]));
+        Point y;
+        y[0] = pt[0]/l;
+        y[1] = pt[1]/l;
+        return y;
+    }
+
+    const Vector<Real> getJacobi(const Point &pt, Real t) const
+    {
+        Vector<Real> ptjac(4);
+        return ptjac;
+    }
+};
+
 class Translation : public VectorFunction<2>
 {
 private:

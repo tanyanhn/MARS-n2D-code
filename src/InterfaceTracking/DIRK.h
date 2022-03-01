@@ -306,7 +306,7 @@ public:
             }
             if (ButcherTab::a[i][i] != 0)
             {
-              tmpt = solveNewton<Dim>(v, tn + ButcherTab::c[i] * dt, ButcherTab::a[i][i] * dt, jacobi, tmpt, pt, 1e-15);
+                tmpt = solveNewton<Dim>(v, tn + ButcherTab::c[i] * dt, ButcherTab::a[i][i] * dt, jacobi, tmpt, pt, 1e-15);
             }
             step[i] = v(tmpt, tn + ButcherTab::c[i] * dt);
             result = result + step[i] * ButcherTab::b[i] * dt;
@@ -317,11 +317,10 @@ public:
     void timeStep(const VectorFunction<Dim> &v, Vector<Point> &pts, Real tn, Real dt)
     {
         int num = pts.size();
-        for (int i = 0; i < num - 1; i++)
+        for (int i = 0; i < num; i++)
         {
             pts[i] = this->timeStep(v, pts[i], tn, dt);
         }
-        pts[num - 1] = pts[0];
     }
 };
 
@@ -341,7 +340,7 @@ std::vector<Vec<Real, Dim>> solveNewton(const VectorOnHypersurface<Dim> &v, Real
     {
         mat(i, i) += 1;
     }
-    
+
     //std::cout << mat << std::endl;
 
     std::vector<Point> vel;
@@ -398,7 +397,6 @@ std::vector<Vec<Real, Dim>> solveNewton(const VectorOnHypersurface<Dim> &v, Real
     return res;
 }
 
-
 template <int Dim, RK::Type_Minor Type>
 class DIRK<Dim, Type, VectorOnHypersurface> : public TimeIntegrator<Dim, VectorOnHypersurface>
 {
@@ -414,7 +412,7 @@ public:
 
     const Point timeStep(const VectorOnHypersurface<Dim> &v, const Point &pt, Real tn, Real dt)
     {
-      throw pt;
+        throw pt;
     }
 
     void timeStep(const VectorOnHypersurface<Dim> &v, Vector<Point> &pts, Real tn, Real dt)
@@ -439,7 +437,7 @@ public:
             }
             if (ButcherTab::a[i][i] != 0)
             {
-              tmpts = solveNewton<Dim>(v, tn + ButcherTab::c[i] * dt, ButcherTab::a[i][i] * dt, jacobi, tmpts, pts, 1e-10);
+                tmpts = solveNewton<Dim>(v, tn + ButcherTab::c[i] * dt, ButcherTab::a[i][i] * dt, jacobi, tmpts, pts, 1e-10);
             }
             step[i] = v(tmpts, tn + ButcherTab::c[i] * dt);
             for (int k = 0; k < num; k++)
@@ -450,6 +448,5 @@ public:
         pts = result;
     }
 };
-
 
 #endif
