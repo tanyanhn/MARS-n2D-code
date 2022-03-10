@@ -4,20 +4,20 @@
 #include <vector>
 #include "Polynomial.h"
 
-// fitCurve's boundary type
-enum BCType{
-              nBC_notAknot = 0,
-              nBC_periodic,
-              nBC_complete,
-              nBC_second,
-              nBC_nature,
-              nBC_type
-};
 
 template <int Dim, int Order>
 class Curve
 {
-public:
+ public:
+  // fitCurve's boundary type
+  enum BCType {
+    notAknot = 0,
+    periodic,
+    complete,
+    second,
+    nature,
+    nBC_type
+  };
   using rVec = Vec<Real,Dim>;
   using T_Polynomial = Polynomial<Order,rVec>;
   template <class T> using vector = std::vector<T>;
@@ -142,8 +142,10 @@ public:
   // friend Curve<2,Ord> fitCurve(const std::vector<Vec<Real,2>> &knots,
   //                              bool periodic);
   template <int Ord>
-  friend Curve<2,Ord> fitCurve(const std::vector<Vec<Real,2>> &knots, BCType
-                               type, const Vec<Real,2>& start, const Vec<Real,2>& end);
+  friend Curve<2, Ord> fitCurve(const std::vector<Vec<Real, 2>>& knots,
+                                typename Curve<2, Ord>::BCType type,
+                                const Vec<Real, 2>& start,
+                                const Vec<Real, 2>& end);
   // read/write operations
 public:
   static Curve<Dim,Order> load(std::istream &is);
@@ -174,8 +176,8 @@ template <int Ord>
 Curve<2,Ord> createLineSegment(const Vec<Real,2>& p0, const Vec<Real,2>& p1);
 
 template <int Order>
-Curve<2,Order> fitCurve(const std::vector<Vec<Real,2>> &knots, BCType
-                        type = nBC_notAknot,const Vec<Real,2>& start =
+Curve<2,Order> fitCurve(const std::vector<Vec<Real,2>> &knots, typename Curve<2, Order>::BCType
+                        type = Curve<2, Order>::notAknot,const Vec<Real,2>& start =
                         Vec<Real,2>(), const Vec<Real,2>& end = Vec<Real,2>());
 
 #endif // CURVE_H

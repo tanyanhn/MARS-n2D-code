@@ -214,7 +214,7 @@ bool YinSet<2, 2>::equal(const YinSet<2, 2> &rhs, Real tol) const
 template <int Order>
 std::string YinSet<2, Order>::getHasseString() const
 {
-  assert(!segmentedCurves.empty());
+  if(segmentedCurves.empty()) return "YinSet empty.";
   const int w = 8;
   std::ostringstream oss;
   oss << std::left << std::setw(w) << " ";

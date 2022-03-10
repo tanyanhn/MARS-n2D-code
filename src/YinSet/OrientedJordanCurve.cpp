@@ -54,7 +54,7 @@ void OrientedJordanCurve<Dim, Order>::define(
   this->polys.clear();
   int pre = -1, pos = -1, last = -1;
   if (kinks.getSimplexes().size() == 0) {
-    Curve<Dim, Order> res = fitCurve<Order>(points, nBC_periodic);
+    Curve<Dim, Order> res = fitCurve<Order>(points, Curve<2, Order>::periodic);
     this->knots = res.getKnots();
     this->polys = res.getPolys();
   } else {
@@ -69,7 +69,7 @@ void OrientedJordanCurve<Dim, Order>::define(
         vector<Vec<Real, Dim>> subPoints(std::next(points.begin(), pre),
                                          std::next(points.begin(), pos + 1));
         assert(subPoints.size() > 1 && "fitCurve Point num < 2.");
-        Curve<Dim, Order> res = fitCurve<Order>(subPoints, nBC_nature);
+        Curve<Dim, Order> res = fitCurve<Order>(subPoints, Curve<2, Order>::nature);
         Real startT;
         if (this->knots.empty()) {
           startT = 0;
@@ -94,7 +94,7 @@ void OrientedJordanCurve<Dim, Order>::define(
                        std::next(points.begin(), last + 1));
     }
     assert(subPoints.size() > 1 && "fitCurve Point num < 2.");
-    Curve<Dim, Order> res = fitCurve<Order>(subPoints, nBC_nature);
+    Curve<Dim, Order> res = fitCurve<Order>(subPoints, Curve<2, Order>::nature);
     Real startT;
     if (this->knots.empty()) {
       startT = 0;

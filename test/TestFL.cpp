@@ -61,20 +61,22 @@ void testFL()
       pts.push_back({center[0] + radio, center[1]});
       for (int i = 1; i < n; i++)
         {
-          pts.push_back({center[0] + radio * cos(2 * M_PI / n * i), center[1] + radio * sin(2 * M_PI / n * i)});
+          pts.push_back({center[0] + radio * cos(2 * M_PI / n * i), center[1] +
+    radio * sin(2 * M_PI / n * i)});
         }
       pts.push_back({center[0] + radio, center[1]});
       cout << "----------- n = " << n << ": ------------" << endl;
-      crv = fitCurve<4>(pts, periodic);
+      crv = fitCurve<4>(pts, Curve<2, 4>::periodic);
       Vector<Curve<2, 4>> vcrv{crv};
       YinSet<2, 4> YS(SegmentedRealizableSpadjor<4>(vcrv), tol);
 
-      MARS2DIMV<4,VectorOnHypersurface> CM(&ESDIRK4, 4 * M_PI * radio / n, test.rtiny);
-      
+      MARS2DIMV<4,VectorOnHypersurface> CM(&ESDIRK4, 4 * M_PI * radio / n,
+    test.rtiny);
+
       VectorForCurvatureFlow<2,4> SFV1;
       VectorForSurfaceDiffusionFlow<2,4> SFV2;
 
-      
+
       //Vector<Real> arclength = calArcLength<3>(crv);
 
       // Vector<Real> LocalFD2coes =  calLocalFDcoes<4>(arclength,3,2);
@@ -82,8 +84,8 @@ void testFL()
       // for (int l = 0 ; l < (int)LocalFD2coes.size() ; l++)
       //   cout << LocalFD2coes[l] << " ";
       // cout << endl;
-      
-      
+
+
       // Vector<Point> velocity = SFV2(pts,0);
       // Vector<Point> exactVelocity = CircleCurvatureLaplacian(radio,n);
       // Real maxnorm = MaxNormVelocity(velocity,exactVelocity);
@@ -92,9 +94,9 @@ void testFL()
       // OneNormVelocity(velocity,exactVelocity,2*M_PI*radio/n);
       // cout << "1-norm: " << onenorm << endl;
 
-      
+
       // list1.push_back(velocity);
-      
+
 
       // for (auto it = velocity.begin(); it != velocity.end() ; ++it)
       //   cout << *it << endl;
@@ -104,7 +106,7 @@ void testFL()
       //     cout << Jacobi(l,m) << " ";
       //   cout << endl;
       // }
-      
+
       begin = clock();
       CM.trackInterface(SFV2, YS, 0, dt, 0.001);
       end = clock();
@@ -115,21 +117,22 @@ void testFL()
       // for (int l = 0 ; l < (int)knots.size() ; l++)
       //   cout << crvn(knots[l])[0] << " " << crvn(knots[l])[1] <<
       // endl;
-      
+
       n*=2;
       dt /= 2;
     }
 
-    //get the approx solution    
+    //get the approx solution
     n *= 8; //ensure that the chdlength is smaller than computational solutions'
     Vector<Point> rpts;
     rpts.push_back({center[0] + radio, center[1]});
     for (int i = 1; i < n; i++)
     {
-        rpts.push_back({center[0] + radio * cos(2 * M_PI / n * i), center[1] + radio * sin(2 * M_PI / n * i)});
+        rpts.push_back({center[0] + radio * cos(2 * M_PI / n * i), center[1] +
+    radio * sin(2 * M_PI / n * i)});
     }
     rpts.push_back({center[0] + radio, center[1]});
-    auto rcrv = fitCurve<4>(rpts, periodic);
+    auto rcrv = fitCurve<4>(rpts, Curve<2, 4>::periodic);
 
     //output the convergency rate
     auto it1 = crvs.begin();
@@ -144,19 +147,21 @@ void testFL()
     cout << "CPU time:" << endl;
     for (int l = 0 ; l < (int)time1.size() ; l++)
       cout << time1[l] << endl;
-    
+
     // n = 64;
     // for (int i = 0; i < loop - 2 ; i++){
     //   cout << "----------- n = " << n << ": ------------" << endl;
     //   cout << "max-norm: " <<
     // MaxNormVelocity(Extrapolation(list1[i],list1[loop-1]),list1[i]) <<
     // endl;
-    //   cout << "1-norm: " << OneNormVelocity(Extrapolation(list1[i],list1[loop-1]),list1[i],2*M_PI*radio/n) <<
+    //   cout << "1-norm: " <<
+    OneNormVelocity(Extrapolation(list1[i],list1[loop-1]),list1[i],2*M_PI*radio/n)
+    <<
     // endl;
     //   n*=2;
     // }
     */
-    
+
     // n = 32;
     dt = 1e-4;
     n = 32;
@@ -175,7 +180,7 @@ void testFL()
         }
       pts.push_back({center[0] + radio, 0});
       //cout << "----------- n = " << n << ": ------------" << endl;
-      crv = fitCurve<4>(pts, periodic);
+      crv = fitCurve<4>(pts, Curve<2, 4>::periodic);
       Vector<Curve<2, 4>> vcrv{crv};
 
       YinSet<2, 4> YS(SegmentedRealizableSpadjor<4>(vcrv), tol);
@@ -247,7 +252,7 @@ void testFL()
         rpts.push_back({nradio * cos(2 * M_PI / n * i), nradio * sin(2 * M_PI / n * i)});
     }
     rpts.push_back({nradio, 0.0});
-    auto rcrv = fitCurve<4>(rpts, periodic);
+    auto rcrv = fitCurve<4>(rpts, Curve<2, 4>::periodic);
 
     //output the convergency rate
     auto it1 = crvs.begin();

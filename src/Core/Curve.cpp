@@ -341,9 +341,10 @@ Curve<Dim,Order-1> der(const Curve<Dim,Order> &c)
 }
 
 template <>
-Curve<2, 2> fitCurve(const std::vector<Vec<Real, 2>> &knots, BCType,
-                     const Vec<Real,2>& , const Vec<Real,2>&)
-{
+Curve<2, 2> fitCurve(const std::vector<Vec<Real, 2>>& knots,
+                     typename Curve<2, 2>::BCType,
+                     const Vec<Real, 2>&,
+                     const Vec<Real, 2>&) {
   const int Order = 2;
   auto numKnots = knots.size();
   assert(numKnots >= 2);
@@ -360,9 +361,10 @@ Curve<2, 2> fitCurve(const std::vector<Vec<Real, 2>> &knots, BCType,
 }
 
 template <>
-Curve<2, 4> fitCurve(const std::vector<Vec<Real, 2>> &vertices, BCType
-                     type, const Vec<Real,2>& start, const Vec<Real,2>& end)
-{
+Curve<2, 4> fitCurve(const std::vector<Vec<Real, 2>>& vertices,
+                     typename Curve<2, 4>::BCType type,
+                     const Vec<Real, 2>& start,
+                     const Vec<Real, 2>& end) {
   //using Point = Vec<Real, 2>;
   const int Order = 4;
   const int numPiece = vertices.size() - 1;
@@ -372,7 +374,7 @@ Curve<2, 4> fitCurve(const std::vector<Vec<Real, 2>> &vertices, BCType
   t[0] = 0.0;
   for (k = 1; k <= numPiece; ++k)
     t[k] = t[k - 1] + norm(vertices[k] - vertices[k - 1], 2);
-  if (type == nBC_periodic){
+  if (type == Curve<2, 4>::periodic) {
     // prepare the coefficient matrix
     std::vector<Real> a(numPiece), b(numPiece, 2.0), c(numPiece);
     a[0] = t[1] / (t[1] + t[numPiece] - t[numPiece - 1]);
@@ -432,14 +434,13 @@ Curve<2, 4> fitCurve(const std::vector<Vec<Real, 2>> &vertices, BCType
     res.polys[numPiece-1][0] =
     Vec<Real,2>{verts[numPiece-1][0],verts[numPiece-1][1]};
     return res;
-  }
-  else if (type == nBC_notAknot || type == nBC_complete || type == nBC_second ||
-    type == nBC_nature){
+  } else if (type == Curve<2, 4>::notAknot || type == Curve<2, 4>::complete ||
+             type == Curve<2, 4>::second || type == Curve<2, 4>::nature) {
     // prepare the coefficient matrix
     std::vector<Real> a(numPiece), b(numPiece+1, 2.0),
     c(numPiece);
     Real d = 0,e = 0,tmp;
-    if (type == nBC_notAknot){
+    if (type == Curve<2, 4>::notAknot) {
       tmp = (t[1] - t[0])*(t[1] - t[0])/((t[2] - t[1])*(t[2] - t[1]));
       b[0] = 1.0;
       c[0] = 1.0 - tmp;
@@ -449,14 +450,12 @@ Curve<2, 4> fitCurve(const std::vector<Vec<Real, 2>> &vertices, BCType
       b[numPiece] = 1.0;
       a[numPiece - 1] = 1.0 - tmp;
       e = -tmp;
-    }
-    else if (type == nBC_complete){
+    } else if (type == Curve<2, 4>::complete) {
       b[0] = 1.0;
       c[0] = 0.0;
       b[numPiece] = 1.0;
       a[numPiece-1] = 0.0;
-    }
-    else if (type == nBC_second || type == nBC_nature){
+    } else if (type == Curve<2, 4>::second || type == Curve<2, 4>::nature) {
       c[0] = 1.0;
       a[numPiece-1] = 1.0;
     }
@@ -467,7 +466,7 @@ Curve<2, 4> fitCurve(const std::vector<Vec<Real, 2>> &vertices, BCType
     // prepare the RHS
     std::vector<Real> rhsx(numPiece+1), rhsy(numPiece+1);
     const auto &verts = vertices;
-    if (type == nBC_notAknot){
+    if (type == Curve<2, 4>::notAknot) {
       tmp = (t[1] - t[0])*(t[1] - t[0])/((t[2] - t[1])*(t[2] - t[1]));
       rhsx[0] = -2*tmp*((verts[2][0]-verts[1][0])/(t[2]-t[1]))+2*((verts[1][0]-verts[0][0])/(t[1]-t[0]));
       rhsy[0] = -2*tmp*((verts[2][1]-verts[1][1])/(t[2]-t[1]))+2*((verts[1][1]-verts[0][1])/(t[1]-t[0]));
@@ -475,20 +474,17 @@ Curve<2, 4> fitCurve(const std::vector<Vec<Real, 2>> &vertices, BCType
             t[numPiece-2])*(t[numPiece-1] - t[numPiece-2]));
       rhsx[numPiece] = -2*tmp*((verts[numPiece-1][0]-verts[numPiece-2][0])/(t[numPiece-1]-t[numPiece-2]))+2*((verts[numPiece][0]-verts[numPiece-1][0])/(t[numPiece]-t[numPiece-1]));
       rhsy[numPiece] = -2*tmp*((verts[numPiece-1][1]-verts[numPiece-2][1])/(t[numPiece-1]-t[numPiece-2]))+2*((verts[numPiece][1]-verts[numPiece-1][1])/(t[numPiece]-t[numPiece-1]));
-    }
-    else if (type == nBC_complete){
+    } else if (type == Curve<2, 4>::complete) {
       rhsx[0] = start[0];
       rhsy[0] = start[1];
       rhsx[numPiece] = end[0];
       rhsy[numPiece] = end[1];
-    }
-    else if (type == nBC_nature){
+    } else if (type == Curve<2, 4>::nature) {
       rhsx[0] = 3*((verts[1][0]-verts[0][0])/(t[1]-t[0]));
       rhsy[0] = 3*((verts[1][1]-verts[0][1])/(t[1]-t[0]));
       rhsx[numPiece] = 3*((verts[numPiece][0]-verts[numPiece-1][0])/(t[numPiece]-t[numPiece-1]));
       rhsy[numPiece] = 3*((verts[numPiece][1]-verts[numPiece-1][1])/(t[numPiece]-t[numPiece-1]));
-    }
-    else if (type == nBC_second){
+    } else if (type == Curve<2, 4>::second) {
       rhsx[0] = 3*((verts[1][0]-verts[0][0])/(t[1]-t[0]))-0.5*start[0]*(t[1]-t[0]);
       rhsy[0] = 3*((verts[1][1]-verts[0][1])/(t[1]-t[0]))-0.5*start[1]*(t[1]-t[0]);
       rhsx[numPiece] = 3*((verts[numPiece][0]-verts[numPiece-1][0])/(t[numPiece]-t[numPiece-1]))-0.5*end[0]*(t[numPiece]-t[numPiece-1]);
@@ -507,11 +503,10 @@ Curve<2, 4> fitCurve(const std::vector<Vec<Real, 2>> &vertices, BCType
     // solve the linear system
     std::vector<Real> resx;
     std::vector<Real> resy;
-    if (type == nBC_notAknot){
+    if (type == Curve<2, 4>::notAknot) {
       resx = solveTrisp(a, b, c, d, e, rhsx);
       resy = solveTrisp(a, b, c, d, e, rhsy);
-    }
-    else{
+    } else {
       resx = solveTri(a, b, c, rhsx);
       resy = solveTri(a, b, c, rhsy);
     }
@@ -532,11 +527,9 @@ Curve<2, 4> fitCurve(const std::vector<Vec<Real, 2>> &vertices, BCType
         res.polys[k][0] = Vec<Real,2>{verts[k][0],verts[k][1]};
       }
     return res;
-  }
-  else
+  } else
     exit(-1);
 }
-
 
 //=================================================
 // explicit instantiation of the followings

@@ -267,7 +267,7 @@ void MARS2D<Order, VectorFunction>::timeStep(const VectorFunction<2> &v, YS &ys,
         {
             dist[i] = norm(pts[i + 1] - pts[i], 2);
         }
-        crv = fitCurve<Order>(pts, periodic);
+        crv = fitCurve<Order>(pts, Curve<2, Order>::periodic);
 
         auto maxp = max_element(dist.begin(), dist.end());
         auto minp = min_element(dist.begin(), dist.end());
@@ -452,7 +452,7 @@ void MARS2D<Order, VectorOnHypersurface>::timeStep(const VectorOnHypersurface<2>
         {
             dist[i] = norm(pts[i + 1] - pts[i], 2);
         }
-        crv = fitCurve<Order>(pts, periodic);
+        crv = fitCurve<Order>(pts, Curve<2, Order>::periodic);
 
         auto maxp = max_element(dist.begin(), dist.end());
         auto minp = min_element(dist.begin(), dist.end());

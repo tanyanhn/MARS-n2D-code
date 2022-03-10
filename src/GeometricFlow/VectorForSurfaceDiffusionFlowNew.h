@@ -42,7 +42,7 @@ const Vector<Point>
 VectorForSurfaceDiffusionFlowNew<2,Order>::operator()(const
                                                    Vector<Point>& pts, Real t) const{
   const int num = pts.size();
-  const Curve<2,4> crv = fitCurve<4>(pts,periodic);
+  const Curve<2, 4> crv = fitCurve<4>(pts, Curve<2, 4>::periodic);
   Vector<Point> der1 = calDer<Order>(pts,crv,1);
   Vector<Point> der2 = calDer<Order>(pts,crv,2);
   Vector<Point> der3 = calDer<Order>(pts,crv,3);

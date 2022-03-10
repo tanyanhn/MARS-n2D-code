@@ -37,7 +37,7 @@ Crv output(const Crv &crv, Point center, Real radio)
         }
     }
     npts.push_back(polys[0][0]);
-    return fitCurve<4>(npts, periodic);
+    return fitCurve<4>(npts, Curve<2, 4>::periodic);
 }
 
 void testIT()
@@ -81,7 +81,7 @@ void testIT()
                 pts.push_back({center[0] + radio * cos(2 * M_PI / n * i), center[1] + radio * sin(2 * M_PI / n * i)});
             }
             pts.push_back({center[0] + radio, center[1]});
-            crv = fitCurve<4>(pts, periodic);
+            crv = fitCurve<4>(pts, Curve<2, 4>::periodic);
             Vector<OrientedJordanCurve<2, 4>> vcrv{crv};
             YinSet<2, 4> YS(SegmentedRealizableSpadjor<4>(vcrv), tol);
 
@@ -125,7 +125,7 @@ void testIT()
                 pts.push_back({center[0] + radio * cos(2 * M_PI / n * i), center[1] + radio * sin(2 * M_PI / n * i)});
             }
             pts.push_back({center[0] + radio, center[1]});
-            crv = fitCurve<4>(pts, periodic);
+            crv = fitCurve<4>(pts, Curve<2, 4>::periodic);
             Vector<Curve<2, 4>> vcrv{crv};
             YinSet<2, 4> YS(SegmentedRealizableSpadjor<4>(vcrv), tol);
 
@@ -162,7 +162,7 @@ void testIT()
         rpts.push_back({center[0] + radio * cos(2 * M_PI / n * i), center[1] + radio * sin(2 * M_PI / n * i)});
     }
     rpts.push_back({center[0] + radio, center[1]});
-    auto rcrv = fitCurve<4>(rpts, periodic);
+    auto rcrv = fitCurve<4>(rpts, Curve<2, 4>::periodic);
 
     //output the convergency rate
     auto it1 = crvs.begin();
@@ -415,7 +415,7 @@ void testKinks_circle()
         //kinks.push_back(std::make_pair(0, n / 4));
         //kinks.push_back(std::make_pair(0, n / 2));
         //kinks.push_back(std::make_pair(0, n * 3 / 4));
-        crv = fitCurve<4>(pts, periodic);
+        crv = fitCurve<4>(pts, Curve<2, 4>::periodic);
         Vector<OrientedJordanCurve<2, 4>> vcrv{crv};
         YinSet<2, 4> YS(SegmentedRealizableSpadjor<4>(vcrv), tol);
         YS.setKinks(kinks);
@@ -454,7 +454,7 @@ void testKinks_circle()
         rpts.push_back({center[0] + radio * cos(2 * M_PI / n * i), center[1] + radio * sin(2 * M_PI / n * i)});
     }
     rpts.push_back({center[0] + radio, center[1]});
-    auto rcrv = fitCurve<4>(rpts, periodic);
+    auto rcrv = fitCurve<4>(rpts, Curve<2, 4>::periodic);
     */
 
     //output the convergency rate
