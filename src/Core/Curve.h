@@ -4,12 +4,13 @@
 #include <vector>
 #include "Polynomial.h"
 
+// fitCurve's boundary type
 enum BCType{
-              notAknot = 0,
-              periodic,
-              complete,
-              second,
-              nature,
+              nBC_notAknot = 0,
+              nBC_periodic,
+              nBC_complete,
+              nBC_second,
+              nBC_nature,
               nBC_type
 };
 
@@ -34,6 +35,8 @@ public:
     knots.push_back(0);
     knots.push_back(len);
   }
+
+  ~Curve(){};
 
   // accessors
 public:
@@ -170,12 +173,9 @@ Curve<2,Ord> createRect(const Vec<Real,2>& lo, const Vec<Real,2>& hi);
 template <int Ord>
 Curve<2,Ord> createLineSegment(const Vec<Real,2>& p0, const Vec<Real,2>& p1);
 
-// template <int Order>
-// Curve<2,Order> fitCurve(const std::vector<Vec<Real,2>> &knots, bool periodic = true);
-
 template <int Order>
 Curve<2,Order> fitCurve(const std::vector<Vec<Real,2>> &knots, BCType
-                        type = notAknot,const Vec<Real,2>& start =
+                        type = nBC_notAknot,const Vec<Real,2>& start =
                         Vec<Real,2>(), const Vec<Real,2>& end = Vec<Real,2>());
 
 #endif // CURVE_H

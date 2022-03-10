@@ -17,12 +17,19 @@ using std::vector;
 struct Simplex {
   set<size_t> vertices;
 
+  // constructor
   Simplex() {}
+
   template <class Containor>
   explicit Simplex(const Containor& v) : vertices(v.begin(), v.end()) {}
+
   template <typename InputIterator>
   Simplex(InputIterator first, InputIterator last) : vertices(first, last) {}
+
+  // accessor
   int getNSim() const { return vertices.size() - 1; }
+
+  // operator
   bool operator<(const Simplex& rhs) const {
     auto lIt = vertices.begin(), rIt = rhs.vertices.begin(),
          lend = vertices.end(), rend = rhs.vertices.end();
@@ -33,7 +40,9 @@ struct Simplex {
     }
     return rIt != rend;
   }
+
   bool operator>(const Simplex& rhs) const { return rhs < *this; }
+
   bool operator==(const Simplex& rhs) const {
     auto lIt = vertices.begin(), rIt = rhs.vertices.begin(),
          lend = vertices.end(), rend = rhs.vertices.end();
@@ -44,6 +53,8 @@ struct Simplex {
     }
     return true;
   }
+
+  // visualization
   void print(std::ostream& os) const {
     os << "(";
     for (auto i : vertices) {
@@ -53,6 +64,7 @@ struct Simplex {
   }
 };
 
+// For hash and map
 template <>
 class std::hash<Simplex> {
   static constexpr std::hash<unsigned int> intHash = {};
@@ -74,27 +86,28 @@ struct std::less<set<Simplex>::iterator> {
                   const set<Simplex>::iterator& rhs) const {
     return *lhs < *rhs;
   }
-  // constexpr bool operator()(const unordered_set<Simplex>::iterator& lhs,
-  //                           const unordered_set<Simplex>::iterator& rhs)
-  //                           const {
-  //   return *lhs < *rhs;
-  // }
 };
+
+//======================================================================
 
 class SimplicialComplex {
  protected:
-  //  public:
   using SimplexIt = set<Simplex>::iterator;
   vector<set<Simplex>> simplexes;
   unordered_map<unsigned int, set<SimplexIt>> mVertex2Simplex;
 
  public:
+  // constructor
   SimplicialComplex(){};
+
   template <class Containor>
   explicit SimplicialComplex(const Containor& sims);
+
   template <typename InputIterator>
   SimplicialComplex(InputIterator first, InputIterator last);
+
   SimplicialComplex(const SimplicialComplex& rhs) { *this = rhs; }
+
   SimplicialComplex& operator=(const SimplicialComplex& rhs) {
     simplexes.clear();
     mVertex2Simplex.clear();
@@ -104,22 +117,43 @@ class SimplicialComplex {
     }
     return *this;
   }
+
+  // accessor
   const vector<set<Simplex>>& getSimplexes() const { return simplexes; }
+
   int getNSim() const { return simplexes.size() - 1; }
+
+  // get a vertex's star
   int starClosure(unsigned int p, SimplicialComplex& Closure) const;
+
   int link(unsigned int p, unordered_set<unsigned int>& res) const;
+
+  // insert a Simplex
   int insert(const Simplex& s);
+
   int insert(Simplex& s);
+
+  // erase a Simplex
   int erase(const Simplex& s);
   int erase(Simplex& s);
+
+ protected:
+  // erase a Simplex, do not consider sub simplex. tool for erase
   template <class Containor>
   int eraseExact(const Containor& containor);
+
+  // find all Simplex appear in every element of sims. tool for erase
   void findShare(
       const vector<unordered_map<unsigned int, set<SimplexIt>>::iterator>& sims,
       vector<SimplexIt>& shareSim);
+
+ public:
+  // determine if contain a Simplex.
   bool contain(const Simplex& s) const {
     return simplexes[s.getNSim()].find(s) != simplexes[s.getNSim()].end();
   }
+
+  // visualization
   void print(std::ostream& os) const {
     os << "{";
     size_t i = 0;
@@ -183,7 +217,9 @@ inline int SimplicialComplex::insert(Simplex& s) {
     return 0;
   if (sNSim >= (int)simplexes.size())
     simplexes.resize(sNSim + 1);
-  auto [sIt, b] = simplexes[sNSim].insert(s);
+  auto pair = simplexes[sNSim].insert(s);
+  auto sIt = pair.first;
+  auto b = pair.second;
   if (b == false)
     return 0;
 

@@ -111,7 +111,7 @@ int main(int argc, char* argv[]) {
   auto knots = cur.getKnots();
   drawCurve(cur, 10, "drawCircle.m");
 
-  string input_name("../../test/data/testCurveFactory");
+  string input_name("../test/data/testCurveFactory");
   int testcase;
   std::cout << "Input test case number:" << std::endl;
   std::cin >> testcase;

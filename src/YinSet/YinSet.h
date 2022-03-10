@@ -2,11 +2,9 @@
 #define YINSET_H
 
 #include <map>
-#include <utility>
-#include <vector>
 #include "Core/VecCompare.h"
-#include "SegmentedRealizableSpadjor.h"
 #include "YinSet/OrientedJordanCurve.h"
+#include "YinSet/SegmentedRealizableSpadjor.h"
 #include "YinSet/SimplicialComplex.h"
 
 template <int Order>
@@ -39,8 +37,8 @@ class YinSet<2, Order> : public SegmentedRealizableSpadjor<Order> {
 
   /// A node in the Hasse diagram.
   struct Node {
-    int depth;  // even number for positive orientation, odd number of
-                // negative orientation
+    int depth;  // even number for positive orientation, odd number of negative
+                // orientation
     int parent;
     std::vector<int> children;
   };
@@ -57,8 +55,7 @@ class YinSet<2, Order> : public SegmentedRealizableSpadjor<Order> {
   /// Return if the Yin set is bounded, based on the Hasse diagram.
   bool isBounded() const { return diagram.back().depth % 2 == 1; }
 
-  /// Get the orientation of the k-th Jordan curve, based on the Hasse
-  /// diagram.
+  /// Get the orientation of the k-th Jordan curve, based on the Hasse diagram.
   int getOrientation(int k) const {
     return (diagram[k].depth % 2 == 0) ? (1) : (-1);
   }
@@ -84,21 +81,34 @@ class YinSet<2, Order> : public SegmentedRealizableSpadjor<Order> {
   // YinSet Factory
   friend struct CurveFactory<2, Order>;
 
-  // kinks related.
+  // kinks accessor
   const SimplicialComplex& getKinks() const { return kinks; }
+
+  // initial kinks, remove old data. will refit every segmentedCurves.
   void setKinks(std::vector<std::pair<unsigned int, unsigned int>> vertices);
+
+  // vertex and Point's conversion function
   int vertex2Point(unsigned int vertex,
                    std::pair<unsigned int, unsigned int>& index) const;
+
   int vertex2Point(unsigned int vertex, rVec& point) const;
+
   int point2Vertex(const std::pair<unsigned int, unsigned int>& index,
                    unsigned int& vertex) const;
+
+  // meanless and inefficient, implement it if necessary
   // void point2Vertex(const rVec& point, unsigned int& vertex) const;
+
+  // modify kinks, will refit related segmentedCurve.
   int insertKinks(const std::pair<unsigned int, unsigned int>& index);
+
   int eraseKinks(unsigned int vertex);
 
  protected:
   ///
   void buildHasse(Real tol);
+
+  // refit segmentedCurve_i.
   void reFitCurve(unsigned int i);
 
   int bettiNumbers[2];
