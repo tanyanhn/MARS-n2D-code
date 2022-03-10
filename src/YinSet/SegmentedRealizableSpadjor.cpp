@@ -39,7 +39,7 @@ template <>
 bool SegmentedRealizableSpadjor<2>::isBounded(Real tol) const
 {
   auto iterator = [&](const auto &callback) {
-    for (const auto &gamma : segmentedCurves) {
+    for (const auto &gamma : orientedJordanCurves) {
       const auto &polys = gamma.getPolys();
       int numPolys = polys.size();
       for (int i = 0; i < numPolys-1; ++i)
@@ -104,7 +104,7 @@ std::vector<Segment<2>> collapseToSeg(const std::vector<OrientedJordanCurve<2, 2
 
 template <>
 void SegmentedRealizableSpadjor<2>::pastSegmentation(
-    vector<OrientedJordanCurve<Dim, 2>>& segmentedCurves,
+    vector<OrientedJordanCurve<Dim, 2>>& aSpadjor,
     const vector<Curve<Dim, 2>>& crv,
     Real tolForSegmentation) {
   PastingMap<2> builder(tolForSegmentation);
@@ -112,9 +112,9 @@ void SegmentedRealizableSpadjor<2>::pastSegmentation(
     builder.addEdge(gamma);
   vector<Curve<2, 2>> res;
   builder.formClosedLoops(res);
-  segmentedCurves.clear();
+  aSpadjor.clear();
   for (auto&& crv : res) {
-    segmentedCurves.push_back(std::move(crv));
+    aSpadjor.push_back(std::move(crv));
   }
 }
 
@@ -163,7 +163,7 @@ meet(const SegmentedRealizableSpadjor<2> &lhs, const SegmentedRealizableSpadjor<
   using std::vector;
   const SegmentedRealizableSpadjor<Order>* operands[] = {&lhs, &rhs};
   const std::vector<OrientedJordanCurve<Dim, Order>>* bdriesOfOperands[] = {
-      &(lhs.segmentedCurves), &(rhs.segmentedCurves)};
+      &(lhs.orientedJordanCurves), &(rhs.orientedJordanCurves)};
   SegmentedRealizableSpadjor<Order> result;
   vector<Curve<Dim, 2>> Curves;
   // group all the line segments
@@ -231,7 +231,7 @@ meet(const SegmentedRealizableSpadjor<2> &lhs, const SegmentedRealizableSpadjor<
     locs[m] = locater(segs[1-m], midBeta[m], operands[1-m]->isBounded(tol));
     for(std::size_t i = 0; i < beta[m].size(); ++i)
       if(locs[m][i] == 1)
-        result.segmentedCurves.push_back(std::move(beta[m][i]));
+        Curves.push_back(std::move(beta[m][i]));
   }
 
   // deal with the overlapping edges
@@ -248,10 +248,10 @@ meet(const SegmentedRealizableSpadjor<2> &lhs, const SegmentedRealizableSpadjor<
       int k = mid2idx[q];
       // is of same orientation ?
       if(norm(beta[0][i].startpoint() - beta[1][k].startpoint()) < tol)
-        result.segmentedCurves.push_back(std::move(beta[0][i]));
+        Curves.push_back(std::move(beta[0][i]));
     }
   }
-  result.pastSegmentation(result.segmentedCurves, Curves, tol);
+  result.pastSegmentation(result.orientedJordanCurves, Curves, tol);
   return result;
 }
 
@@ -262,11 +262,11 @@ SegmentedRealizableSpadjor<2>::SegmentedRealizableSpadjor(
     const vector<OrientedJordanCurve<Dim, 2>>& aSpadjor,
     Real tolForSegmentation) {
   if (tolForSegmentation == 0.0) {
-    segmentedCurves = aSpadjor;
+    orientedJordanCurves = aSpadjor;
   } else {
     vector<Curve<Dim, 2>> Curves;
     applySegmentation(aSpadjor, Curves, tolForSegmentation);
-    pastSegmentation(segmentedCurves, Curves, tolForSegmentation);
+    pastSegmentation(orientedJordanCurves, Curves, tolForSegmentation);
   }
 }
 
@@ -279,7 +279,7 @@ SegmentedRealizableSpadjor<4>::SegmentedRealizableSpadjor(
   // represented by cubic splines shoud go here.
   // assert(tolForSegmentation == 0.0);
   // *******************************************************
-  segmentedCurves = aSpadjor;
+  orientedJordanCurves = aSpadjor;
 }
 
 template <>
@@ -292,11 +292,11 @@ SegmentedRealizableSpadjor<2>::SegmentedRealizableSpadjor(
   for (int i = 0; i < N; ++i)
     aSpadjor.push_back((OrientedJordanCurve<Dim, 2>(Curve<Dim, 2>::load(is))));
   if (tolForSegmentation == 0.0) {
-    segmentedCurves = std::move(aSpadjor);
+    orientedJordanCurves = std::move(aSpadjor);
   } else {
     vector<Curve<Dim, 2>> Curves;
     applySegmentation(aSpadjor, Curves, tolForSegmentation);
-    pastSegmentation(segmentedCurves, Curves, tolForSegmentation);
+    pastSegmentation(orientedJordanCurves, Curves, tolForSegmentation);
   }
 }
 
@@ -313,7 +313,7 @@ SegmentedRealizableSpadjor<4>::SegmentedRealizableSpadjor(
   // The implementation of the Boolean algebra for Yin sets
   // represented by cubic splines shoud go here.
   assert(tolForSegmentation == 0.0);
-  segmentedCurves = std::move(content);
+  orientedJordanCurves = std::move(content);
   // *******************************************************
 }
 
@@ -321,8 +321,8 @@ template <int Order>
 auto SegmentedRealizableSpadjor<Order>::translate(const rVec &delta) const -> SRS
 {
   SRS result;
-  for(const auto &j : segmentedCurves)
-    result.segmentedCurves.push_back(j.offset(delta));
+  for(const auto &j : orientedJordanCurves)
+    result.orientedJordanCurves.push_back(j.offset(delta));
   return result;
 }
 
@@ -332,13 +332,13 @@ auto SegmentedRealizableSpadjor<Order>::complement(
   SRS result;
   if (Order == 2) {
     vector<Curve<Dim, Order>> Curves, reverseCurve;
-    applySegmentation(segmentedCurves, Curves, tolForSegmentation);
+    applySegmentation(orientedJordanCurves, Curves, tolForSegmentation);
     for (const auto& j : Curves)
       reverseCurve.push_back(j.reverse());
-    pastSegmentation(result.segmentedCurves, reverseCurve, tolForSegmentation);
+    pastSegmentation(result.orientedJordanCurves, reverseCurve, tolForSegmentation);
   } else {
-    for (const auto& j : segmentedCurves)
-      result.segmentedCurves.push_back(j.reverse());
+    for (const auto& j : orientedJordanCurves)
+      result.orientedJordanCurves.push_back(j.reverse());
   }
   return result;
 }

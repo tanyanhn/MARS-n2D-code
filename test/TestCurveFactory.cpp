@@ -180,7 +180,7 @@ int main(int argc, char* argv[]) {
     factory_params2.push_back(s);
     getline(input2, s);
   }
-  std::pair<unsigned int, unsigned int> index, indexres;
+  typename YinSet<2, 4>::PointIndex index, indexres;
   std::cout << "Test Order=4:" << std::endl;
   auto ys4 = factory4.createYinSet(factory_params2);
   auto sims = ys4.getKinks();
@@ -189,23 +189,23 @@ int main(int argc, char* argv[]) {
   indexres = std::make_pair<unsigned int, unsigned int>(1, 3);
   assert(index == indexres);
   drawCurve(ys4.getBoundaryCycles()[0], 10, "kinks0.m");
-  ys4.setKinks(std::vector<std::pair<unsigned int, unsigned int>>());
+  ys4.resetAllKinks(vector<typename YinSet<2, 4>::PointIndex>());
   sims = ys4.getKinks();
   assert(sims.getSimplexes().size() == 0);
   drawCurve(ys4.getBoundaryCycles()[0], 10, "kinks1.m");
-  auto vertex = ys4.insertKinks(std::make_pair(0, 8));
+  auto vertex = ys4.insertKink(std::make_pair(0, 8));
   sims = ys4.getKinks();
   assert(sims.getSimplexes()[0].size() == 1);
   ys4.vertex2Point(0, index);
   indexres = std::make_pair<unsigned int, unsigned int>(0, 8);
   assert(index == indexres);
   drawCurve(ys4.getBoundaryCycles()[0], 10, "kinks2.m");
-  ys4.eraseKinks(vertex);
+  ys4.eraseKink(vertex);
   sims = ys4.getKinks();
   assert(sims.getSimplexes().size() == 0);
   drawCurve(ys4.getBoundaryCycles()[0], 10, "kinks3.m");
-  ys4.setKinks(std::vector<std::pair<unsigned int, unsigned int>>(
-      {{0, 0}, {0, 8}, {1, 9}}));
+  ys4.resetAllKinks(
+      vector<typename YinSet<2, 4>::PointIndex>({{0, 0}, {0, 8}, {1, 9}}));
   sims = ys4.getKinks();
   assert(sims.getSimplexes()[0].size() == 3);
   ys4.vertex2Point(2, index);
@@ -214,12 +214,12 @@ int main(int argc, char* argv[]) {
   drawCurve(ys4.getBoundaryCycles()[0], 10, "kinks40.m");
   drawCurve(ys4.getBoundaryCycles()[1], 10, "kinks41.m");
   drawCurve(ys4.getBoundaryCycles()[2], 10, "kinks50.m");
-  ys4.setKinks(std::vector<std::pair<unsigned int, unsigned int>>(
-      {{2, 2}, {2, 3}, {2, 4}}));
+  ys4.resetAllKinks(
+      vector<typename YinSet<2, 4>::PointIndex>({{2, 2}, {2, 3}, {2, 4}}));
   drawCurve(ys4.getBoundaryCycles()[2], 10, "kinks51.m");
-  ys4.insertKinks(std::make_pair(2, 0));
+  ys4.insertKink(std::make_pair(2, 0));
   drawCurve(ys4.getBoundaryCycles()[2], 10, "kinks52.m");
-  unsigned int v;
-  ys4.point2Vertex(std::make_pair<unsigned int, unsigned int>(2, 4), v);
+  typename YinSet<2, 4>::Vertex v;
+  ys4.point2Vertex(typename YinSet<2, 4>::PointIndex(2, 4), v);
   assert(v == 2);
 };

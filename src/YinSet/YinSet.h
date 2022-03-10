@@ -20,10 +20,12 @@ class YinSet<2, Order> : public SegmentedRealizableSpadjor<Order> {
   enum { Dim = 2 };
   using SRS = SegmentedRealizableSpadjor<Order>;
   using rVec = Vec<Real, 2>;
+  using PointIndex = std::pair<size_t, size_t>;
+  using Vertex = Simplex::Vertex;
 
   /// Initialize a Yin set from the stream.
   ///
-  /// The Hasse diagram is caclulated, but no re-segmentation is applied.
+  /// The Hasse diagram is calculated, but no re-segmentation is applied.
   /// \param tol The tolerance for building the Hasse diagram.
   YinSet(std::istream& is, Real tol);
 
@@ -49,7 +51,7 @@ class YinSet<2, Order> : public SegmentedRealizableSpadjor<Order> {
  public:
   /// Get the boundary Jordan curves.
   const std::vector<OrientedJordanCurve<Dim, Order>> getBoundaryCycles() const {
-    return segmentedCurves;
+    return orientedJordanCurves;
   }
 
   /// Return if the Yin set is bounded, based on the Hasse diagram.
@@ -70,7 +72,7 @@ class YinSet<2, Order> : public SegmentedRealizableSpadjor<Order> {
   void dump(std::ostream& os) const;
 
  public:
-  /// Calculate the complementation.
+  /// Calculate the complementary set.
   YinSet<2, Order> complement(Real tol) const;
 
   /// Calculate the intersection of two Yin sets.
@@ -85,37 +87,37 @@ class YinSet<2, Order> : public SegmentedRealizableSpadjor<Order> {
   const SimplicialComplex& getKinks() const { return kinks; }
 
   // initial kinks, remove old data. will refit every segmentedCurves.
-  void setKinks(std::vector<std::pair<unsigned int, unsigned int>> vertices);
+  void resetAllKinks(std::vector<PointIndex> vertices);
 
   // vertex and Point's conversion function
-  int vertex2Point(unsigned int vertex,
-                   std::pair<unsigned int, unsigned int>& index) const;
+  int vertex2Point(Vertex vertex,
+                   PointIndex& index) const;
 
-  int vertex2Point(unsigned int vertex, rVec& point) const;
+  int vertex2Point(Vertex vertex, rVec& point) const;
 
-  int point2Vertex(const std::pair<unsigned int, unsigned int>& index,
-                   unsigned int& vertex) const;
+  int point2Vertex(const PointIndex& index,
+                   Vertex& vertex) const;
 
   // meanless and inefficient, implement it if necessary
-  // void point2Vertex(const rVec& point, unsigned int& vertex) const;
+  // void point2Vertex(const rVec& point, Vertex& vertex) const;
 
   // modify kinks, will refit related segmentedCurve.
-  int insertKinks(const std::pair<unsigned int, unsigned int>& index);
+  int insertKink(const PointIndex& index);
 
-  int eraseKinks(unsigned int vertex);
+  int eraseKink(Vertex vertex);
 
  protected:
   ///
   void buildHasse(Real tol);
 
   // refit segmentedCurve_i.
-  void reFitCurve(unsigned int i);
+  void reFitCurve(Vertex i);
 
   int bettiNumbers[2];
   SimplicialComplex kinks;
-  std::map<unsigned int, std::pair<unsigned int, unsigned int>> mVertex2Point;
-  std::map<std::pair<unsigned int, unsigned int>, unsigned int> mPoint2Vertex;
-  using SRS::segmentedCurves;
+  std::map<Vertex, PointIndex> mVertex2Point;
+  std::map<PointIndex, Vertex> mPoint2Vertex;
+  using SRS::orientedJordanCurves;
 };
 
 #endif  // YINSET_H

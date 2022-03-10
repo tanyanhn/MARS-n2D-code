@@ -57,7 +57,7 @@ protected:
 
   // past Curves and get OrientedJordanCurves
   static void pastSegmentation(
-      vector<OrientedJordanCurve<Dim, Order>>& segmentedCurves,
+      vector<OrientedJordanCurve<Dim, Order>>& aSpadjor,
       const vector<Curve<Dim, Order>>& crv,
       Real tolForSegmentation);
       
@@ -70,7 +70,7 @@ protected:
 protected:
   friend class YinSet<2, Order>;
 
-  vector<OrientedJordanCurve<Dim, Order>> segmentedCurves;
+  vector<OrientedJordanCurve<Dim, Order>> orientedJordanCurves;
 };
 
 #endif //SEGMENTEDREALIZABLESPADJOR_H

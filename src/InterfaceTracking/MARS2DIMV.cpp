@@ -265,8 +265,8 @@ void MARS2DIMV<Order, VectorFunction>::timeStep(const VectorFunction<2> &v, YS &
     {
         for (auto &simplex : kinks.getSimplexes()[0])
         {
-            unsigned int index = *simplex.vertices.begin();
-            std::pair<unsigned int, unsigned int> id;
+            typename YS::Vertex index = *simplex.vertices.begin();
+            typename YS::PointIndex id;
             int info = ys.vertex2Point(index, id);
             if (info == 0)
                 throw std::runtime_error("cannot find kink's id");
@@ -274,7 +274,7 @@ void MARS2DIMV<Order, VectorFunction>::timeStep(const VectorFunction<2> &v, YS &
         }
     }
 
-    Vector<std::pair<unsigned int, unsigned int>> newkinks;
+    Vector<typename YS::PointIndex> newkinks;
 
     for (int id = 0; id < N; id++)
     {
@@ -413,7 +413,7 @@ void MARS2DIMV<Order, VectorFunction>::timeStep(const VectorFunction<2> &v, YS &
         }
     }
     ys = YS(SegmentedRealizableSpadjor<Order>(vcrv), tol);
-    ys.setKinks(newkinks);
+    ys.resetAllKinks(newkinks);
     return;
 }
 

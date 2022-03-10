@@ -8,7 +8,7 @@
       "name": "(gdb) Launch",
       "type": "cppdbg",
       "request": "launch",
-      "program": "${workspaceFolder}/problems/1307/main.exe",
+      "program": "${workspaceFolder}/build/test/UnitTest",
       "args": [],
       "stopAtEntry": false,
       "cwd": "${fileDirname}",
@@ -17,11 +17,11 @@
       "MIMode": "gdb",
       "console": "integratedTerminal",
       "setupCommands": [
-        {
-          "description": "Test",
-          "text": "python import sys;sys.path.insert(0, '/usr/local/share/gcc-11.1.0/python');from libstdcxx.v6.printers import register_libstdcxx_printers;register_libstdcxx_printers(None)",
-          "ignoreFailures": false
-        },
+        // {
+        //   "description": "Test",
+        //   "text": "python import sys;sys.path.insert(0, '/usr/local/share/gcc-11.1.0/python');from libstdcxx.v6.printers import register_libstdcxx_printers;register_libstdcxx_printers(None)",
+        //   "ignoreFailures": false
+        // },
         {
           "description": "Enable pretty-printing for gdb",
           "text": "-enable-pretty-printing",

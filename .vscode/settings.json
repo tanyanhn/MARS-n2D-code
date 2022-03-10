@@ -22,4 +22,11 @@
         "-I ${workspaceRoot}/src",
         "-I ${workspaceRoot}/test"
     ],
+    "cSpell.words": [
+        "Hasse",
+        "Simplicial",
+        "SIMPLICIALCOMPLEX",
+        "Spadjor",
+        "stod"
+    ],
 }

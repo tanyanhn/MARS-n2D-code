@@ -233,7 +233,7 @@ void testKinks_0nk()
     //get the initial curve
     Vector<Point> pts;
     SimplicialComplex kinks;
-    std::vector<std::pair<unsigned int, unsigned int>> kps;
+    std::vector<typename YinSet<2, 4>::PointIndex> kps;
     for (int i = 0; i < 5; i++)
     {
         pts.push_back({0.2 * i, -1});
@@ -267,7 +267,7 @@ void testKinks_0nk()
 
     Vector<OrientedJordanCurve<2, 4>> vcrv{crv};
     YinSet<2, 4> YS(SegmentedRealizableSpadjor<4>(vcrv), tol);
-    YS.setKinks(kps);
+    YS.resetAllKinks(kps);
 
     //set the CubicMARS method
     MARS2DIMV<4, VectorFunction> CM(&ERK, 0.3, 0.5);
@@ -308,7 +308,7 @@ void testKinks_0k()
         OrientedJordanCurve<2, 4> crv;
         Vector<Point> pts;
         SimplicialComplex kinks;
-        std::vector<std::pair<unsigned int, unsigned int>> kps;
+        std::vector<typename YinSet<2, 4>::PointIndex> kps;
         for (int i = 0; i < n; i++)
         {
             pts.push_back({center[0] - test.radio + h * i, center[1] - test.radio});
@@ -338,7 +338,7 @@ void testKinks_0k()
 
         Vector<OrientedJordanCurve<2, 4>> vcrv{crv};
         YinSet<2, 4> YS(SegmentedRealizableSpadjor<4>(vcrv), tol);
-        YS.setKinks(kps);
+        YS.resetAllKinks(kps);
 
         //set the CubicMARS method
         MARS2DIMV<4, VectorFunction> CM(&ESDIRK4, 2 * h, test.rtiny);
@@ -409,7 +409,7 @@ void testKinks_circle()
             pts.push_back({center[0] + radio * cos(2 * M_PI / n * i), center[1] + radio * sin(2 * M_PI / n * i)});
         }
         pts.push_back({center[0] + radio, center[1]});
-        Vector<std::pair<unsigned int, unsigned int>> kinks;
+        Vector<typename YinSet<2, 4>::PointIndex> kinks;
         kinks.push_back(std::make_pair(0, 0));
         //kinks.push_back(std::make_pair(0, n / 8));
         //kinks.push_back(std::make_pair(0, n / 4));
@@ -418,7 +418,7 @@ void testKinks_circle()
         crv = fitCurve<4>(pts, Curve<2, 4>::periodic);
         Vector<OrientedJordanCurve<2, 4>> vcrv{crv};
         YinSet<2, 4> YS(SegmentedRealizableSpadjor<4>(vcrv), tol);
-        YS.setKinks(kinks);
+        YS.resetAllKinks(kinks);
 
         //set the CubicMARS method
         MARS2DIMV<4, VectorFunction> CM(&SDIRK2, 4 * M_PI * radio / n, test.rtiny);

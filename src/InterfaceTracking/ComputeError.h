@@ -2,6 +2,7 @@
 #define _COMPUTEERROR_H_
 
 #include "XorArea.h"
+#include "YinSet/YinSet.h"
 #include <cmath>
 #include <numeric>
 
@@ -56,12 +57,13 @@ Vector<Real> squarerror(const Vector<YinSet<2, 4>> &vys, const Point &center, Re
         {
             for (auto &simplex : kinks.getSimplexes()[0])
             {
-                unsigned int index = *simplex.vertices.begin();
-                std::pair<unsigned int, unsigned int> id;
-                int info = vys[i].vertex2Point(index, id);
-                if (info == 0)
-                    throw std::runtime_error("cannot find kink's id");
-                brk.push_back(id.second);
+              typename YinSet<2, 4>::Vertex index =
+                  *simplex.vertices.begin();
+              typename YinSet<2, 4>::PointIndex id;
+              int info = vys[i].vertex2Point(index, id);
+              if (info == 0)
+                throw std::runtime_error("cannot find kink's id");
+              brk.push_back(id.second);
             }
         }
         assert(brk[0] == 0 && brk.size() == 4);
