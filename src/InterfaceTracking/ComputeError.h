@@ -51,18 +51,14 @@ Vector<Real> squarerror(const Vector<YinSet<2, 4>> &vys, const Point &center, Re
     for (int i = 0; i < n; i++)
     {
         auto crv = vys[i].getBoundaryCycles()[0];
-        SimplicialComplex kinks = vys[i].getKinks();
+        SimplicialComplex<typename YinSet<2, 4>::PointIndex> kinks =
+            vys[i].getKinks();
         Vector<unsigned int> brk;
         if (kinks.getSimplexes().size() != 0)
         {
             for (auto &simplex : kinks.getSimplexes()[0])
             {
-              typename YinSet<2, 4>::Vertex index =
-                  *simplex.vertices.begin();
-              typename YinSet<2, 4>::PointIndex id;
-              int info = vys[i].vertex2Point(index, id);
-              if (info == 0)
-                throw std::runtime_error("cannot find kink's id");
+              typename YinSet<2, 4>::Vertex id = *simplex.vertices.begin();
               brk.push_back(id.second);
             }
         }

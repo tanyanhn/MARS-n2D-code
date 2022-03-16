@@ -1,7 +1,7 @@
 #include "OrientedJordanCurve.h"
 #include <cassert>
 #include <cmath>
-#include <sstream>
+#include <fstream>
 #include <string>
 #include "Core/Curve.h"
 #include "SimplicialComplex.h"
@@ -12,13 +12,13 @@ using std::string;
 
 template <int Dim, int Order>
 void OrientedJordanCurve<Dim, Order>::define(const string& parameters) {
-  SimplicialComplex kinks;
+  SimplicialComplex<Vertex> kinks;
   define(parameters, kinks);
 }
 
 template <int Dim, int Order>
 void OrientedJordanCurve<Dim, Order>::define(const string& parameters,
-                                             SimplicialComplex& kinks) {
+                                             SimplicialComplex<Vertex>& kinks) {
   assert(kinks.getDimension() == -1);
   std::stringstream iss(parameters);
   define(iss, kinks);
@@ -26,7 +26,7 @@ void OrientedJordanCurve<Dim, Order>::define(const string& parameters,
 
 template <int Dim, int Order>
 void OrientedJordanCurve<Dim, Order>::define(std::istream& iss,
-                                             SimplicialComplex& kinks) {
+                                             SimplicialComplex<Vertex>& kinks) {
   size_t nPolys;
   // iss.read((char*)&nPolys, sizeof(size_t));
   iss >> nPolys;
@@ -39,9 +39,9 @@ void OrientedJordanCurve<Dim, Order>::define(std::istream& iss,
       // points[i][j] = *pbuf++;
       iss >> points[i][j];
   }
-  Vertex id;
+  size_t id;
   while (iss >> id)
-    kinks.insert(Simplex{std::initializer_list<Vertex>{id}});
+    kinks.insert(Simplex<Vertex>{std::initializer_list<Vertex>{{0, id}}});
 
   define(points, kinks);
 }
@@ -49,10 +49,10 @@ void OrientedJordanCurve<Dim, Order>::define(std::istream& iss,
 template <int Dim, int Order>
 void OrientedJordanCurve<Dim, Order>::define(
     const std::vector<Vec<Real, Dim>>& points,
-    const vector<size_t>& indexes) {
-  SimplicialComplex kinks;
+    const vector<Vertex>& indexes) {
+  SimplicialComplex<Vertex> kinks;
   for (auto id : indexes) {
-    kinks.insert(Simplex{std::initializer_list<size_t>{id}});
+    kinks.insert(Simplex<Vertex>{std::initializer_list<Vertex>{id}});
   }
   define(points, kinks);
 }
@@ -60,7 +60,7 @@ void OrientedJordanCurve<Dim, Order>::define(
 template <int Dim, int Order>
 void OrientedJordanCurve<Dim, Order>::define(
     const std::vector<Vec<Real, Dim>>& points,
-    const SimplicialComplex& kinks) {
+    const SimplicialComplex<Vertex>& kinks) {
   this->knots.clear();
   this->polys.clear();
   int pre = -1, pos = -1, last = -1;
@@ -70,13 +70,13 @@ void OrientedJordanCurve<Dim, Order>::define(
     this->polys = res.getPolys();
   } else {
     for (auto& simplex : kinks.getSimplexes()[0]) {
-      assert(*simplex.vertices.begin() < points.size() &&
+      assert(simplex.vertices.begin()->second < points.size() &&
              "kinks value should be points index.");
       if (pre == -1) {
-        pre = *simplex.vertices.begin();
+        pre = simplex.vertices.begin()->second;
         last = pre;
       } else {
-        pos = *simplex.vertices.begin();
+        pos = simplex.vertices.begin()->second;
         vector<Vec<Real, Dim>> subPoints(std::next(points.begin(), pre),
                                          std::next(points.begin(), pos + 1));
         assert(subPoints.size() > 1 && "fitCurve Point num < 2.");
@@ -135,19 +135,20 @@ void OrientedJordanCurve<Dim, Order>::define(
 
 template <int Order>
 void Circle<Order>::define(const std::string& parameters) {
-  SimplicialComplex kinks;
+  SimplicialComplex<Vertex> kinks;
   define(parameters, kinks);
 }
 
 template <int Order>
 void Circle<Order>::define(const std::string& parameters,
-                           SimplicialComplex& kinks) {
+                           SimplicialComplex<Vertex>& kinks) {
   std::stringstream iss(parameters);
   define(iss, kinks);
 }
 
 template <int Order>
-void Circle<Order>::define(std::istream& iss, SimplicialComplex& kinks) {
+void Circle<Order>::define(std::istream& iss,
+                           SimplicialComplex<Vertex>& kinks) {
   assert(kinks.getDimension() == -1 && "output kinks should be empty.");
   Vec<Real, 2> center;
   Real radius;
@@ -172,19 +173,20 @@ void Circle<Order>::define(std::istream& iss, SimplicialComplex& kinks) {
 
 template <int Order>
 void Rectangle<Order>::define(const std::string& parameters) {
-  SimplicialComplex kinks;
+  SimplicialComplex<Vertex> kinks;
   define(parameters, kinks);
 }
 
 template <int Order>
 void Rectangle<Order>::define(const std::string& parameters,
-                              SimplicialComplex& kinks) {
+                              SimplicialComplex<Vertex>& kinks) {
   std::stringstream iss(parameters);
   define(iss, kinks);
 }
 
 template <int Order>
-void Rectangle<Order>::define(std::istream& iss, SimplicialComplex& kinks) {
+void Rectangle<Order>::define(std::istream& iss,
+                              SimplicialComplex<Vertex>& kinks) {
   assert(kinks.getDimension() == -1 && "output kinks should be empty.");
   Vec<Real, 2> smallEnd, bigEnd;
   Real theta;
@@ -206,16 +208,16 @@ void Rectangle<Order>::define(std::istream& iss, SimplicialComplex& kinks) {
 
   std::vector<Vec<Real, 2>> points;
   vector<Vertex> kinks1;
-  kinks1.push_back(points.size());
+  kinks1.push_back({0, points.size()});
   for (size_t i = 0; i < rowPolys; ++i)
     points.push_back(Vec<Real, 2>{smallEnd[0] + i * dx, smallEnd[1]});
-  kinks1.push_back(points.size());
+  kinks1.push_back({0, points.size()});
   for (size_t i = 0; i < colPolys; ++i)
     points.push_back(Vec<Real, 2>{bigEnd[0], smallEnd[1] + i * dy});
-  kinks1.push_back(points.size());
+  kinks1.push_back({0, points.size()});
   for (size_t i = 0; i < rowPolys; ++i)
     points.push_back(Vec<Real, 2>{bigEnd[0] - i * dx, bigEnd[1]});
-  kinks1.push_back(points.size());
+  kinks1.push_back({0, points.size()});
   for (size_t i = 0; i < colPolys; ++i)
     points.push_back(Vec<Real, 2>{smallEnd[0], bigEnd[1] - i * dy});
   points.push_back(smallEnd);
@@ -230,14 +232,13 @@ void Rectangle<Order>::define(std::istream& iss, SimplicialComplex& kinks) {
     std::reverse(points.begin(), points.end());
     auto size = points.size() - 1;
     for (auto& simplex : kinks1) {
-      auto j = size - simplex;
+      auto j = size - simplex.second;
       j = (j != size ? j : 0);
-      kinks.insert(Simplex{std::initializer_list<Vertex>{j}});
+      kinks.insert(Simplex<Vertex>{std::initializer_list<Vertex>{{0, j}}});
     }
   } else {
-    for (auto& simplex : kinks1) {
-      auto j = simplex;
-      kinks.insert(Simplex{std::initializer_list<Vertex>{j}});
+    for (auto& vertex : kinks1) {
+      kinks.insert(Simplex<Vertex>{std::initializer_list<Vertex>{vertex}});
     }
   }
 
@@ -247,14 +248,14 @@ void Rectangle<Order>::define(std::istream& iss, SimplicialComplex& kinks) {
 template <int Order>
 std::unique_ptr<OrientedJordanCurve<2, Order>>
 CurveFactory<2, Order>::createCurve(const std::string& parameters) {
-  SimplicialComplex kinks;
+  SimplicialComplex<Vertex> kinks;
   return createCurve(parameters, kinks);
 }
 
 template <int Order>
 std::unique_ptr<OrientedJordanCurve<2, Order>>
 CurveFactory<2, Order>::createCurve(const std::string& parameters,
-                                    SimplicialComplex& kinks) {
+                                    SimplicialComplex<Vertex>& kinks) {
   assert(kinks.getDimension() == -1);
   std::stringstream iss(parameters);
   string type;
@@ -276,36 +277,45 @@ CurveFactory<2, Order>::createCurve(const std::string& parameters,
 }
 
 template <int Order>
+void drawCurve(const Curve<2, Order>& cur, size_t num_piece, string of_name) {
+  auto polys = cur.getPolys();
+  auto knots = cur.getKnots();
+  std::ofstream Curve_build_out(of_name);
+  Curve_build_out << "X=[";
+  Curve_build_out << polys[0][0][0] << ", " << polys[0][0][1] << ";"
+                  << std::endl;
+  for (size_t j = 0; j != polys.size(); j++) {
+    Real leng = knots[j + 1] - knots[j];
+    for (size_t i = 1; i != num_piece + 1; i++) {
+      Curve_build_out << (polys[j](leng * 1.0 * i / num_piece))[0] << ", "
+                      << (polys[j](leng * 1.0 * i / num_piece))[1] << ";"
+                      << std::endl;
+    }
+  }
+  Curve_build_out << "];" << std::endl;
+  Curve_build_out << "hold on; plot(X(:, 1), X(:, 2)); figure(1)" << std::endl;
+}
+
+template <int Order>
 YinSet<2, Order> CurveFactory<2, Order>::createYinSet(
     const std::vector<std::string>& parameters) {
   size_t nCurves = parameters.size() - 1;
   std::vector<OrientedJordanCurve<2, Order>> curves(nCurves);
   Real tol = stod(parameters[0]);
-  SimplicialComplex kinks;
-  std::map<Vertex, PointIndex> mVertex2Point;
-  std::map<PointIndex, Vertex> mPoint2Vertex;
-  size_t id = 0;
+  SimplicialComplex<Vertex> kinks;
   for (size_t i = 0; i < nCurves; ++i) {
-    SimplicialComplex tmp;
+    SimplicialComplex<Vertex> tmp;
     curves[i] = *createCurve(parameters[i + 1], tmp);
     if (tmp.getDimension() == 0) {
       for (auto& simplex : tmp.getSimplexes()[0]) {
-        auto j = *simplex.vertices.begin();
-        auto index = PointIndex(i, j);
-        kinks.insert(Simplex{std::initializer_list<Vertex>{id}});
-        mVertex2Point[id] = index;
-        mPoint2Vertex[index] = id;
-        ++id;
+        auto j = simplex.vertices.begin()->second;
+        kinks.insert(Simplex<Vertex>{std::initializer_list<Vertex>{{i, j}}});
       }
     }
   }
-  SegmentedRealizableSpadjor<Order> segmentedSpadjor(curves, tol);
-
+  SegmentedRealizableSpadjor<Order> segmentedSpadjor(curves, 0);
   YinSet<2, Order> ret(segmentedSpadjor, tol);
   ret.kinks = kinks;
-  ret.mVertex2Point = mVertex2Point;
-  ret.mPoint2Vertex = mPoint2Vertex;
-
   return ret;
 }
 

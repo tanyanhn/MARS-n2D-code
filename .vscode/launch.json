@@ -8,7 +8,7 @@
       "name": "(gdb) Launch",
       "type": "cppdbg",
       "request": "launch",
-      "program": "${workspaceFolder}/build/test/UnitTest",
+      "program": "${workspaceFolder}/build/test/TestCurveFactory",
       "args": [],
       "stopAtEntry": false,
       "cwd": "${fileDirname}",

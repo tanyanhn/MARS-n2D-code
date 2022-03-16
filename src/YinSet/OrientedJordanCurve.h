@@ -15,7 +15,8 @@ class YinSet;
 template <int Dim, int Order>
 class OrientedJordanCurve : public Curve<Dim, Order> {
  public:
-  using Vertex = Simplex::Vertex;
+  using PointIndex = std::pair<size_t, size_t>;
+  using Vertex = Simplex<PointIndex>::Vertex;
   // constructors
   OrientedJordanCurve() = default;
 
@@ -29,15 +30,15 @@ class OrientedJordanCurve : public Curve<Dim, Order> {
   // virtual constructor
   virtual void define(const std::string& parameters);
 
-  virtual void define(const std::string& parameters, SimplicialComplex& kinks);
+  virtual void define(const std::string& parameters, SimplicialComplex<Vertex>& kinks);
 
-  virtual void define(std::istream& is, SimplicialComplex& kinks);
+  virtual void define(std::istream& is, SimplicialComplex<Vertex>& kinks);
 
   // initial function
   void define(const std::vector<Vec<Real, Dim>>& points,
-              const SimplicialComplex& kinks);
+              const SimplicialComplex<Vertex>& kinks);
   void define(const std::vector<Vec<Real, Dim>>& points,
-              const vector<size_t>& indexes);
+              const vector<Vertex>& indexes);
 
   template <int, int>
   friend class YinSet;
@@ -55,9 +56,9 @@ struct Circle : public OrientedJordanCurve<2, Order> {
   // virtual constructor
   void define(const std::string& parameters);
 
-  void define(const std::string& parameters, SimplicialComplex& kinks);
+  void define(const std::string& parameters, SimplicialComplex<Vertex>& kinks);
 
-  void define(std::istream& is, SimplicialComplex& kinks);
+  void define(std::istream& is, SimplicialComplex<Vertex>& kinks);
 };
 
 template <int Order>
@@ -70,9 +71,9 @@ struct Rectangle : public OrientedJordanCurve<2, Order> {
   // virtual constructor
   void define(const std::string& parameters);
 
-  void define(const std::string& parameters, SimplicialComplex& kinks);
+  void define(const std::string& parameters, SimplicialComplex<Vertex>& kinks);
 
-  void define(std::istream& is, SimplicialComplex& kinks);
+  void define(std::istream& is, SimplicialComplex<Vertex>& kinks);
 };
 
 //=========================================================================================
@@ -97,11 +98,11 @@ struct CurveFactory<2, Order> {
 
   std::unique_ptr<OrientedJordanCurve<2, Order>> createCurve(
       const std::string& parameters,
-      SimplicialComplex& kinks);
+      SimplicialComplex<Vertex>& kinks);
 
   std::unique_ptr<OrientedJordanCurve<2, Order>> createCurve(
       std::istream& is,
-      SimplicialComplex& kinks);
+      SimplicialComplex<Vertex>& kinks);
 
   YinSet<2, Order> createYinSet(const std::vector<std::string>& parameters);
 };

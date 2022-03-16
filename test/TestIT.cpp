@@ -232,31 +232,35 @@ void testKinks_0nk()
 
     //get the initial curve
     Vector<Point> pts;
-    SimplicialComplex kinks;
+    SimplicialComplex<typename YinSet<2, 4>::PointIndex> kinks;
     std::vector<typename YinSet<2, 4>::PointIndex> kps;
     for (int i = 0; i < 5; i++)
     {
         pts.push_back({0.2 * i, -1});
     }
-    kinks.insert(Simplex{std::initializer_list<unsigned int>{5}});
+    kinks.insert(Simplex<typename YinSet<2, 4>::PointIndex>{
+        std::initializer_list<typename YinSet<2, 4>::Vertex>{{0, 5}}});
     kps.push_back(std::make_pair(0, 5));
     for (int i = 0; i < 10; i++)
     {
         pts.push_back({1, -1 + 0.2 * i});
     }
-    kinks.insert(Simplex{std::initializer_list<unsigned int>{15}});
+    kinks.insert(Simplex<typename YinSet<2, 4>::PointIndex>{
+        std::initializer_list<typename YinSet<2, 4>::Vertex>{{0, 15}}});
     kps.push_back(std::make_pair(0, 15));
     for (int i = 0; i < 10; i++)
     {
         pts.push_back({1 - 0.2 * i, 1});
     }
-    kinks.insert(Simplex{std::initializer_list<unsigned int>{25}});
+    kinks.insert(Simplex<typename YinSet<2, 4>::PointIndex>{
+        std::initializer_list<typename YinSet<2, 4>::Vertex>{{0, 25}}});
     kps.push_back(std::make_pair(0, 25));
     for (int i = 0; i < 10; i++)
     {
         pts.push_back({-1, 1 - 0.2 * i});
     }
-    kinks.insert(Simplex{std::initializer_list<unsigned int>{35}});
+    kinks.insert(Simplex<typename YinSet<2, 4>::PointIndex>{
+        std::initializer_list<typename YinSet<2, 4>::Vertex>{{0, 35}}});
     kps.push_back(std::make_pair(0, 35));
     for (int i = 0; i < 5; i++)
     {
@@ -307,31 +311,35 @@ void testKinks_0k()
         Vector<Curve<2, 4>> crvs;
         OrientedJordanCurve<2, 4> crv;
         Vector<Point> pts;
-        SimplicialComplex kinks;
+        SimplicialComplex<typename YinSet<2, 4>::PointIndex> kinks;
         std::vector<typename YinSet<2, 4>::PointIndex> kps;
         for (int i = 0; i < n; i++)
         {
             pts.push_back({center[0] - test.radio + h * i, center[1] - test.radio});
         }
-        kinks.insert(Simplex{std::initializer_list<unsigned int>{0}});
+        kinks.insert(Simplex<typename YinSet<2, 4>::PointIndex>{
+            std::initializer_list<typename YinSet<2, 4>::Vertex>{{0, 0}}});
         kps.push_back(std::make_pair(0, 0));
         for (int i = 0; i < n; i++)
         {
             pts.push_back({center[0] + test.radio, center[1] - test.radio + h * i});
         }
-        kinks.insert(Simplex{std::initializer_list<unsigned int>{(unsigned int)n}});
+        kinks.insert(Simplex<typename YinSet<2, 4>::PointIndex>{
+            std::initializer_list<typename YinSet<2, 4>::Vertex>{{0, n}}});
         kps.push_back(std::make_pair(0, n));
         for (int i = 0; i < n; i++)
         {
             pts.push_back({center[0] + test.radio - h * i, center[1] + test.radio});
         }
-        kinks.insert(Simplex{std::initializer_list<unsigned int>{2 * (unsigned int)n}});
+        kinks.insert(Simplex<typename YinSet<2, 4>::PointIndex>{
+            std::initializer_list<typename YinSet<2, 4>::Vertex>{{0, 2 * n}}});
         kps.push_back(std::make_pair(0, 2 * n));
         for (int i = 0; i < n; i++)
         {
             pts.push_back({center[0] - test.radio, center[1] + test.radio - h * i});
         }
-        kinks.insert(Simplex{std::initializer_list<unsigned int>{3 * (unsigned int)n}});
+        kinks.insert(Simplex<typename YinSet<2, 4>::PointIndex>{
+            std::initializer_list<typename YinSet<2, 4>::Vertex>{{0, 3 * n}}});
         kps.push_back(std::make_pair(0, 3 * n));
         pts.push_back(pts[0]);
         crv.define(pts, kinks);

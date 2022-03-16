@@ -20,8 +20,8 @@ class YinSet<2, Order> : public SegmentedRealizableSpadjor<Order> {
   enum { Dim = 2 };
   using SRS = SegmentedRealizableSpadjor<Order>;
   using rVec = Vec<Real, 2>;
-  using PointIndex = std::pair<size_t, size_t>;
-  using Vertex = Simplex::Vertex;
+  using PointIndex = typename OrientedJordanCurve<Dim, Order>::PointIndex;
+  using Vertex = typename Simplex<PointIndex>::Vertex;
 
   /// Initialize a Yin set from the stream.
   ///
@@ -84,39 +84,25 @@ class YinSet<2, Order> : public SegmentedRealizableSpadjor<Order> {
   friend struct CurveFactory<2, Order>;
 
   // kinks accessor
-  const SimplicialComplex& getKinks() const { return kinks; }
+  const SimplicialComplex<Vertex>& getKinks() const { return kinks; }
 
   // initial kinks, remove old data. will refit every segmentedCurves.
-  void resetAllKinks(std::vector<PointIndex> vertices);
-
-  // vertex and Point's conversion function
-  int vertex2Point(Vertex vertex,
-                   PointIndex& index) const;
-
-  int vertex2Point(Vertex vertex, rVec& point) const;
-
-  int point2Vertex(const PointIndex& index,
-                   Vertex& vertex) const;
-
-  // meanless and inefficient, implement it if necessary
-  // void point2Vertex(const rVec& point, Vertex& vertex) const;
+  void resetAllKinks(std::vector<Vertex> vertices);
 
   // modify kinks, will refit related segmentedCurve.
-  int insertKink(const PointIndex& index);
+  int insertKink(const Vertex& index);
 
-  int eraseKink(Vertex vertex);
+  int eraseKink(const Vertex& index);
 
  protected:
   ///
   void buildHasse(Real tol);
 
   // refit segmentedCurve_i.
-  void reFitCurve(Vertex i);
+  void reFitCurve(size_t i);
 
   int bettiNumbers[2];
-  SimplicialComplex kinks;
-  std::map<Vertex, PointIndex> mVertex2Point;
-  std::map<PointIndex, Vertex> mPoint2Vertex;
+  SimplicialComplex<Vertex> kinks;
   using SRS::orientedJordanCurves;
 };
 

@@ -261,114 +261,61 @@ void YinSet<2, Order>::dump(std::ostream &os) const
 }
 
 template <int Order>
-void YinSet<2, Order>::resetAllKinks(
-    std::vector<PointIndex> vertices) {
+void YinSet<2, Order>::resetAllKinks(std::vector<Vertex> vertices) {
   sort(vertices.begin(), vertices.end());
-  mPoint2Vertex.clear();
-  mVertex2Point.clear();
-  kinks = SimplicialComplex();
-  Vertex vertex = 0;
-  auto start = vertices.begin(), end = start;
+  kinks = SimplicialComplex<Vertex>();
   auto numCurves = orientedJordanCurves.size();
   for (size_t i = 0; i < numCurves; ++i) {
-    start = std::lower_bound(vertices.begin(), vertices.end(),
-                             PointIndex(i, 0));
-    end =
-        std::lower_bound(vertices.begin(), vertices.end(),
-                         PointIndex(i + 1, 0));
+    auto start =
+             std::lower_bound(vertices.begin(), vertices.end(), Vertex(i, 0)),
+         end = std::lower_bound(vertices.begin(), vertices.end(),
+                                Vertex(i + 1, 0));
     for (auto Iter = start; Iter != end; ++Iter) {
-      mPoint2Vertex[*Iter] = vertex;
-      mVertex2Point[vertex] = *Iter;
-      kinks.insert(Simplex{std::initializer_list<Vertex>{vertex}});
-      ++vertex;
+      kinks.insert(Simplex<Vertex>{std::initializer_list<Vertex>{*Iter}});
     }
     reFitCurve(i);
   }
 }
 
 template <int Order>
-int YinSet<2, Order>::vertex2Point(
-    Vertex vertex,
-    PointIndex& index) const {
-  auto iter = mVertex2Point.find(vertex);
-  int ret = 1;
-  if (iter == mVertex2Point.end()) {
-    ret = 0;
-  } else {
-    index = iter->second;
-  }
-  return ret;
+int YinSet<2, Order>::insertKink(const Vertex& index) {
+  auto sim = Simplex<Vertex>{std::initializer_list<Vertex>{index}};
+  if (kinks.contain(sim))
+    return 0;
+  kinks.insert(sim);
+  reFitCurve(index.first);
+  return 1;
 }
 
 template <int Order>
-int YinSet<2, Order>::vertex2Point(Vertex vertex, rVec& point) const {
-  PointIndex index;
-  int ret = vertex2Point(vertex, index);
-  if (ret == 1)
-    point = orientedJordanCurves[index.first](
-        orientedJordanCurves[index.first].getKnots()[index.second]);
-  return ret;
+int YinSet<2, Order>::eraseKink(const Vertex& index) {
+  auto sim = Simplex<Vertex>{std::initializer_list<Vertex>{index}};
+  if (!kinks.contain(sim))
+    return 0;
+  kinks.erase(sim);
+  reFitCurve(index.first);
+  return 1;
 }
 
 template <int Order>
-int YinSet<2, Order>::point2Vertex(
-    const PointIndex& index,
-    Vertex& vertex) const {
-  auto iter = mPoint2Vertex.find(index);
-  int ret = 1;
-  if (iter == mPoint2Vertex.end()) {
-    ret = 0;
-  } else {
-    vertex = iter->second;
-  }
-  return ret;
-}
-
-template <int Order>
-int YinSet<2, Order>::insertKink(
-    const PointIndex& index) {
-  if (mPoint2Vertex.find(index) != mPoint2Vertex.end())
-    return -1;
-  auto i = index.first;
-  Vertex vertex;
-  if (mVertex2Point.empty())
-    vertex = 0;
-  else
-    vertex = mVertex2Point.rbegin()->first + 1;
-  mPoint2Vertex[index] = vertex;
-  mVertex2Point[vertex] = index;
-  kinks.insert(Simplex{std::initializer_list<Vertex>{vertex}});
-  reFitCurve(i);
-  return vertex;
-}
-
-template <int Order>
-int YinSet<2, Order>::eraseKink(Vertex vertex) {
-  if (mVertex2Point.find(vertex) == mVertex2Point.end())
-    return -1;
-  auto& index = mVertex2Point[vertex];
-  auto i = index.first;
-  mPoint2Vertex.erase(index);
-  mVertex2Point.erase(vertex);
-  kinks.erase(Simplex{std::initializer_list<Vertex>{vertex}});
-  reFitCurve(i);
-  return vertex;
-}
-
-template <int Order>
-void YinSet<2, Order>::reFitCurve(Vertex i) {
-  auto start = mPoint2Vertex.lower_bound(PointIndex(i, 0)),
-       end = mPoint2Vertex.lower_bound(PointIndex(i + 1, 0));
-  SimplicialComplex sims;
+void YinSet<2, Order>::reFitCurve(size_t i) {
+  if (kinks.getSimplexes().empty())
+    return;
+  const auto& sims = kinks.getSimplexes()[0];
+  SimplicialComplex<Vertex> tmp;
   vector<Vec<Real, 2>> points;
+  auto start = sims.lower_bound(
+           Simplex<Vertex>{std::initializer_list<Vertex>{{i, 0}}}),
+       end = sims.lower_bound(
+           Simplex<Vertex>{std::initializer_list<Vertex>{{i + 1, 0}}});
   while (start != end) {
-    sims.insert(
-        Simplex{std::initializer_list<Vertex>{start->first.second}});
+    tmp.insert(Simplex<Vertex>{
+        std::initializer_list<Vertex>{{0, start->vertices.begin()->second}}});
     start++;
   }
   for (auto t : orientedJordanCurves[i].getKnots())
     points.push_back(orientedJordanCurves[i](t));
-  orientedJordanCurves[i].define(points, sims);
+  orientedJordanCurves[i].define(points, tmp);
 }
 
 //============================================================

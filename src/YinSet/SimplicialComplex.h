@@ -14,8 +14,9 @@ using std::unordered_map;
 using std::unordered_set;
 using std::vector;
 
+template <class IdType>
 struct Simplex {
-  using Vertex = unsigned long;
+  using Vertex = IdType;
   set<Vertex> vertices;
 
   // constructor
@@ -65,38 +66,40 @@ struct Simplex {
   }
 };
 
-// For hash and map
-template <>
-class std::hash<Simplex> {
-  static constexpr std::hash<unsigned int> intHash = {};
-
- public:
-  std::size_t operator()(const Simplex& s) const noexcept {
-    size_t res = 0;
-    int n = s.getDimension();
-    assert(n >= 0 && "Simplex in hash() should be initialed.");
-    for (auto i : s.vertices)
-      res ^= (intHash(i) << 1);
-    return res;
+template <class IdType>
+struct SimplexIterComp {
+  bool operator()(const typename set<Simplex<IdType>>::iterator& lhs,
+                  const typename set<Simplex<IdType>>::iterator& rhs) const {
+    return *lhs < *rhs;
   }
+  // bool operator()(const typename set<Simplex<IdType>>::const_iterator& lhs,
+  //                 const typename set<Simplex<IdType>>::const_iterator& rhs) {
+  //   return *lhs < *rhs;
+  // }
 };
 
-template <>
-struct std::less<set<Simplex>::iterator> {
-  bool operator()(const set<Simplex>::iterator& lhs,
-                  const set<Simplex>::iterator& rhs) const {
-    return *lhs < *rhs;
+template <class T1, class T2>
+struct std::hash<std::pair<T1, T2>> {
+  static constexpr hash<T1> h1{};
+  static constexpr hash<T2> h2{};
+  size_t operator()(const std::pair<T1, T2> v) const {
+    return h1(v.first) ^ (h2(v.second) << 1);
   }
 };
 
 //======================================================================
 
+template <class IdType>
 class SimplicialComplex {
+ public:
+  using SIM = Simplex<IdType>;
+  using Vertex = typename SIM::Vertex;
+
  protected:
-  using SimplexIter = set<Simplex>::iterator;
-  using Vertex = Simplex::Vertex;
-  vector<set<Simplex>> simplexes;
-  unordered_map<Vertex, set<SimplexIter>> mVertex2Simplex;
+  using SimplexIter = typename set<SIM>::iterator;
+  vector<set<SIM>> simplexes;
+  unordered_map<Vertex, set<SimplexIter, SimplexIterComp<IdType>>>
+      mVertex2Simplex;
 
  public:
   // constructor
@@ -121,7 +124,7 @@ class SimplicialComplex {
   }
 
   // accessor
-  const vector<set<Simplex>>& getSimplexes() const { return simplexes; }
+  const vector<set<SIM>>& getSimplexes() const { return simplexes; }
 
   int getDimension() const { return simplexes.size() - 1; }
 
@@ -131,12 +134,12 @@ class SimplicialComplex {
   int getLink(Vertex p, unordered_set<Vertex>& res) const;
 
   // insert a Simplex
-  int insert(const Simplex& s);
-  int insert(Simplex& s);
+  int insert(const SIM& s);
+  int insert(SIM& s);
 
-  // erase a Simplex
-  int erase(const Simplex& s);
-  int erase(Simplex& s);
+  // erase a SIM
+  int erase(const SIM& s);
+  int erase(SIM& s);
 
  protected:
   // erase a Simplex, do not consider sub simplex. tool for erase
@@ -145,12 +148,14 @@ class SimplicialComplex {
 
   // find all Simplex appear in every element of sims. tool for erase
   void findShare(
-      const vector<unordered_map<Vertex, set<SimplexIter>>::iterator>& sims,
+      const vector<typename unordered_map<
+          Vertex,
+          set<SimplexIter, SimplexIterComp<IdType>>>::iterator>& sims,
       vector<SimplexIter>& shareSim);
 
  public:
   // determine if contain a Simplex.
-  bool contain(const Simplex& s) const {
+  bool contain(const SIM& s) const {
     return simplexes[s.getDimension()].find(s) !=
            simplexes[s.getDimension()].end();
   }
@@ -170,23 +175,27 @@ class SimplicialComplex {
   }
 };
 
+template <class IdType>
 template <class Containor>
-inline SimplicialComplex::SimplicialComplex(const Containor& sims) {
+inline SimplicialComplex<IdType>::SimplicialComplex(const Containor& sims) {
   for (auto& s : sims) {
     insert(s);
   }
 }
 
+template <class IdType>
 template <typename InputIterator>
-inline SimplicialComplex::SimplicialComplex(InputIterator first,
-                                            InputIterator last) {
+inline SimplicialComplex<IdType>::SimplicialComplex(InputIterator first,
+                                                    InputIterator last) {
   while (first != last) {
     insert(*first++);
   }
 }
 
-inline int SimplicialComplex::getStarClosure(Vertex p,
-                                             SimplicialComplex& closure) const {
+template <class IdType>
+inline int SimplicialComplex<IdType>::getStarClosure(
+    Vertex p,
+    SimplicialComplex& closure) const {
   auto sims = mVertex2Simplex.find(p);
   if (sims == mVertex2Simplex.end())
     return 0;
@@ -196,8 +205,10 @@ inline int SimplicialComplex::getStarClosure(Vertex p,
   return 1;
 }
 
-inline int SimplicialComplex::getLink(Vertex p,
-                                      unordered_set<Vertex>& res) const {
+template <class IdType>
+inline int SimplicialComplex<IdType>::getLink(
+    Vertex p,
+    unordered_set<Vertex>& res) const {
   auto sims = mVertex2Simplex.find(p);
   if (sims == mVertex2Simplex.end())
     return 0;
@@ -209,11 +220,14 @@ inline int SimplicialComplex::getLink(Vertex p,
   return 1;
 }
 
-inline int SimplicialComplex::insert(const Simplex& s) {
-  Simplex copy(s);
+template <class IdType>
+inline int SimplicialComplex<IdType>::insert(const SIM& s) {
+  SIM copy(s);
   return insert(copy);
 }
-inline int SimplicialComplex::insert(Simplex& s) {
+
+template <class IdType>
+inline int SimplicialComplex<IdType>::insert(SIM& s) {
   int sNSim = s.getDimension();
   if (sNSim == -1)
     return 0;
@@ -226,9 +240,8 @@ inline int SimplicialComplex::insert(Simplex& s) {
     return 0;
 
   auto vIt = s.vertices.begin();
-  size_t vertex;
   while (vIt != s.vertices.end()) {
-    vertex = *vIt;
+    auto vertex = *vIt;
     mVertex2Simplex[vertex].insert(sIt);
     s.vertices.erase(vIt);
     insert(s);
@@ -238,17 +251,20 @@ inline int SimplicialComplex::insert(Simplex& s) {
   return 1;
 }
 
-inline void SimplicialComplex::findShare(
-    const vector<unordered_map<Vertex, set<SimplexIter>>::iterator>& sims,
+template <class IdType>
+inline void SimplicialComplex<IdType>::findShare(
+    const vector<typename unordered_map<
+        Vertex,
+        set<SimplexIter, SimplexIterComp<IdType>>>::iterator>& sims,
     vector<SimplexIter>& shareSim) {
-  std::less<SimplexIter> cmp;
+  SimplexIterComp<IdType> cmp;
   size_t i = 0, j = 0, n = sims.size();
   if (n == 1) {
     shareSim.insert(shareSim.end(), sims[0]->second.begin(),
                     sims[0]->second.end());
     return;
   }
-  vector<set<SimplexIter>::iterator> arr;
+  vector<typename set<SimplexIter, SimplexIterComp<IdType>>::iterator> arr;
   for (i = 0; i < n; ++i) {
     arr.push_back(sims[i]->second.begin());
   }
@@ -279,17 +295,22 @@ inline void SimplicialComplex::findShare(
   }
 }
 
-inline int SimplicialComplex::erase(const Simplex& s) {
-  Simplex copy(s);
+template <class IdType>
+inline int SimplicialComplex<IdType>::erase(const SIM& s) {
+  SIM copy(s);
   return erase(copy);
 }
-inline int SimplicialComplex::erase(Simplex& s) {
+
+template <class IdType>
+inline int SimplicialComplex<IdType>::erase(SIM& s) {
   int sNSim = s.getDimension();
   auto b = simplexes[sNSim].find(s);
   if (b == simplexes[sNSim].end())
     return 0;
 
-  vector<unordered_map<Vertex, set<SimplexIter>>::iterator> sims;
+  vector<typename unordered_map<
+      Vertex, set<SimplexIter, SimplexIterComp<IdType>>>::iterator>
+      sims;
   vector<SimplexIter> shareSim;
   for (auto vertex : s.vertices) {
     sims.push_back(mVertex2Simplex.find(vertex));
@@ -299,8 +320,9 @@ inline int SimplicialComplex::erase(Simplex& s) {
   return 1;
 }
 
+template <class IdType>
 template <class Containor>
-inline int SimplicialComplex::eraseExact(const Containor& containor) {
+inline int SimplicialComplex<IdType>::eraseExact(const Containor& containor) {
   for (auto it : containor) {
     for (auto vertex : it->vertices) {
       auto mit = mVertex2Simplex[vertex].find(it);

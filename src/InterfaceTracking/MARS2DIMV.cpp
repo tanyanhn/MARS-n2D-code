@@ -265,12 +265,8 @@ void MARS2DIMV<Order, VectorFunction>::timeStep(const VectorFunction<2> &v, YS &
     {
         for (auto &simplex : kinks.getSimplexes()[0])
         {
-            typename YS::Vertex index = *simplex.vertices.begin();
-            typename YS::PointIndex id;
-            int info = ys.vertex2Point(index, id);
-            if (info == 0)
-                throw std::runtime_error("cannot find kink's id");
-            vbrk[id.first].push_back(id.second);
+          typename YS::Vertex id = *simplex.vertices.begin();
+          vbrk[id.first].push_back(id.second);
         }
     }
 
@@ -328,7 +324,7 @@ void MARS2DIMV<Order, VectorFunction>::timeStep(const VectorFunction<2> &v, YS &
         {
             int nks = vbrk[id].size();
             Vector<Point> respts;
-            SimplicialComplex reskinks;
+            SimplicialComplex<typename YS::PointIndex> reskinks;
             int pre, pos;
             unsigned int supn = n;
             int splitnum = 0, removenum = 0;
@@ -361,8 +357,9 @@ void MARS2DIMV<Order, VectorFunction>::timeStep(const VectorFunction<2> &v, YS &
                 back += localpts.size() - 1;
                 if (back != supn-1)
                 {
-                    reskinks.insert(Simplex{std::initializer_list<unsigned int>{back}});
-                    newkinks.push_back(std::make_pair((unsigned int)id, back));
+                  reskinks.insert(Simplex<typename YS::Vertex>{
+                      std::initializer_list<typename YS::Vertex>{{id, back}}});
+                  newkinks.push_back(std::make_pair((unsigned int)id, back));
                 }
                 return;
             };
@@ -376,8 +373,9 @@ void MARS2DIMV<Order, VectorFunction>::timeStep(const VectorFunction<2> &v, YS &
             }
             else
             {
-                reskinks.insert(Simplex{std::initializer_list<unsigned int>{back}});
-                newkinks.push_back(std::make_pair((unsigned int)id, back));
+              reskinks.insert(Simplex<typename YS::Vertex>{
+                  std::initializer_list<typename YS::Vertex>{{id, back}}});
+              newkinks.push_back(std::make_pair((unsigned int)id, back));
             }
 
             pre = vbrk[id][0];
