@@ -72,10 +72,6 @@ struct SimplexIterComp {
                   const typename set<Simplex<IdType>>::iterator& rhs) const {
     return *lhs < *rhs;
   }
-  // bool operator()(const typename set<Simplex<IdType>>::const_iterator& lhs,
-  //                 const typename set<Simplex<IdType>>::const_iterator& rhs) {
-  //   return *lhs < *rhs;
-  // }
 };
 
 template <class T1, class T2>

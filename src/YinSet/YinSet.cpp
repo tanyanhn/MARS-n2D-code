@@ -318,6 +318,28 @@ void YinSet<2, Order>::reFitCurve(size_t i) {
   orientedJordanCurves[i].define(points, tmp);
 }
 
+template <int Order>
+vector<Curve<2, Order>> YinSet<2, Order>::getSmoothCurves(Real tol) const {
+  vector<Curve<2, Order>> res;
+  const auto& sims = kinks.getSimplexes()[0];
+  auto numJordanCurve = orientedJordanCurves.size();
+  for (auto i = 0ul; i < numJordanCurve; ++i) {
+    vector<Real> brks;
+    auto start = sims.lower_bound(
+             Simplex<Vertex>{std::initializer_list<Vertex>{{i, 0}}}),
+         end = sims.lower_bound(
+             Simplex<Vertex>{std::initializer_list<Vertex>{{i + 1, 0}}});
+    while (start != end) {
+      const auto& index = *start->vertices.begin();
+      brks.push_back(
+          orientedJordanCurves[index.first].getKnots()[index.second]);
+      ++start;
+    }
+    orientedJordanCurves[i].split(brks, res, tol);
+  }
+  return res;
+}
+
 //============================================================
 template class YinSet<2, 2>;
 template class YinSet<2, 4>;

@@ -91,8 +91,10 @@ class YinSet<2, Order> : public SegmentedRealizableSpadjor<Order> {
 
   // modify kinks, will refit related segmentedCurve.
   int insertKink(const Vertex& index);
-
   int eraseKink(const Vertex& index);
+
+  // split orientedJordanCurves to spline without kinks.
+  vector<Curve<2, Order>> getSmoothCurves(Real tol) const;
 
  protected:
   ///
