@@ -277,26 +277,6 @@ CurveFactory<2, Order>::createCurve(const std::string& parameters,
 }
 
 template <int Order>
-void drawCurve(const Curve<2, Order>& cur, size_t num_piece, string of_name) {
-  auto polys = cur.getPolys();
-  auto knots = cur.getKnots();
-  std::ofstream Curve_build_out(of_name);
-  Curve_build_out << "X=[";
-  Curve_build_out << polys[0][0][0] << ", " << polys[0][0][1] << ";"
-                  << std::endl;
-  for (size_t j = 0; j != polys.size(); j++) {
-    Real leng = knots[j + 1] - knots[j];
-    for (size_t i = 1; i != num_piece + 1; i++) {
-      Curve_build_out << (polys[j](leng * 1.0 * i / num_piece))[0] << ", "
-                      << (polys[j](leng * 1.0 * i / num_piece))[1] << ";"
-                      << std::endl;
-    }
-  }
-  Curve_build_out << "];" << std::endl;
-  Curve_build_out << "hold on; plot(X(:, 1), X(:, 2)); figure(1)" << std::endl;
-}
-
-template <int Order>
 YinSet<2, Order> CurveFactory<2, Order>::createYinSet(
     const std::vector<std::string>& parameters) {
   size_t nCurves = parameters.size() - 1;

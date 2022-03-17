@@ -180,11 +180,12 @@ int main(int argc, char* argv[]) {
     factory_params2.push_back(s);
     getline(input2, s);
   }
-  typename YinSet<2, 4>::PointIndex index, indexres;
+  using Vertex = YinSet<2, 4>::Vertex;
   std::cout << "Test Order=4:" << std::endl;
   auto ys4 = factory4.createYinSet(factory_params2);
   auto sims = ys4.getKinks();
   assert(sims.getSimplexes()[0].size() == 8);
+  assert(sims.contain(Simplex<Vertex>{{{1ul, 3ul}}}));
   drawCurve(ys4.getBoundaryCycles()[0], 10, "kinks0.m");
   ys4.resetAllKinks(vector<typename YinSet<2, 4>::PointIndex>());
   sims = ys4.getKinks();
@@ -193,6 +194,7 @@ int main(int argc, char* argv[]) {
   ys4.insertKink(std::make_pair(0, 8));
   sims = ys4.getKinks();
   assert(sims.getSimplexes()[0].size() == 1);
+  assert(sims.contain(Simplex<Vertex>{{{0ul, 8ul}}}));
   drawCurve(ys4.getBoundaryCycles()[0], 10, "kinks2.m");
   ys4.eraseKink({0, 8});
   sims = ys4.getKinks();
@@ -202,6 +204,7 @@ int main(int argc, char* argv[]) {
       vector<typename YinSet<2, 4>::PointIndex>({{0, 0}, {0, 8}, {1, 9}}));
   sims = ys4.getKinks();
   assert(sims.getSimplexes()[0].size() == 3);
+  assert(sims.contain(Simplex<Vertex>{{{1ul, 9ul}}}));
   drawCurve(ys4.getBoundaryCycles()[0], 10, "kinks40.m");
   drawCurve(ys4.getBoundaryCycles()[1], 10, "kinks41.m");
   drawCurve(ys4.getBoundaryCycles()[2], 10, "kinks50.m");

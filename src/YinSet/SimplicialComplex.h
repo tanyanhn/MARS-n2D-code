@@ -25,6 +25,9 @@ struct Simplex {
   template <class Containor>
   explicit Simplex(const Containor& v) : vertices(v.begin(), v.end()) {}
 
+  explicit Simplex(const std::initializer_list<IdType>& v)
+      : Simplex(v.begin(), v.end()) {}
+
   template <typename InputIterator>
   Simplex(InputIterator first, InputIterator last) : vertices(first, last) {}
 
