@@ -1,1 +1,0 @@
-/usr/bin/c++   -Wno-unknown-pragmas -DDIM=2 -g -Wall   CMakeFiles/TestBA.dir/TestBA.cpp.o  -o TestBA  ../src/libbays.a -lblas -llapack -llapacke -lgfortran 

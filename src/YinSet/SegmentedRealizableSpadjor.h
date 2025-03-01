@@ -47,7 +47,7 @@ public:
   SRS translate(const rVec &delta) const;
 
   /// Return the complemententation.
-  SRS complement(Real tolForSegmentation) const;
+  SRS complement(Real tolForSegmentation = 1e-10) const;
 
   /// Calculate the meet of two segmented Spadjors.
   friend SRS meet<Order>(const SRS &lhs, const SRS &rhs, Real tol);
