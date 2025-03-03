@@ -1,7 +1,4 @@
 #include "Core/Curve.h"
 #include "testHeader.h"
 
-
-TEST_CASE("Curve ", "[Point][fundament]") {
-
-}
+TEST_CASE("Curve ", "[Point][fundament]") {}

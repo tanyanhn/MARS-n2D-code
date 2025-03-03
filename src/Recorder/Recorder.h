@@ -60,7 +60,7 @@ extern std::string exportDir;
 
 struct RecorderInfo {
   DebugLevel level = DebugLevel::INFO;
-  std::string exportDir = "";
+  std::string exportDir;
 };
 
 void RecorderInitialize(const RecorderInfo info = RecorderInfo());

@@ -50,12 +50,11 @@ class approxInterfaceGraph {
                        // and -index imply edges[-index - 1]->reverse()
                        std::vector<std::vector<EdgeIndex>>&& cyclesEdgesId);
 
-
   auto& approxJordanCurves() const;
+
  private:
   InterfaceGraph undirectGraph;
   std::vector<Edge> edges_;
   std::vector<std::vector<EdgeIndex>>& cyclesEdgesId_;
-
 };
 }  // namespace MARSn2D

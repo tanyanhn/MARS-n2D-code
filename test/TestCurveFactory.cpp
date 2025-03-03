@@ -4,6 +4,7 @@
 #include <iostream>
 #include <sstream>
 #include <utility>
+
 #include "Core/Curve.h"
 #include "Core/VecCompare.h"
 #include "Core/dirConfig.h"
@@ -13,8 +14,7 @@ using std::string;
 using rVec = Vec<Real, 2>;
 
 bool verifySpline(const std::vector<Polynomial<4, rVec>>& polys,
-                  const std::vector<Real>& knots,
-                  const bool periodic,
+                  const std::vector<Real>& knots, const bool periodic,
                   const Real tol) {
   size_t lidx, ridx;
   size_t npolys = polys.size();
@@ -25,15 +25,12 @@ bool verifySpline(const std::vector<Polynomial<4, rVec>>& polys,
     rVec M0 = poly.der().der()(knots[0]);
     poly = polys[npolys - 1];
     rVec Mn = poly.translate(knots[npolys - 1]).der().der()(t);
-    if (pt_cmp.compare(M0, {0, 0}) != 0)
-      return false;
-    if (pt_cmp.compare(Mn, {0, 0}) != 0)
-      return false;
+    if (pt_cmp.compare(M0, {0, 0}) != 0) return false;
+    if (pt_cmp.compare(Mn, {0, 0}) != 0) return false;
   }
   for (size_t i = 0; i != polys.size(); i++) {
     if (i == 0) {
-      if (!periodic)
-        continue;
+      if (!periodic) continue;
       lidx = polys.size() - 1;
     } else {
       lidx = i - 1;
@@ -82,8 +79,7 @@ void drawCurve(const Curve<2, Order>& cur, size_t num_piece, string of_name) {
   Curve_build_out << "hold on; plot(X(:, 1), X(:, 2)); figure(1)" << std::endl;
 }
 template <int Order>
-void drawCurve(const OrientedJordanCurve<2, Order>& cur,
-               size_t num_piece,
+void drawCurve(const OrientedJordanCurve<2, Order>& cur, size_t num_piece,
                string of_name) {
   Curve<2, Order> cu = cur;
   drawCurve(cu, num_piece, of_name);
@@ -135,7 +131,8 @@ int main(int argc, char* argv[]) {
   std::cout << "Test Order=2:" << std::endl;
   auto ys2 = factory2.createYinSet(factory_params);
   std::cout << ys2.getHasseString() << std::endl;
-  std::ofstream of2(std::string(ROOT_DIR) + "/test/result/resultOrientedJordanCurveFactory2_" +
+  std::ofstream of2(std::string(ROOT_DIR) +
+                        "/test/result/resultOrientedJordanCurveFactory2_" +
                         std::to_string(testcase) + ".dat",
                     std::ios_base::binary);
   ys2.dump(of2);

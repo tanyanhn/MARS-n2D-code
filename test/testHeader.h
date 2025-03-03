@@ -1,13 +1,12 @@
 // Only include by test file.
-#include "Core/dirConfig.h"
 #include "Core/Config.h"
+#include "Core/dirConfig.h"
 #include "catch_amalgamated.hpp"
 
 using namespace std;
 using namespace Catch;
 
-
-struct Generator { 
+struct Generator {
   template <int l, int r>
   [[nodiscard]] static auto randomCreateReal() -> Real;
 };

@@ -43,7 +43,7 @@ function plotYinSet(sf, lineColor, lineWidth, offset)
         verts = verts + offset;
         if filled
             fill(verts(:,1),verts(:,2), fillcolor{c}, ...
-                'EdgeColor', 'none');
+                'EdgeColor', 'k');
         else
             plot(verts(:,1),verts(:,2), ...
                 [lineColor,linestyle{c}], ...
@@ -52,15 +52,15 @@ function plotYinSet(sf, lineColor, lineWidth, offset)
         end
     end
     
-    %setAxisProperties();
+    setAxisProperties();
     hold off;
 end
 
-% function setAxisProperties()
-%     axis equal tight;
-%     ax = gca;
-%     ax.XColor = ax.Color;
-%     ax.YColor = ax.Color;
-%     ax.XTick = [];
-%     ax.YTick = [];
-% end
+function setAxisProperties()
+    axis equal tight;
+    ax = gca;
+    % ax.XColor = ax.Color;
+    % ax.YColor = ax.Color;
+    % ax.XTick = [];
+    % ax.YTick = [];
+end

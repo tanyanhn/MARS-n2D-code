@@ -2,6 +2,7 @@
 #define YINSET_H
 
 #include <map>
+
 #include "Core/VecCompare.h"
 #include "YinSet/OrientedJordanCurve.h"
 #include "YinSet/SegmentedRealizableSpadjor.h"
@@ -9,8 +10,7 @@
 
 template <int Order>
 YinSet<2, Order> intersect(const YinSet<2, Order>& lhs,
-                           const YinSet<2, Order>& rhs,
-                           Real tol);
+                           const YinSet<2, Order>& rhs, Real tol);
 
 template <int Dim, int Order>
 struct CurveFactory;

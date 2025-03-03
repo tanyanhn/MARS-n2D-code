@@ -1,6 +1,8 @@
 #include "TestOrientedJordanCurve.h"
+
 #include <fstream>
 #include <string>
+
 #include "Core/VecCompare.h"
 #include "Core/dirConfig.h"
 
@@ -8,9 +10,7 @@ using std::string;
 
 bool TestOrientedJordanCurve::verifySpline(
     const std::vector<Polynomial<4, rVec>>& polys,
-    const std::vector<Real>& knots,
-    const bool periodic,
-    const Real tol) {
+    const std::vector<Real>& knots, const bool periodic, const Real tol) {
   size_t lidx, ridx;
   size_t npolys = polys.size();
   VecCompare<Real, 2> pt_cmp(tol);
@@ -18,16 +18,13 @@ bool TestOrientedJordanCurve::verifySpline(
   if (!periodic) {
     rVec M0 = polys[0].der().der()[0];
     rVec Mn = polys[npolys - 1].der().der()(t);
-    if (pt_cmp.compare(M0, {0, 0}) != 0)
-      return false;
-    if (pt_cmp.compare(Mn, {0, 0}) != 0)
-      return false;
+    if (pt_cmp.compare(M0, {0, 0}) != 0) return false;
+    if (pt_cmp.compare(Mn, {0, 0}) != 0) return false;
   }
   //!!! unverify the start knot.
   for (size_t i = 0; i != polys.size(); i++) {
     if (i == 0) {
-      if (!periodic)
-        continue;
+      if (!periodic) continue;
       lidx = polys.size() - 1;
     } else {
       lidx = i - 1;
@@ -37,16 +34,13 @@ bool TestOrientedJordanCurve::verifySpline(
     t = knots[lidx + 1] - knots[lidx];
     lpoly = polys[lidx];
     rpoly = polys[ridx];
-    if (pt_cmp.compare(lpoly(t), rpoly[0]) != 0)
-      return false;
+    if (pt_cmp.compare(lpoly(t), rpoly[0]) != 0) return false;
     auto d_lpoly = lpoly.der();
     auto d_rpoly = rpoly.der();
-    if (pt_cmp.compare(d_lpoly(t), d_rpoly[0]) != 0)
-      return false;
+    if (pt_cmp.compare(d_lpoly(t), d_rpoly[0]) != 0) return false;
     auto dd_lpoly = d_lpoly.der();
     auto dd_rpoly = d_rpoly.der();
-    if (pt_cmp.compare(dd_lpoly(t), dd_rpoly[0]) != 0)
-      return false;
+    if (pt_cmp.compare(dd_lpoly(t), dd_rpoly[0]) != 0) return false;
   }
   return true;
 };
@@ -64,8 +58,7 @@ bool TestOrientedJordanCurve::testOrientedJordanCurve(const string& input,
   }
   std::vector<unsigned int> kink_ids;
   unsigned int idx;
-  while (iss >> idx)
-    kink_ids.push_back(idx);
+  while (iss >> idx) kink_ids.push_back(idx);
   std::vector<rVec> points(nPolys + 1);
   for (size_t i = 0; i != points.size(); i++) {
     points[i] = init_points[i];
@@ -145,8 +138,7 @@ bool TestOrientedJordanCurve::testOrientedJordanCurve(const string& input,
   return true;
 };
 
-bool TestOrientedJordanCurve::testCircle(const string& input,
-                                         const Real tol,
+bool TestOrientedJordanCurve::testCircle(const string& input, const Real tol,
                                          string& message) {
   std::stringstream iss(input);
   rVec center;
@@ -180,8 +172,7 @@ bool TestOrientedJordanCurve::testCircle(const string& input,
   return true;
 };
 
-bool TestOrientedJordanCurve::testRectangle(const string& input,
-                                            const Real tol,
+bool TestOrientedJordanCurve::testRectangle(const string& input, const Real tol,
                                             string& message) {
   std::stringstream iss(input);
   VecCompare<Real, 2> pt_cmp(tol);
@@ -226,16 +217,14 @@ bool TestOrientedJordanCurve::testRectangle(const string& input,
   }
   auto isOrthogonal = [tol](rVec v1, rVec v2) {
     Real res = v1[0] * v2[0] + v1[1] * v2[1];
-    if (std::abs(res) < tol)
-      return true;
+    if (std::abs(res) < tol) return true;
     return false;
   };
   for (size_t i = 0; i != polys.size(); i++) {
     Real t = knots[i + 1] - knots[i];
     rVec dir = polys[i](t) - polys[i][0];
     dir = normalize(dir);
-    if (pt_cmp.compare(polys[i][0], corners[pole]) == 0)
-      pole++;
+    if (pt_cmp.compare(polys[i][0], corners[pole]) == 0) pole++;
     if (pole >= 5) {
       message = "Reached too many corners.";
       return false;
@@ -270,8 +259,9 @@ bool TestOrientedJordanCurve::testRectangle(const string& input,
 };
 
 void TestOrientedJordanCurve::doTest(int num) {
-  string input_name(std::string(ROOT_DIR) + "/test/data/testOrientedJordanCurve-" + std::to_string(num) +
-                    ".input");
+  string input_name(std::string(ROOT_DIR) +
+                    "/test/data/testOrientedJordanCurve-" +
+                    std::to_string(num) + ".input");
   std::ifstream input(input_name);
   std::vector<string> testcase(3);
   for (int i = 0; i != 3; i++) {

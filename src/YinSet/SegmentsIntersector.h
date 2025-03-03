@@ -1,80 +1,78 @@
 #ifndef SEGMENTSINTERSECTOR_H
 #define SEGMENTSINTERSECTOR_H
 
-#include <vector>
+#include <algorithm>
 #include <map>
 #include <set>
-#include <algorithm>
-#include "Segment.h"
+#include <vector>
+
 #include "Core/VecCompare.h"
+#include "Segment.h"
 
 /// Compute the intersections of a multiset of line segments.
 /**
-All the intersection points along with the incident line segments will be reported.
-Particularly, for an overlie, endpoints of the overlie will be reported. 
+All the intersection points along with the incident line segments will be
+reported. Particularly, for an overlie, endpoints of the overlie will be
+reported.
  */
 
-class SegmentsIntersector
-{
-public:
-  
-  typedef Vec<Real,2> rVec;
+class SegmentsIntersector {
+ public:
+  typedef Vec<Real, 2> rVec;
   typedef Segment<2> Seg;
   typedef typename std::vector<Seg>::const_iterator cpSeg;
   typedef std::vector<cpSeg> Bundle;
 
-  typedef std::map<rVec, std::vector<int>, VecCompare<Real,2>> ResultType;
+  typedef std::map<rVec, std::vector<int>, VecCompare<Real, 2>> ResultType;
 
-protected:
+ protected:
   ///
   /**
      A partial order defined on bundles
      is required by the line sweeping algorithm.
-     
+
      The x-coordinate of the intersection of the sweep line and the bundle
-     is the major keyword. 
+     is the major keyword.
      The slope is the minor keyword.
    */
   struct BundleCompare {
     Real tol;
-    const rVec * volatile evt; // the event point, volatile ?
+    const rVec *volatile evt;  // the event point, volatile ?
 
-    BundleCompare() : tol(0), evt(nullptr) { }
-    BundleCompare(Real _tol, const rVec *_q) : tol(_tol), evt(_q) { }
+    BundleCompare() : tol(0), evt(nullptr) {}
+    BundleCompare(Real _tol, const rVec *_q) : tol(_tol), evt(_q) {}
 
-    bool operator() (const Bundle *b1, const Bundle *b2) const {
-      assert(!b1->empty()); assert(!b2->empty());
+    bool operator()(const Bundle *b1, const Bundle *b2) const {
+      assert(!b1->empty());
+      assert(!b2->empty());
       // find representative from b1, b2
       cpSeg seg1 = b1->front();
       cpSeg seg2 = b2->front();
       Real x1 = seg1->substitute(*evt, tol)[0];
       Real x2 = seg2->substitute(*evt, tol)[0];
-      if(std::abs(x1-x2) < tol) { // use slope
-        if(seg1->parallel(*seg2, tol))
-          return false;
+      if (std::abs(x1 - x2) < tol) {  // use slope
+        if (seg1->parallel(*seg2, tol)) return false;
         Real k1 = seg1->slope();
         Real k2 = seg2->slope();
-        if(k1==0 || k2==0) return (k1!=0);
-        if(k1*k2<0) return (k1>0);
-        return (k1<k2);
+        if (k1 == 0 || k2 == 0) return (k1 != 0);
+        if (k1 * k2 < 0) return (k1 > 0);
+        return (k1 < k2);
       }
       return x1 < x2;
     }
   };
 
-  typedef std::map<rVec, std::map<cpSeg,int>, VecCompare<Real,2>> QueueType;
-  typedef std::set<Bundle*, BundleCompare> StatusType;
-  
-public:
+  typedef std::map<rVec, std::map<cpSeg, int>, VecCompare<Real, 2>> QueueType;
+  typedef std::set<Bundle *, BundleCompare> StatusType;
+
+ public:
   ///
   /**
      The constructor accepts _tol as the uncertainty quantification.
    */
-  SegmentsIntersector(Real _tol) :
-    tol(_tol), pt_cmp(_tol), bdl_cmp(_tol, &eventPoint)
-  {
-  }
-  
+  SegmentsIntersector(Real _tol)
+      : tol(_tol), pt_cmp(_tol), bdl_cmp(_tol, &eventPoint) {}
+
   ///
   /**
      The copy constructor is disabled.
@@ -84,24 +82,26 @@ public:
   ///
   /**
      This function does the work of computing the intersections.
-     
-     The uncertainty amount used here has been passed in through the constructor.
 
-     Return a std::map<> object (see ResultType) whose keys are the intersection points, 
-     and whose values are the incident segments (represented by their indices in lineSet). 
+     The uncertainty amount used here has been passed in through the
+     constructor.
+
+     Return a std::map<> object (see ResultType) whose keys are the intersection
+     points, and whose values are the incident segments (represented by their
+     indices in lineSet).
    */
-  ResultType operator() (const std::vector<Seg> &lineSet) {
+  ResultType operator()(const std::vector<Seg> &lineSet) {
     event.clear();
     event = QueueType(pt_cmp);
     status.clear();
     status = StatusType(bdl_cmp);
-    
+
     lineSetBegin = lineSet.cbegin();
     backref.resize(lineSet.size());
     return findIntersections(lineSet);
   }
 
-protected:
+ protected:
   ///
   /**
      The main function for finding the intersections
@@ -137,7 +137,7 @@ protected:
   ///
   /**
      Recover the true C(p) under special case.
-     
+
      Refer to the document for detailed dicussion on the algorithm.
    */
   void collectCp(cpSeg testor);
@@ -146,7 +146,7 @@ protected:
   /**
      Add a segment to the status structure.
 
-     If there is an existing bundle to which the segment belongs to, 
+     If there is an existing bundle to which the segment belongs to,
      the segment will be added to that bundle
      and tested against all the other segments in that bundle.
      Otherwise a new bundle is created, containing only the segment.
@@ -161,18 +161,17 @@ protected:
    */
   StatusType::iterator delFromStatus(cpSeg cit);
 
-protected:
-  enum { INTERIOR = 0, UPPER=-1, LOWER=1 };
+ protected:
+  enum { INTERIOR = 0, UPPER = -1, LOWER = 1 };
   std::vector<Seg>::const_iterator lineSetBegin;
   Real tol;
 
-  rVec                eventPoint;
+  rVec eventPoint;
   std::vector<StatusType::iterator> backref;
-  QueueType          event;
-  StatusType         status;
-  VecCompare<Real,2>  pt_cmp;
-  BundleCompare       bdl_cmp;
-
+  QueueType event;
+  StatusType status;
+  VecCompare<Real, 2> pt_cmp;
+  BundleCompare bdl_cmp;
 };
 
-#endif //SEGMENTSINTERSECTOR_H
+#endif  // SEGMENTSINTERSECTOR_H

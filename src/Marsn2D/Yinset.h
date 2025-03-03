@@ -11,13 +11,13 @@ class Spadjor {
  public:
   using OrientedJordanCurve = OrientedJordanCurve<Order>;
 
-  protected:
+ protected:
   std::vector<OrientedJordanCurve> orientedJordanCurves_;
 };
 
 template <int Order>
 class Yinset : public Spadjor<Order> {
-  public:
+ public:
   /// A node in the Hasse diagram.
   struct Node {
     int depth;  // even number for positive orientation, odd number of negative
@@ -25,12 +25,11 @@ class Yinset : public Spadjor<Order> {
     int parent;
     std::vector<int> children;
   };
- 
-  protected:
+
+ protected:
   void buildHasse(Real tol);
 
   /// The Hasse diagram. The last node is the root of the forest.
   std::vector<Node> diagram_;
-
- };
+};
 }  // namespace MARSn2D

@@ -1,10 +1,13 @@
 #include "SegmentedRealizableSpadjor.h"
+
+#include <limits>
+
 #include "PointsLocater.h"
 #include "SegmentsIntersector.h"
 #include "YinSet/PastingMap.h"
-#include <limits>
 
-template <class T> bool checkIsBounded(const T &iterator, Real tol) {
+template <class T>
+bool checkIsBounded(const T &iterator, Real tol) {
   VecCompare<Real, 2> vcmp(tol);
   Vec<Real, 2> topmost(-std::numeric_limits<Real>::max());
   std::vector<Segment<2>> edges;
@@ -26,18 +29,16 @@ template <class T> bool checkIsBounded(const T &iterator, Real tol) {
             [](const Segment<2> &lhs, const Segment<2> &rhs) {
               Real k1 = lhs.slope();
               Real k2 = rhs.slope();
-              if (k1 == 0)
-                return false;
-              if (k2 == 0)
-                return true;
-              if (k1 * k2 < 0)
-                return k1 > 0;
+              if (k1 == 0) return false;
+              if (k2 == 0) return true;
+              if (k1 * k2 < 0) return k1 > 0;
               return k1 < k2;
             });
   return vcmp.compare(topmost, edges[0].p[0]) == 0;
 }
 
-template <> bool SegmentedRealizableSpadjor<2>::isBounded(Real tol) const {
+template <>
+bool SegmentedRealizableSpadjor<2>::isBounded(Real tol) const {
   auto iterator = [&](const auto &callback) {
     for (const auto &gamma : orientedJordanCurves) {
       const auto &polys = gamma.getPolys();
@@ -50,7 +51,8 @@ template <> bool SegmentedRealizableSpadjor<2>::isBounded(Real tol) const {
   return checkIsBounded(iterator, tol);
 }
 
-template <int Order> bool isBounded(const Curve<2, Order> &polygon, Real tol) {
+template <int Order>
+bool isBounded(const Curve<2, Order> &polygon, Real tol) {
   auto iterator = [&](const auto &callback) {
     const auto &polys = polygon.getPolys();
     int numPolys = polys.size();
@@ -80,9 +82,9 @@ std::vector<Segment<2>> collapseToSeg(const Curve<2, Order> &polygon) {
 template std::vector<Segment<2>> collapseToSeg(const Curve<2, 2> &);
 template std::vector<Segment<2>> collapseToSeg(const Curve<2, 4> &);
 
-std::vector<Segment<2>>
-collapseToSeg(const std::vector<OrientedJordanCurve<2, 2>> &bdries,
-              std::vector<int> &cIdx, std::vector<int> &pIdx) {
+std::vector<Segment<2>> collapseToSeg(
+    const std::vector<OrientedJordanCurve<2, 2>> &bdries,
+    std::vector<int> &cIdx, std::vector<int> &pIdx) {
   std::vector<Segment<2>> segs;
   for (std::size_t c = 0; c < bdries.size(); ++c) {
     const auto &gamma = bdries[c];
@@ -105,8 +107,7 @@ void SegmentedRealizableSpadjor<2>::pastSegmentation(
     vector<OrientedJordanCurve<Dim, 2>> &aSpadjor,
     const vector<Curve<Dim, 2>> &crv, Real tolForSegmentation) {
   PastingMap<2> builder(tolForSegmentation);
-  for (const auto &gamma : crv)
-    builder.addEdge(gamma);
+  for (const auto &gamma : crv) builder.addEdge(gamma);
   vector<Curve<2, 2>> res;
   builder.formClosedLoops(res);
   aSpadjor.clear();
@@ -127,7 +128,7 @@ void SegmentedRealizableSpadjor<2>::applySegmentation(
   auto itsInfo = intersector(segs);
   // Find the curve parameters at the improper intersections
   std::vector<std::vector<Real>> brks(
-      aSpadjor.size()); // [which curve][which piece]
+      aSpadjor.size());  // [which curve][which piece]
   for (const auto &info : itsInfo) {
     const auto &incident = info.second;
     if (incident.size() > 2) {
@@ -167,8 +168,8 @@ SegmentedRealizableSpadjor<2> meet(const SegmentedRealizableSpadjor<2> &lhs,
   vector<Curve<Dim, 2>> Curves;
   // group all the line segments
   vector<Segment<Dim>> segs[2];
-  vector<int> ci; // index of curve
-  vector<int> pi; // index of piece
+  vector<int> ci;  // index of curve
+  vector<int> pi;  // index of piece
   int numSeg[2];
   for (int m = 0; m < 2; ++m) {
     segs[m] = collapseToSeg(*bdriesOfOperands[m], ci, pi);
@@ -192,9 +193,8 @@ SegmentedRealizableSpadjor<2> meet(const SegmentedRealizableSpadjor<2> &lhs,
   }
 
   // dispatch the intersections to each curve
-  vector<vector<Real>> breaks[2]; // [which SF][which curve][which break]
-  for (int m = 0; m < 2; m++)
-    breaks[m].resize(bdriesOfOperands[m]->size());
+  vector<vector<Real>> breaks[2];  // [which SF][which curve][which break]
+  for (int m = 0; m < 2; m++) breaks[m].resize(bdriesOfOperands[m]->size());
 
   for (const auto &i : itsInfo) {
     for (int j : i.second) {
@@ -231,16 +231,14 @@ SegmentedRealizableSpadjor<2> meet(const SegmentedRealizableSpadjor<2> &lhs,
       midBeta[m][i] = beta[m][i].midpoint();
     locs[m] = locater(segs[1 - m], midBeta[m], operands[1 - m]->isBounded(tol));
     for (std::size_t i = 0; i < beta[m].size(); ++i)
-      if (locs[m][i] == 1)
-        Curves.push_back(std::move(beta[m][i]));
+      if (locs[m][i] == 1) Curves.push_back(std::move(beta[m][i]));
   }
 
   // deal with the overlapping edges
   VecCompare<Real, Dim> vcmp(tol);
   std::map<Vec<Real, Dim>, int, VecCompare<Real, Dim>> mid2idx(vcmp);
   for (std::size_t i = 0; i < midBeta[1].size(); ++i) {
-    if (locs[1][i] == 0)
-      mid2idx.insert(std::make_pair(midBeta[1][i], i));
+    if (locs[1][i] == 0) mid2idx.insert(std::make_pair(midBeta[1][i], i));
   }
   for (std::size_t i = 0; i < beta[0].size(); ++i) {
     if (locs[0][i] == 0) {
@@ -357,8 +355,7 @@ auto SegmentedRealizableSpadjor<Order>::complement(
   if (Order == 2) {
     vector<Curve<Dim, Order>> Curves, reverseCurve;
     applySegmentation(orientedJordanCurves, Curves, tolForSegmentation);
-    for (const auto &j : Curves)
-      reverseCurve.push_back(j.reverse());
+    for (const auto &j : Curves) reverseCurve.push_back(j.reverse());
     pastSegmentation(result.orientedJordanCurves, reverseCurve,
                      tolForSegmentation);
   } else {

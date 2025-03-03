@@ -1,8 +1,10 @@
 #include "OrientedJordanCurve.h"
+
 #include <cassert>
 #include <cmath>
 #include <fstream>
 #include <string>
+
 #include "Core/Curve.h"
 #include "SimplicialComplex.h"
 #include "YinSet.h"
@@ -48,8 +50,7 @@ void OrientedJordanCurve<Dim, Order>::define(std::istream& iss,
 
 template <int Dim, int Order>
 void OrientedJordanCurve<Dim, Order>::define(
-    const std::vector<Vec<Real, Dim>>& points,
-    const vector<Vertex>& indexes) {
+    const std::vector<Vec<Real, Dim>>& points, const vector<Vertex>& indexes) {
   SimplicialComplex<Vertex> kinks;
   for (auto id : indexes) {
     kinks.insert(Simplex<Vertex>{std::initializer_list<Vertex>{id}});

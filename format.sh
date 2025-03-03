@@ -1,2 +1,2 @@
 #!/bin/bash
-cmake -B build --target format
+cmake --build build --target format

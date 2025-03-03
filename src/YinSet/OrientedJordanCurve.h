@@ -5,6 +5,7 @@
 #include <sstream>
 #include <string>
 #include <vector>
+
 #include "Core/Curve.h"
 #include "Core/VecCompare.h"
 #include "SimplicialComplex.h"
@@ -22,7 +23,7 @@ class OrientedJordanCurve : public Curve<Dim, Order> {
 
   OrientedJordanCurve(const Curve<Dim, Order>& curve)
       : Curve<Dim, Order>(curve) {
-        VecCompare<Real, Dim> vCmp(1e-10);
+    VecCompare<Real, Dim> vCmp(1e-10);
     assert(vCmp(curve.startpoint(), curve.endpoint()) == 0 &&
            "Initial OrientedJordanCurve must maintain startpoint == endpoint.");
   }
@@ -31,7 +32,8 @@ class OrientedJordanCurve : public Curve<Dim, Order> {
   // virtual constructor
   virtual void define(const std::string& parameters);
 
-  virtual void define(const std::string& parameters, SimplicialComplex<Vertex>& kinks);
+  virtual void define(const std::string& parameters,
+                      SimplicialComplex<Vertex>& kinks);
 
   virtual void define(std::istream& is, SimplicialComplex<Vertex>& kinks);
 
@@ -98,12 +100,10 @@ struct CurveFactory<2, Order> {
       const std::string& parameters);
 
   std::unique_ptr<OrientedJordanCurve<2, Order>> createCurve(
-      const std::string& parameters,
-      SimplicialComplex<Vertex>& kinks);
+      const std::string& parameters, SimplicialComplex<Vertex>& kinks);
 
   std::unique_ptr<OrientedJordanCurve<2, Order>> createCurve(
-      std::istream& is,
-      SimplicialComplex<Vertex>& kinks);
+      std::istream& is, SimplicialComplex<Vertex>& kinks);
 
   YinSet<2, Order> createYinSet(const std::vector<std::string>& parameters);
 };

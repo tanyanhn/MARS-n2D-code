@@ -1,14 +1,16 @@
-#include <fstream>
 #include "TestYinSetsBooleanOps.H"
+
+#include <fstream>
+
+#include "Core/dirConfig.h"
 #include "YinSet/SegmentedRealizableSpadjor.h"
 #include "YinSet/YinSet.h"
-#include "Core/dirConfig.h"
 using std::ifstream;
 using std::ofstream;
 
-void TestYinSetsBooleanOps::doTest(const string &name1, const string &name2, Real tol,
-                                   const rVec &ofs, const string &answer)
-{
+void TestYinSetsBooleanOps::doTest(const string &name1, const string &name2,
+                                   Real tol, const rVec &ofs,
+                                   const string &answer) {
   ifstream input1(name1, std::ios::binary);
   ifstream input2(name2, std::ios::binary);
   ifstream input3(answer, std::ios::binary);
@@ -18,12 +20,12 @@ void TestYinSetsBooleanOps::doTest(const string &name1, const string &name2, Rea
   const int Order = 2;
   SegmentedRealizableSpadjor<Order> srs1(input1);
   SegmentedRealizableSpadjor<Order> srs2(input2);
-  if(norm(ofs, 0) != 0.0)
-    srs2 = srs2.translate(ofs);
+  if (norm(ofs, 0) != 0.0) srs2 = srs2.translate(ofs);
   YinSet<Dim, Order> ys3(input3, tol);
   YinSet<Dim, Order> ys4(meet(srs1, srs2, tol), tol);
-  if(get_dbglevel() >= 2) {
-    ofstream of(std::string(ROOT_DIR) + "/test/results/resultYinSet.dat", std::ios_base::binary);
+  if (get_dbglevel() >= 2) {
+    ofstream of(std::string(ROOT_DIR) + "/test/results/resultYinSet.dat",
+                std::ios_base::binary);
     ys4.dump(of);
   }
   CPPUNIT_ASSERT(ys3.equal(ys4, tol));

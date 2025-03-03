@@ -1,6 +1,8 @@
 #include <cppunit/TestCaller.h>
 #include <cppunit/ui/text/TestRunner.h>
+
 #include <iostream>
+
 #include "TestLocater.h"
 #include "TestOrientedJordanCurve.h"
 #include "TestSegmentsIntersector.H"
