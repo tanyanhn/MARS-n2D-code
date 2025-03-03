@@ -1,178 +1,170 @@
 #ifndef POLYNOMIAL_H
 #define POLYNOMIAL_H
 
-#include "Interval.h"
-#include "static_for.h"
 #include "numlib.h"
+#include "static_for.h"
 
 // this helper takes care of the reduction of order when finding derivatives
 template <int Order>
-struct _der_wrapper;
+struct der_wrapper;
 
 ///
 /**
  */
-template <int _Order, class CoefType>
-class Polynomial
-{
-protected:
-  CoefType coefs[_Order];
+template <int Order, class CoefType>
+class Polynomial {
+ protected:
+  CoefType coefs[Order];
 
-public:
-  enum { Order = _Order };
+ public:
+  // enum { _Order = Order };
 
   Polynomial(const CoefType &_c = CoefType()) {
     coefs[0] = _c;
-    for(int i=1; i<Order; coefs[i++]=CoefType());
+    for (int i = 1; i < Order; coefs[i++] = CoefType())
+      ;
   }
 
   Polynomial(std::initializer_list<CoefType> l) {
     auto q = l.begin();
-    for(int i=0; i<Order; ++i)
-      coefs[i] = *q++;
+    for (int i = 0; i < Order; ++i) coefs[i] = *q++;
   }
 
-public:
+ public:
+  const CoefType &operator[](int k) const { return coefs[k]; }
 
-  const CoefType& operator[] (int k) const { return coefs[k]; }
+  CoefType &operator[](int k) { return coefs[k]; }
 
-  CoefType &operator[]       (int k) { return coefs[k]; }
-  
   ///
   /**
      Evaluate the polynomial at x.
    */
   template <class T2>
-  CoefType operator() (const T2 &x) const {
+  CoefType operator()(const T2 &x) const {
     CoefType val = coefs[0];
     T2 basis = static_cast<T2>(1.);
-    for(int d=1; d<Order; d++) {
+    for (int d = 1; d < Order; d++) {
       basis = basis * x;
       val = val + coefs[d] * basis;
     }
     return val;
   }
 
-  auto der() const { return _der_wrapper<Order>::calc(*this); }
+  auto der() const { return der_wrapper<Order>::calc(*this); }
 
   ///
   /**
      The constant term is always 0.
    */
-  Polynomial<Order+1, CoefType> prim() const
-  {
-    Polynomial<Order+1,CoefType> res;
-    for(int d=1; d<Order+1; ++d)
-      res[d] = coefs[d-1] / d;
+  Polynomial<Order + 1, CoefType> prim() const {
+    Polynomial<Order + 1, CoefType> res;
+    for (int d = 1; d < Order + 1; ++d) res[d] = coefs[d - 1] / d;
     return res;
   }
 
   ///
   /**
-     Re-express in the variable (x-x0) if reflect = false, 
-     in (x0-x) if reflect = true.
+     Re-express in the y = (x-x0) if reflect = false,
+     in y = (x0-x) if reflect = true.
+     input f(x) = f(x0 + y) or f(x0 - y) -> return g(y)
    */
   template <class T2>
-  Polynomial<Order,CoefType> translate(const T2 &x0, bool reflect = false) const {
+  Polynomial<Order, CoefType> translate(const T2 &x0,
+                                        bool reflect = false) const {
     // note : the Taylor expansion of a polynomial of order D
     // up to D-th order gives the polynomial itself
-    Polynomial<Order,CoefType> res;
+    Polynomial<Order, CoefType> res;
     res[0] = (*this)(x0);
     auto calc = [&x0, &res](auto _i, const auto &poly) {
       auto dp = poly.der();
       res[decltype(_i)::value] = dp(x0) / factorial(decltype(_i)::value);
       return dp;
     };
-    static_for<1,Order>::execute(calc, *this);
-    if(reflect) {
-      for(int d=1; d<Order; d+=2) // negate the odd terms
-	    res.coefs[d] = -res.coefs[d];
+    static_for<1, Order>::execute(calc, *this);
+    if (reflect) {
+      for (int d = 1; d < Order; d += 2)  // negate the odd terms
+        res.coefs[d] = -res.coefs[d];
     }
     return res;
   }
 
   // arithmetics
-public:
-
-  Polynomial<Order,CoefType> operator+(const Polynomial<Order,CoefType> &rhs) const {
-    Polynomial<Order,CoefType> res;
-    for(int d=0; d<Order; d++)
-      res[d] = coefs[d] + rhs[d];
+ public:
+  Polynomial<Order, CoefType> operator+(
+      const Polynomial<Order, CoefType> &rhs) const {
+    Polynomial<Order, CoefType> res;
+    for (int d = 0; d < Order; d++) res[d] = coefs[d] + rhs[d];
     return res;
   }
 
-  Polynomial<Order,CoefType> operator-() const {
-    Polynomial<Order,CoefType> res;
-    for(int d=0; d<Order; d++)
-      res[d] = -coefs[d];
+  Polynomial<Order, CoefType> operator-() const {
+    Polynomial<Order, CoefType> res;
+    for (int d = 0; d < Order; d++) res[d] = -coefs[d];
     return res;
   }
 
-  Polynomial<Order,CoefType> operator-(const Polynomial<Order,CoefType> &rhs) const {
-    Polynomial<Order,CoefType> res;
-    for(int d=0; d<Order; d++)
-      res[d] = coefs[d] - rhs[d];
+  Polynomial<Order, CoefType> operator-(
+      const Polynomial<Order, CoefType> &rhs) const {
+    Polynomial<Order, CoefType> res;
+    for (int d = 0; d < Order; d++) res[d] = coefs[d] - rhs[d];
     return res;
   }
 
   template <int Ord1, int Ord2, class CT>
-  friend
-  Polynomial<Ord1+Ord2-1,CT> operator*(const Polynomial<Ord1,CT> &lhs, const Polynomial<Ord2,CT> &rhs);
+  friend Polynomial<Ord1 + Ord2 - 1, CT> operator*(
+      const Polynomial<Ord1, CT> &lhs, const Polynomial<Ord2, CT> &rhs);
 
-  Polynomial<Order,CoefType> operator*(Real scalar) const {
-    Polynomial<Order,CoefType> res;
-    for(int d=0; d<Order; d++)
-      res[d] = coefs[d] * scalar;
+  Polynomial<Order, CoefType> operator*(Real scalar) const {
+    Polynomial<Order, CoefType> res;
+    for (int d = 0; d < Order; d++) res[d] = coefs[d] * scalar;
     return res;
   }
 
-  Polynomial<Order,CoefType> operator/(Real scalar) const {
-    Polynomial<Order,CoefType> res;
-    for(int d=0; d<Order; d++)
-      res.coefs[d] = coefs[d] / scalar;
-    return res;    
+  Polynomial<Order, CoefType> operator/(Real scalar) const {
+    Polynomial<Order, CoefType> res;
+    for (int d = 0; d < Order; d++) res.coefs[d] = coefs[d] / scalar;
+    return res;
   }
 };
 
 template <class CoefType>
-class Polynomial<0, CoefType>; // 0 order is meaningless
+class Polynomial<0, CoefType>;  // 0 order is meaningless
 
 //==================================================
 
 template <int Order>
-struct _der_wrapper {
+struct der_wrapper {
   template <class CoefType>
-  static Polynomial<Order-1,CoefType> calc(const Polynomial<Order,CoefType> &P) {
-    Polynomial<Order-1,CoefType> res;
-    for(int d=0; d<Order-1; d++)
-      res[d] = P[d+1] * (d+1);
+  static Polynomial<Order - 1, CoefType> calc(
+      const Polynomial<Order, CoefType> &P) {
+    Polynomial<Order - 1, CoefType> res;
+    for (int d = 0; d < Order - 1; d++) res[d] = P[d + 1] * (d + 1);
     return res;
   }
 };
 
 template <>
-struct _der_wrapper<1> {
+struct der_wrapper<1> {
   template <class CoefType>
-  static Polynomial<1,CoefType> calc(const Polynomial<1,CoefType> &P) {
-    return Polynomial<1,CoefType>(0);
+  static Polynomial<1, CoefType> calc(const Polynomial<1, CoefType> &P) {
+    return Polynomial<1, CoefType>(0);
   }
 };
 
 template <int Order, class T>
-struct ipow_wrapper<Polynomial<Order,T>,0,0> {
-  static Polynomial<1,T> calc(const Polynomial<Order,T> &) {
-    return Polynomial<1,T>(1);
+struct ipow_wrapper<Polynomial<Order, T>, 0, 0> {
+  static Polynomial<1, T> calc(const Polynomial<Order, T> &) {
+    return Polynomial<1, T>(1);
   }
 };
 
 template <int Ord1, int Ord2, class CT>
-inline
-Polynomial<Ord1+Ord2-1,CT> operator*(const Polynomial<Ord1,CT> &lhs, const Polynomial<Ord2,CT> &rhs)
-{
-  Polynomial<Ord1+Ord2-1,CT> res; // res is zeroized
-  for(int k=0; k<Ord1+Ord2-1; ++k)
-    for(int j=std::max(0, k-Ord2+1); j<=std::min(k, Ord1-1); j++)
-      res[k] = res[k] + lhs[j] * rhs[k-j];
+inline Polynomial<Ord1 + Ord2 - 1, CT> operator*(
+    const Polynomial<Ord1, CT> &lhs, const Polynomial<Ord2, CT> &rhs) {
+  Polynomial<Ord1 + Ord2 - 1, CT> res;  // res is zeroized
+  for (int k = 0; k < Ord1 + Ord2 - 1; ++k)
+    for (int j = std::max(0, k - Ord2 + 1); j <= std::min(k, Ord1 - 1); j++)
+      res[k] = res[k] + lhs[j] * rhs[k - j];
   return res;
 }
 
@@ -182,20 +174,22 @@ Polynomial<Ord1+Ord2-1,CT> operator*(const Polynomial<Ord1,CT> &lhs, const Polyn
    Require CoefType to support the [] syntax.
  */
 template <int Order, class CoefType>
-inline auto getComp(const Polynomial<Order,CoefType>& poly, int comp) {
-  using T = std::decay_t<decltype(poly[0][0])>; // the additional [0] is to get a component
-  Polynomial<Order,T> result;
-  for(int d=0; d<Order; ++d)
-    result[d] = poly[d][comp];
+inline auto getComp(const Polynomial<Order, CoefType> &poly, int comp) {
+  using T = std::decay_t<decltype(poly[0][0])>;  // the additional [0] is to get
+                                                 // a component
+  Polynomial<Order, T> result;
+  for (int d = 0; d < Order; ++d) result[d] = poly[d][comp];
   return result;
 }
 
 //==================================================
 // roots-finding functions for real polynomails
 
-template <int Order> using RealPolynomial = Polynomial<Order,Real>;
+template <int Order>
+using RealPolynomial = Polynomial<Order, Real>;
 
-template <int Order> struct _PolynomialRoots {
+template <int Order>
+struct _PolynomialRoots {
   template <class Inserter>
   static Inserter roots(const RealPolynomial<Order> &, Inserter rts, Real) {
     return rts;
@@ -218,41 +212,37 @@ struct _PolynomialRoots<3> {
     const Real &a = poly[2];
     const Real &b = poly[1];
     const Real &c = poly[0];
-    Real delta = b*b - 4*a*c;
-    if(delta < -tol)
-      return rts;
-    if(delta < tol) {
-      *rts++ = -b / (2*a);
+    Real delta = b * b - 4 * a * c;
+    if (delta < -tol) return rts;
+    if (delta < tol) {
+      *rts++ = -b / (2 * a);
       return rts;
     }
     Real dsqrt = sqrt(delta);
-    *rts++ = (-b - dsqrt) / (2*a);
-    *rts++ = (-b + dsqrt) / (2*a);
+    *rts++ = (-b - dsqrt) / (2 * a);
+    *rts++ = (-b + dsqrt) / (2 * a);
     return rts;
   }
 };
 
 template <class Inserter, int Order>
-inline
-Inserter roots(const RealPolynomial<Order> &poly, Inserter rts, Real tol) {
+inline Inserter roots(const RealPolynomial<Order> &poly, Inserter rts,
+                      Real tol) {
   return _PolynomialRoots<Order>::roots(poly, rts, tol);
 };
 
 template <int Order>
-inline
-Real root(const RealPolynomial<Order> &poly, Real x0, Real tol, int maxIter)
-{
+inline Real root(const RealPolynomial<Order> &poly, Real x0, Real tol,
+                 int maxIter) {
   auto q = poly.der();
   return fzero(poly, q, x0, maxIter, tol);
 }
 
 template <class Inserter, int Order>
-inline
-Inserter extrema(const RealPolynomial<Order> &poly, Inserter rts, Real tol)
-{
-  if(Order >= 3)
-    return roots(poly.der(), rts, tol);
+inline Inserter extrema(const RealPolynomial<Order> &poly, Inserter rts,
+                        Real tol) {
+  if (Order >= 3) return roots(poly.der(), rts, tol);
   return rts;
 }
 
-#endif // POLYNOMIAL_H
+#endif  // POLYNOMIAL_H

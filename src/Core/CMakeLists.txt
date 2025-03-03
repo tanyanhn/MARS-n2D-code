@@ -9,14 +9,19 @@ set(Core_Files
     Core/numlib.cpp
     Core/static_for.h
     Core/Polynomial.h
+    Core/MultivariatePolynomial.h
     Core/Curve.h
     Core/Curve.cpp
     Core/Tensor.h
     Core/TensorExpr.h
     Core/TensorSlice.h
     Core/RowSparse.h
+    Core/Wrapper_OpenMP.cpp
     Core/Wrapper_OpenMP.h
     Core/Wrapper_LAPACKE.h
     Core/SolveTri.h
+    Core/Linearization.h
     PARENT_SCOPE
 )
+
+configure_file("${CMAKE_SOURCE_DIR}/src/Core/dirConfig.h.in" "${CMAKE_SOURCE_DIR}/src/Core/dirConfig.h")

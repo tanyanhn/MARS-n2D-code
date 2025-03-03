@@ -5,6 +5,7 @@
 #include "YinSet/OrientedJordanCurve.h"
 #include "YinSet/PointsLocater.h"
 #include "YinSet/SegmentedRealizableSpadjor.h"
+#include "Core/dirConfig.h"
 
 using std::ifstream;
 using std::string;
@@ -26,7 +27,7 @@ void TestLocater::doTest(int num) {
   vector<rVec> queries;
   vector<int> answer;
 
-  ifstream infile(string("data/testLocater-") + (char)('0' + num) + ".input");
+  ifstream infile(string(std::string(ROOT_DIR) + "/test/data/testLocater-") + (char)('0' + num) + ".input");
   infile >> numCurve;
   for (int n = 0; n < numCurve; ++n) {
     int nk;
@@ -47,7 +48,7 @@ void TestLocater::doTest(int num) {
     infile >> queries[k][0] >> queries[k][1];
 
   infile.close();
-  infile.open(string("data/testLocater-") + (char)('0' + num) + ".answer");
+  infile.open(string(std::string(ROOT_DIR) + "/test/data/testLocater-") + (char)('0' + num) + ".answer");
   answer.resize(nq);
   for (int k = 0; k < nq; ++k)
     infile >> answer[k];

@@ -3,3 +3,6 @@
 .history/
 .cache/
 build/
+vcpkg_installed/
+
+*.dat

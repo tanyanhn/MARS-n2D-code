@@ -26,6 +26,7 @@ class OrientedJordanCurve : public Curve<Dim, Order> {
     assert(vCmp(curve.startpoint(), curve.endpoint()) == 0 &&
            "Initial OrientedJordanCurve must maintain startpoint == endpoint.");
   }
+  virtual ~OrientedJordanCurve() = default;
 
   // virtual constructor
   virtual void define(const std::string& parameters);

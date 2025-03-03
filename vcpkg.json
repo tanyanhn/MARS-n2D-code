@@ -1,0 +1,9 @@
+{
+  "dependencies": [
+    "cppunit",
+    "eigen3",
+    "fmt",
+    "gsl",
+    "spdlog"
+  ]
+}

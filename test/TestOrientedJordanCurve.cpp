@@ -2,6 +2,7 @@
 #include <fstream>
 #include <string>
 #include "Core/VecCompare.h"
+#include "Core/dirConfig.h"
 
 using std::string;
 
@@ -269,7 +270,7 @@ bool TestOrientedJordanCurve::testRectangle(const string& input,
 };
 
 void TestOrientedJordanCurve::doTest(int num) {
-  string input_name("data/testOrientedJordanCurve-" + std::to_string(num) +
+  string input_name(std::string(ROOT_DIR) + "/test/data/testOrientedJordanCurve-" + std::to_string(num) +
                     ".input");
   std::ifstream input(input_name);
   std::vector<string> testcase(3);

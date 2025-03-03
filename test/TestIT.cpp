@@ -43,7 +43,7 @@ Crv output(const Crv &crv, Point center, Real radio)
 void testIT()
 {
     int loop = 1;
-    bool plot = false;
+    bool plot = true;
     Real tol = 1e-15;
     int stages = 5;
     cout << setiosflags(ios::scientific) << setprecision(2);
@@ -65,6 +65,9 @@ void testIT()
     Vector<Real> time1(2 * stages - 1, 0);
     Vector<Real> time2(2 * stages - 1, 0);
     clock_t begin, end;
+    string dir = std::string(ROOT_DIR) + "/results/" + test.name + "/";
+    auto success = mkdir(dir.c_str(), 0755);
+    assert(success == 0);
     for (int lp = 0; lp < loop; lp++)
     {
 
@@ -92,10 +95,10 @@ void testIT()
 
             ostringstream tmps;
             tmps << k;
-            string fname = "results" + test.name + "/No" + tmps.str();
+            string fname = dir + "No" + tmps.str();
 
             begin = clock();
-            if (plot == true)
+            if (plot)
                 CM.trackInterface(*test.velocity, YS, 0, dt, test.T, true, fname, opstride);
             else
                 CM.trackInterface(*test.velocity, YS, 0, dt, test.T);
@@ -487,9 +490,9 @@ void testKinks_circle()
 
 int main()
 {
-    //testIT();
+    testIT();
     //testKinks_0nk();
-    testKinks_0k();
+    // testKinks_0k();
     //testKinks_circle();
     return 0;
 }

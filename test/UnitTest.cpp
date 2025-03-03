@@ -6,6 +6,7 @@
 #include "TestSegmentsIntersector.H"
 #include "TestYinSetsBooleanOps.H"
 int main(int argc, char* argv[]) {
+  // std::cout << "test start";
   CppUnit::TextUi::TestRunner runner1;
   runner1.addTest(TestSegmentsIntersector::suite());
   CppUnit::TextUi::TestRunner runner3;

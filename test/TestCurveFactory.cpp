@@ -6,6 +6,7 @@
 #include <utility>
 #include "Core/Curve.h"
 #include "Core/VecCompare.h"
+#include "Core/dirConfig.h"
 #include "YinSet/OrientedJordanCurve.h"
 #include "YinSet/YinSet.h"
 using std::string;
@@ -111,10 +112,10 @@ int main(int argc, char* argv[]) {
   auto knots = cur.getKnots();
   drawCurve(cur, 10, "drawCircle.m");
 
-  string input_name("../test/data/testCurveFactory");
-  int testcase;
-  std::cout << "Input test case number:" << std::endl;
-  std::cin >> testcase;
+  string input_name(std::string(ROOT_DIR) + "/test/data/testCurveFactory");
+  int testcase = 0;
+  // std::cout << "Input test case number:" << std::endl;
+  // std::cin >> testcase;
   // 0.one closed circle.
   // 1.unclosed circle.
   // 2.two equivalent curves.
@@ -134,7 +135,7 @@ int main(int argc, char* argv[]) {
   std::cout << "Test Order=2:" << std::endl;
   auto ys2 = factory2.createYinSet(factory_params);
   std::cout << ys2.getHasseString() << std::endl;
-  std::ofstream of2("result/resultOrientedJordanCurveFactory2_" +
+  std::ofstream of2(std::string(ROOT_DIR) + "/test/result/resultOrientedJordanCurveFactory2_" +
                         std::to_string(testcase) + ".dat",
                     std::ios_base::binary);
   ys2.dump(of2);

@@ -6,10 +6,10 @@
 
 class TestIT
 {
-    using Point = Vec<Real, 2>;
+public:
+  using Point = Vec<Real, 2>;
 
-    template <class T>
-    using Vector = std::vector<T>;
+  template <class T> using Vector = std::vector<T>;
 
 public:
     Point center;                //center of initial circle
@@ -35,8 +35,9 @@ VectorFunction<2> *circleshrink = new CircleShrink(1);
 VectorFunction<2> *squareshrink = new SquareShrink();
 
 TestIT getTest(int i)
-{
-    Vector<TestIT> test;
+{   
+    using Point = TestIT::Point;
+    std::vector<TestIT> test;
 
     //test 0
     //Vortex(8)

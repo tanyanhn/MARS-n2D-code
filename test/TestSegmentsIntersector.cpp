@@ -3,6 +3,7 @@
 #include <iomanip>
 #include <cctype>
 #include "TestSegmentsIntersector.H"
+#include "Core/dirConfig.h"
 
 using std::ifstream;
 using std::ostringstream;
@@ -11,7 +12,7 @@ using std::istringstream;
 void TestSegmentsIntersector::doTest(int num)
 {
   ostringstream prefix;
-  prefix << "data/testLineInts-" << num;
+  prefix << std::string(ROOT_DIR) + "/test/data/testLineInts-" << num;
   
   Real tol;
   vector<Segment<2>> segs = readInputFile(prefix.str() + ".input", tol);
@@ -27,6 +28,7 @@ bool my_isspace(const char &c) {
 
 vector<Segment<2>> TestSegmentsIntersector::readInputFile(const string &filename, Real &tol)
 {
+  std::cout << "filename: \n" << filename;
   ifstream input(filename);
   assert(input);
   input >> tol;

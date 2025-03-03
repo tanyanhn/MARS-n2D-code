@@ -1,0 +1,46 @@
+{
+  "version": 2,
+  "configurePresets": [
+    {
+      "name": "default",
+      "generator": "Ninja",
+      "binaryDir": "/root/shareFolder/github/myrepo/YinSet2D_MARS/build",
+      "cacheVariables": {
+        "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+        "VCPKG_INSTALLED_DIR": "${sourceDir}/vcpkg_installed",
+        "VCPKG_TARGET_TRIPLET": "x64-linux"
+      }
+    },
+    {
+      "name": "gcc",
+      "inherits": "default",
+      "description": "Configure with GCC",
+      "cacheVariables": {
+        "MARS_COMPILER_FILE": "${sourceDir}/vcpkg-gcc-toolchain.cmake"
+      }
+    },
+    {
+      "name": "clang",
+      "inherits": "default",
+      "description": "Configure with Clang",
+      "cacheVariables": {
+        "MARS_COMPILER_FILE": "${sourceDir}/vcpkg-clang-toolchain.cmake"
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "default",
+      "hidden": true,
+      "configurePreset": "default"
+    },
+    {
+      "name": "gcc",
+      "configurePreset": "gcc"
+    },
+    {
+      "name": "clang",
+      "configurePreset": "clang"
+    }
+  ]
+}

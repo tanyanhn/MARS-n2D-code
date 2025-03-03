@@ -30,6 +30,7 @@ public:
   /// \param tolForSegmentation The tolerance for segmenting the Jordan curves at the improper intersections.
   /// Set to 0.0 if no segmentation is needed.
   SegmentedRealizableSpadjor(const vector<OrientedJordanCurve<Dim, Order>>& aSpadjor,Real tolForSegmentation = 0.0);
+  SegmentedRealizableSpadjor(const vector<Curve<Dim, Order>>& aSpadjor,Real tolForSegmentation = 0.0);
 
   /// Load a segmented Spadjor from the stream. See YinSet::dump().
   /// \param is
