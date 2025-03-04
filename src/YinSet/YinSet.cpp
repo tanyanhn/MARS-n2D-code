@@ -254,8 +254,8 @@ void YinSet<2, Order>::resetAllKinks(std::vector<Vertex> vertices) {
   auto numCurves = orientedJordanCurves.size();
   for (size_t i = 0; i < numCurves; ++i) {
     auto start =
-             std::lower_bound(vertices.begin(), vertices.end(), Vertex(i, 0)),
-         end = std::lower_bound(vertices.begin(), vertices.end(),
+             std::lower_bound(vertices.begin(), vertices.end(), Vertex(i, 0));
+    auto end = std::lower_bound(vertices.begin(), vertices.end(),
                                 Vertex(i + 1, 0));
     for (auto Iter = start; Iter != end; ++Iter) {
       kinks.insert(Simplex<Vertex>{std::initializer_list<Vertex>{*Iter}});
@@ -289,8 +289,8 @@ void YinSet<2, Order>::reFitCurve(size_t i) {
   SimplicialComplex<Vertex> tmp;
   vector<Vec<Real, 2>> points;
   auto start = sims.lower_bound(
-           Simplex<Vertex>{std::initializer_list<Vertex>{{i, 0}}}),
-       end = sims.lower_bound(
+           Simplex<Vertex>{std::initializer_list<Vertex>{{i, 0}}});
+  auto end = sims.lower_bound(
            Simplex<Vertex>{std::initializer_list<Vertex>{{i + 1, 0}}});
   while (start != end) {
     tmp.insert(Simplex<Vertex>{
@@ -310,8 +310,8 @@ vector<Curve<2, Order>> YinSet<2, Order>::getSmoothCurves(Real tol) const {
   for (auto i = 0ul; i < numJordanCurve; ++i) {
     vector<Real> brks;
     auto start = sims.lower_bound(
-             Simplex<Vertex>{std::initializer_list<Vertex>{{i, 0}}}),
-         end = sims.lower_bound(
+             Simplex<Vertex>{std::initializer_list<Vertex>{{i, 0}}});
+    auto end = sims.lower_bound(
              Simplex<Vertex>{std::initializer_list<Vertex>{{i + 1, 0}}});
     while (start != end) {
       const auto &index = *start->vertices.begin();

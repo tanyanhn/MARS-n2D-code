@@ -4,6 +4,7 @@
 #include <vector>
 
 #include "Core/Curve.h"
+#include "Core/Tensor.h"
 #include "Segment.h"
 #include "YinSet/OrientedJordanCurve.h"
 
@@ -60,6 +61,9 @@ class SegmentedRealizableSpadjor {
 
   /// Calculate the meet of two segmented Spadjors.
   friend SRS meet<Order>(const SRS& lhs, const SRS& rhs, Real tol);
+
+  /// Calculate the Spadjor CutCell.
+  auto cutCell(const Box<Dim>& box, const Interval<Dim>& range) const -> Tensor<SRS, 2>;
 
  protected:
   SegmentedRealizableSpadjor() = default;

@@ -36,8 +36,10 @@ struct Simplex {
 
   // operator
   bool operator<(const Simplex& rhs) const {
-    auto lIt = vertices.begin(), rIt = rhs.vertices.begin(),
-         lend = vertices.end(), rend = rhs.vertices.end();
+    auto lIt = vertices.begin();
+    auto rIt = rhs.vertices.begin();
+    auto lend = vertices.end();
+    auto rend = rhs.vertices.end();
     while (lIt != lend && rIt != rend) {
       if (*lIt != *rIt) return *lIt < *rIt;
       ++lIt, ++rIt;
@@ -48,8 +50,10 @@ struct Simplex {
   bool operator>(const Simplex& rhs) const { return rhs < *this; }
 
   bool operator==(const Simplex& rhs) const {
-    auto lIt = vertices.begin(), rIt = rhs.vertices.begin(),
-         lend = vertices.end(), rend = rhs.vertices.end();
+    auto lIt = vertices.begin();
+    auto rIt = rhs.vertices.begin();
+    auto lend = vertices.end();
+    auto rend = rhs.vertices.end();
     while (lIt != lend && rIt != rend) {
       if (*lIt != *rIt) return false;
       ++lIt, ++rIt;

@@ -63,6 +63,11 @@ inline void keepSleep() {
   }
 }
 
-// Real tol = 1e-12;
+inline Real distTol(Real tol = 1e-12) {
+  static Real distTol = tol;
+  return distTol;
+}
+
+const int newtonMaxIter = 10;
 
 #endif  // CONFIG_H

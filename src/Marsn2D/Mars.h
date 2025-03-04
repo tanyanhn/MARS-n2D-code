@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Mars/InterfaceGraph.h"
-#include "Mars/Yinset.h"
+#include "Marsn2D/InterfaceGraph.h"
+#include "Marsn2D/Yinset.h"
 
 namespace MARSn2D {
 template <int Order>

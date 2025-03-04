@@ -16,6 +16,7 @@ class YinSet;
 template <int Dim, int Order>
 class OrientedJordanCurve : public Curve<Dim, Order> {
  public:
+  // (i, j), i-th Curve, j-th knot point.
   using PointIndex = std::pair<size_t, size_t>;
   using Vertex = Simplex<PointIndex>::Vertex;
   // constructors

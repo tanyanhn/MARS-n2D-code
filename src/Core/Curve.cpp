@@ -317,6 +317,8 @@ Curve<2, Order> createRect(const Vec<Real, 2> &lo, const Vec<Real, 2> &hi) {
 template <int Order>
 Real area(const Curve<2, Order> &gon) {
   Real a = 0.0;
+  if (!gon.isClosed(distTol()))
+    throw std::runtime_error("unclosed Curve calculate area.");
   const auto &knots = gon.getKnots();
   int i = 0;
   // apply the Green's formula

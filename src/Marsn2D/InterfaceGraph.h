@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Mars/Elements.h"
-#include "Mars/OrientedJordanCurve.h"
+#include "Marsn2D/Elements.h"
+#include "Marsn2D/OrientedJordanCurve.h"
 
 namespace MARSn2D {
 

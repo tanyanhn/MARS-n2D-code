@@ -202,10 +202,10 @@ void Rectangle<Order>::define(std::istream& iss,
   // iss.read((char*)&(hL), sizeof(Real));
   iss >> smallEnd[0] >> smallEnd[1] >> bigEnd[0] >> bigEnd[1] >> theta >>
       orientation >> hL;
-  size_t rowPolys = (bigEnd[0] - smallEnd[0]) / hL + 1,
-         colPolys = (bigEnd[1] - smallEnd[1]) / hL + 1;
-  Real dx = (bigEnd[0] - smallEnd[0]) / rowPolys,
-       dy = (bigEnd[1] - smallEnd[1]) / colPolys;
+  size_t rowPolys = (bigEnd[0] - smallEnd[0]) / hL + 1;
+  size_t colPolys = (bigEnd[1] - smallEnd[1]) / hL + 1;
+  Real dx = (bigEnd[0] - smallEnd[0]) / rowPolys;
+  Real dy = (bigEnd[1] - smallEnd[1]) / colPolys;
 
   std::vector<Vec<Real, 2>> points;
   vector<Vertex> kinks1;
@@ -223,7 +223,10 @@ void Rectangle<Order>::define(std::istream& iss,
     points.push_back(Vec<Real, 2>{smallEnd[0], bigEnd[1] - i * dy});
   points.push_back(smallEnd);
 
-  Real c = cos(theta), s = sin(theta), x, y;
+  Real c = cos(theta);
+  Real s = sin(theta);
+  Real x;
+  Real y;
   for (auto& p : points) {
     x = c * p[0] - s * p[1];
     y = s * p[0] + c * p[1];

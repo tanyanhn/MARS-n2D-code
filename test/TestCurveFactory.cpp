@@ -93,7 +93,7 @@ int main(int argc, char* argv[]) {
   string inCircle1 = "Circle 0 0 1 1 1";
   string inCircle2 = "Circle 10 10 1 1 0.2";
   string inCircle3 = "Circle 15 15 1 1 0.2";
-  string inRectangle1 = "Rectangle 0 0 1 2 0 1 0.5";
+  string inRectangle1 = "Rectangle 0 0 1 2 0 1 3";
   string inRectangle2 =
       "Rectangle 0 0 1 2 " + std::to_string(0.5 * M_PI) + " 1 0.5";
   string inRectangle3 = "Rectangle 4 4 10 10 0 1 2";
@@ -101,12 +101,14 @@ int main(int argc, char* argv[]) {
   CurveFactory<2, 4> factory4;
   CurveFactory<2, 2> factory2;
 
-  auto cur = *factory4.createCurve(inCircle1);
+  auto cur = *factory2.createCurve(inRectangle1);
+  SegmentedRealizableSpadjor<2> test(std::vector<OrientedJordanCurve<2, 2>>{cur});
+  std::cout << test.isBounded(tol);
   // std::cout << verifySpline(cur.getPolys(), cur.getKnots(), true, tol) <<
   // std::endl;
   auto polys = cur.getPolys();
   auto knots = cur.getKnots();
-  drawCurve(cur, 10, "drawCircle.m");
+  // drawCurve(cur, 10, "drawCircle.m");
 
   string input_name(std::string(ROOT_DIR) + "/test/data/testCurveFactory");
   int testcase = 0;

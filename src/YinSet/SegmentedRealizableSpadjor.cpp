@@ -4,6 +4,7 @@
 
 #include "PointsLocater.h"
 #include "SegmentsIntersector.h"
+#include "YinSet/CutCellHelper.h"
 #include "YinSet/PastingMap.h"
 
 template <class T>
@@ -29,8 +30,8 @@ bool checkIsBounded(const T &iterator, Real tol) {
             [](const Segment<2> &lhs, const Segment<2> &rhs) {
               Real k1 = lhs.slope();
               Real k2 = rhs.slope();
-              if (k1 == 0) return false;
-              if (k2 == 0) return true;
+              if (k1 == 0) return true;
+              if (k2 == 0) return false;
               if (k1 * k2 < 0) return k1 > 0;
               return k1 < k2;
             });
@@ -353,7 +354,8 @@ auto SegmentedRealizableSpadjor<Order>::complement(
     Real tolForSegmentation) const -> SRS {
   SRS result;
   if (Order == 2) {
-    vector<Curve<Dim, Order>> Curves, reverseCurve;
+    vector<Curve<Dim, Order>> Curves;
+    vector<Curve<Dim, Order>> reverseCurve;
     applySegmentation(orientedJordanCurves, Curves, tolForSegmentation);
     for (const auto &j : Curves) reverseCurve.push_back(j.reverse());
     pastSegmentation(result.orientedJordanCurves, reverseCurve,
@@ -363,6 +365,36 @@ auto SegmentedRealizableSpadjor<Order>::complement(
       result.orientedJordanCurves.push_back(j.reverse());
   }
   return result;
+}
+
+template <int Order>
+auto SegmentedRealizableSpadjor<Order>::cutCell(
+    const Box<Dim> &box, const Interval<Dim> &range) const -> Tensor<SRS, 2> {
+  Tensor<vector<SRS>, 2> ret(box);
+  auto size = box.size();
+  Real tol = distTol();
+
+  auto lo = range.lo();
+  auto hi = range.hi();
+  auto h = (hi - lo) / size;
+  auto gridBox = box + Vec<int, 2>(1);
+
+  // calculate the intersections' parameters
+  auto intersections = CutCellHelper<Order>::intersectGridLine(
+      lo, hi, h, orientedJordanCurves, tol);
+
+  Tensor<vector<Curve<2, Order>>, 2> gridCurves;
+  // partition the curves to Tensor<Curve<Dim, Order>, 2>
+  CutCellHelper<Order>::splitCurves(lo, h, intersections, orientedJordanCurves,
+                                    gridCurves, tol);
+
+  // past in every cells.
+  CutCellHelper<Order>::pastCells(lo, h, gridCurves, ret, tol);
+
+  // fill inner cell rectangles.
+  CutCellHelper<Order>::fillInner(*this, ret, tol);
+
+  return ret;
 }
 
 //============================================================

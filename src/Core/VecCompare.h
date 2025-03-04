@@ -38,7 +38,7 @@ class VecCompare<Real, 2> {
   int compare(const rVec &p1, const rVec &p2) const {
     if (std::abs(p1[1] - p2[1]) <= tol) {
       if (std::abs(p1[0] - p2[0]) <= tol) return 0;
-      return (p1[0] < p2[0]) ? (-1) : (1);
+      return (p1[0] > p2[0]) ? (-1) : (1);
     }
     return (p1[1] > p2[1]) ? (-1) : (1);
   }

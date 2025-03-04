@@ -30,6 +30,10 @@ class Curve {
     knots.push_back(len);
   }
 
+  Curve(std::vector<Real>&& knots_,
+        std::vector<Polynomial<Order, rVec>>&& polys_)
+      : knots(std::move(knots_)), polys(std::move(polys_)) {}
+
   Curve(const Curve&) = default;
   auto operator=(const Curve&) -> Curve& = default;
   Curve(Curve&&) = default;
@@ -71,6 +75,7 @@ class Curve {
   }
 
   const std::vector<Real>& getKnots() const { return knots; }
+  auto getKnotPoints() const;
 
   const std::vector<T_Polynomial>& getPolys() const { return polys; }
 
@@ -176,5 +181,16 @@ Curve<2, Order> fitCurve(
     typename Curve<2, Order>::BCType type = Curve<2, Order>::notAknot,
     const Vec<Real, 2>& start = Vec<Real, 2>(),
     const Vec<Real, 2>& end = Vec<Real, 2>());
+
+template <int Dim, int Order>
+auto Curve<Dim, Order>::getKnotPoints() const {
+  std::vector<rVec> ret;
+  ret.reserve(knots.size());
+  for (auto& poly : polys) {
+    ret.push_back(poly[0]);
+  }
+  ret.push_back(endpoint());
+  return ret;
+}
 
 #endif  // CURVE_H
