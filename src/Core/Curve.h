@@ -95,7 +95,8 @@ class Curve {
   }
 
   Curve<Dim, Order> rotate(Real theta) const {
-    const Real c = cos(theta), s = sin(theta);
+    const Real c = cos(theta);
+    const Real s = sin(theta);
     Curve<Dim, Order> res;
     res.knots = this->knots;
     for (const auto& p : this->polys) {
@@ -111,7 +112,7 @@ class Curve {
 
   // advanved operations
  public:
-  Curve<Dim, Order> extract(Real from, Real to, Real tol) const;
+  Curve<Dim, Order> extract(Real lo, Real hi, Real tol) const;
 
   void split(const vector<Real>& brks, vector<Curve<Dim, Order>>& out,
              Real tol) const;
@@ -127,6 +128,22 @@ class Curve {
      Require the curve to be piecewise monotonic, see makeMonotonic().
    */
   int countProperInts(Real c, int d, Real tol) const;
+
+  // normal Vector
+  std::vector<rVec> normalVector(Real brk, Real tol) const;
+
+  // compare around a point p(boundary point)
+  int compare(const Curve& rhs, const rVec& p, int ix, int iy, Real tol) const;
+  // type = 0, startpoint() == rhs.startpoint()
+  // type = 1, startpoint() == rhs.endpoint()
+  // type = 2, endpoint() == rhs.startpoint()
+  // type = 3, endpoint() == rhs.endpoint()
+  auto getComparablePoint(const Curve& rhs, Real tol, int type = 0) const -> std::pair<rVec, rVec>;
+  protected:
+  static Real paraCalculator(const auto &poly, int ix, Real x, Real t0, Real tol) {
+    auto xPoly = getComp(poly, ix);
+    return root(xPoly - x, t0, tol, newtonMaxIter);
+  };
 
   // friend helpers
  public:

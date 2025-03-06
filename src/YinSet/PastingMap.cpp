@@ -3,10 +3,9 @@
 #include <algorithm>
 
 template <int Order, class Selector>
-void PastingMap<Order, Selector>::removeEdge(
-    const rVec &oldtail, vector<Crv> &repo,
-    typename vector<Crv>::const_iterator eit) {
-  assert(repo.cbegin() <= eit && eit < repo.cend());
+void PastingMap<Order, Selector>::removeEdge(const rVec &oldtail,
+                                             std::set<size_t> &repo, Iter eit) {
+  necessaryEdge.erase(*eit);
   repo.erase(eit);
   if (repo.empty()) graph.erase(oldtail);
 }
@@ -14,17 +13,23 @@ void PastingMap<Order, Selector>::removeEdge(
 template <int Order, class Selector>
 void PastingMap<Order, Selector>::formClosedLoops(vector<Crv> &outCont) {
   Crv jordan;
-  rVec oldtail, newtail;
+  rVec oldtail;
+  rVec newtail;
   vector<std::pair<rVec, Real>> footprint;
   VecCompare<Real, SpaceDim> vcmp(tol);
+  // for (auto& crv : allCrvs) {
+  //   std::cout << crv.startpoint() << ", " << crv.endpoint() << std::endl;
+  // }
 
-  while (!graph.empty()) {
-    typename vector<Crv>::const_iterator outEdge;
-    vector<Crv> *cands;
+  while (!necessaryEdge.empty()) {
+    Iter outEdge;
+    std::set<size_t> *cands;
     if (jordan.empty()) {  // start a new loop
-      auto iter = graph.begin();
+      auto id = *necessaryEdge.begin();
+      auto startpoint = allCrvs[id].startpoint();
+      auto iter = graph.find(startpoint);
       cands = &(iter->second);
-      outEdge = cands->cbegin();
+      outEdge = cands->find(id);
       // take care of the starting point
       oldtail = iter->first;
       footprint.resize(1);
@@ -34,9 +39,9 @@ void PastingMap<Order, Selector>::formClosedLoops(vector<Crv> &outCont) {
       assert(graph.find(oldtail) != graph.end());
       cands = &(graph[oldtail]);
       outEdge = std::min_element(cands->cbegin(), cands->cend(),
-                                 Selector(tol, oldtail, jordan));
+                                 Selector(tol, oldtail, jordan, allCrvs));
     }
-    jordan.concat(*outEdge);
+    jordan.concat(allCrvs[*outEdge]);
     newtail = jordan.endpoint();
     // delete the already-used out-edge
     removeEdge(oldtail, *cands, outEdge);
@@ -57,13 +62,20 @@ void PastingMap<Order, Selector>::formClosedLoops(vector<Crv> &outCont) {
 }
 
 template <int Order>
-bool OutEdgeSelectorByKnots<Order>::operator()(const Crv &lhs, const Crv &rhs) {
+bool OutEdgeSelectorByKnots<Order>::operator()(const size_t &lhsId,
+                                               const size_t &rhsId) {
+  // TODO(ytan): there is a bug in selecting multi curves.
+  const auto &lhs = allCrvs[lhsId];
+  const auto &rhs = allCrvs[rhsId];
   auto getNextPoint = [](const Crv &p) {
     const auto &knots = p.getKnots();
     return p.getPolys().front()(knots[1] - knots[0]);
   };
-  rVec d1 = normalize(getNextPoint(lhs) - standpoint);
-  rVec d2 = normalize(getNextPoint(rhs) - standpoint);
+  auto lhsPoint = getNextPoint(lhs);
+  auto rhsPoint = getNextPoint(rhs);
+  // auto [lhsPoint, rhsPoint] = lhs.getComparablePoint(rhs, tol, 0);
+  rVec d1 = normalize(lhsPoint - standpoint);
+  rVec d2 = normalize(rhsPoint - standpoint);
   Real s1 = cross(indir, d1);
   Real s2 = cross(indir, d2);
   if (s1 * s2 <= 0) return (s1 >= 0);

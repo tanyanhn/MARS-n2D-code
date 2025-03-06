@@ -111,3 +111,79 @@ auto PointsLocater::compute(const vector<Segment<2>> &segs,
   status.clear();
   return output;
 }
+
+template <int Order>
+vector<int> PointsLocater::operator()(
+    const vector<OrientedJordanCurve<DIM, Order>> &ys,
+    const vector<rVec> &queries, bool /*unused*/) {
+  std::vector<int> ret;
+  if (ys.empty() || queries.empty()) {
+    return {};
+  }
+  using Crv = Curve<DIM, Order>;
+
+  // <distance, point, normal, direction>
+  std::vector<std::tuple<Real, rVec, rVec, Crv>> closest_points;
+  closest_points.resize(queries.size(),
+                        std::make_tuple(std::numeric_limits<Real>::max(),
+                                        rVec{0, 0}, rVec{0, 0}, Crv()));
+  const int ix = 0;
+  const int iy = 1;
+  VecCompare<Real, 2> vcmp;
+
+  for (const auto &jordanCurve : ys) {
+    auto &polys = jordanCurve.getPolys();
+    auto &knots = jordanCurve.getKnots();
+    for (int i = 0; i < polys.size(); ++i) {
+      auto &poly = polys[i];
+      auto xPoly = getComp(poly, ix);
+      auto p0 = poly[0];
+      auto p1 = poly(knots[i + 1] - knots[i]);
+      Crv localCrv(poly, knots[i + 1] - knots[i]);
+      if (p0[ix] > p1[ix]) std::swap(p0, p1);
+
+      for (int j = 0; j < queries.size(); ++j) {
+        const auto &q = queries[j];
+        Real x = q[ix];
+        if (x < p0[ix] || x > p1[ix]) continue;
+        if (norm(p0[iy] - q[iy]) > std::get<0>(closest_points[j]) &&
+            norm(p1[iy] - q[iy]) > std::get<0>(closest_points[j]))
+          continue;
+
+        auto brk =
+            root(xPoly, (knots[i + 1] - knots[i]) / 2, tol, newtonMaxIter);
+        if (brk < 0 || brk > knots[i + 1] - knots[i])
+          throw std::runtime_error("root not found");
+        auto y = poly(brk)[iy];
+        auto d = norm(y - q[iy]);
+        rVec aim = {x, y};
+        if (norm(d - std::get<0>(closest_points[j])) < tol) {
+          auto preCrv = std::get<3>(closest_points[j]);
+          auto compareRes = localCrv.compare(preCrv, q, ix, iy, tol);
+          if (compareRes * (y - q[iy]) > 0) {
+            closest_points[j] = std::make_tuple(d, aim, localCrv.normalVector(brk, tol)[0], localCrv);
+          }
+        } else if (d < std::get<0>(closest_points[j])) {
+          closest_points[j] = std::make_tuple(d, aim, localCrv.normalVector(brk, tol)[0], localCrv);
+        }
+      }
+    }
+  }
+
+  ret.resize(queries.size());
+  for (int i = 0; i < queries.size(); ++i) {
+    auto &cp = closest_points[i];
+    if (std::get<0>(cp) > tol)
+      ret[i] = dot(std::get<2>(cp), std::get<1>(cp) - queries[i]) > 0 ? 1 : -1;
+    else
+      ret[i] = 0;
+  }
+  return ret;
+}
+
+template vector<int> PointsLocater::operator()<4>(
+    const vector<OrientedJordanCurve<2, 4>> &ys, const vector<rVec> &queries,
+    bool);
+template vector<int> PointsLocater::operator()<2>(
+    const vector<OrientedJordanCurve<2, 2>> &ys, const vector<rVec> &queries,
+    bool);

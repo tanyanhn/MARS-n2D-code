@@ -13,6 +13,8 @@ class SegmentedRealizableSpadjor;
 
 template <int Dim, int Order>
 class YinSet;
+template <int Order>
+struct CutCellHelper;
 
 template <int Order>
 SegmentedRealizableSpadjor<Order> meet(
@@ -63,7 +65,10 @@ class SegmentedRealizableSpadjor {
   friend SRS meet<Order>(const SRS& lhs, const SRS& rhs, Real tol);
 
   /// Calculate the Spadjor CutCell.
-  auto cutCell(const Box<Dim>& box, const Interval<Dim>& range) const -> Tensor<SRS, 2>;
+  auto cutCell(const Box<Dim>& box, const Interval<Dim>& range) const -> Tensor<vector<SRS>, 2>;
+
+  // auto& getOrientedJordanCurves() { return orientedJordanCurves; }
+  const auto& getOrientedJordanCurvesRef() const { return orientedJordanCurves; }
 
  protected:
   SegmentedRealizableSpadjor() = default;

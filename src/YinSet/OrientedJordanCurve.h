@@ -22,8 +22,8 @@ class OrientedJordanCurve : public Curve<Dim, Order> {
   // constructors
   OrientedJordanCurve() = default;
 
-  OrientedJordanCurve(const Curve<Dim, Order>& curve)
-      : Curve<Dim, Order>(curve) {
+  OrientedJordanCurve(const Curve<Dim, Order>& curve) : Curve<Dim, Order>(curve) {
+    makeSelfMonotonic(distTol());
     VecCompare<Real, Dim> vCmp(1e-10);
     assert(vCmp(curve.startpoint(), curve.endpoint()) == 0 &&
            "Initial OrientedJordanCurve must maintain startpoint == endpoint.");
@@ -43,6 +43,22 @@ class OrientedJordanCurve : public Curve<Dim, Order> {
               const SimplicialComplex<Vertex>& kinks);
   void define(const std::vector<Vec<Real, Dim>>& points,
               const vector<Vertex>& indexes);
+
+  void makeSelfMonotonic(Real tol) {
+    // *this = this->makeMonotonic(tol);
+  }
+
+  // locate the point in the OrientedJordanCurve.
+  enum class LocateResult {
+    // point is inside the curve.
+    INSIDE,
+    // point is outside the curve.
+    OUTSIDE,
+    // point is on the curve.
+    ON_CURVE
+  };
+  auto locate(const Vec<Real, Dim>& point, Real tol = distTol()) const
+      -> LocateResult;
 
   template <int, int>
   friend class YinSet;

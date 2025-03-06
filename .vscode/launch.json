@@ -14,7 +14,7 @@
             // "[Fitter]",
             // "--rng-seed 634119452"
           ],
-          "cwd": "${workspaceFolder}",
+          "cwd": "${workspaceFolder}/test",
           "environment": [],
           "externalConsole": false,
           "MIMode": "gdb",

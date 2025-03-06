@@ -64,7 +64,8 @@ void testIT() {
   Vector<Real> time2(2 * stages - 1, 0);
   clock_t begin, end;
   string dir = std::string(ROOT_DIR) + "/results/" + test.name + "/";
-  auto success = mkdir(dir.c_str(), 0755);
+  // auto success = 
+  mkdir(dir.c_str(), 0755);
   // assert(success == 0);
   for (int lp = 0; lp < loop; lp++) {
     n = test.n;    //

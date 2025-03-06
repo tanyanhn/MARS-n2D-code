@@ -6,6 +6,7 @@
 #include "SegmentsIntersector.h"
 #include "YinSet/CutCellHelper.h"
 #include "YinSet/PastingMap.h"
+#include "Core/Tensor.h"
 
 template <class T>
 bool checkIsBounded(const T &iterator, Real tol) {
@@ -30,8 +31,8 @@ bool checkIsBounded(const T &iterator, Real tol) {
             [](const Segment<2> &lhs, const Segment<2> &rhs) {
               Real k1 = lhs.slope();
               Real k2 = rhs.slope();
-              if (k1 == 0) return true;
-              if (k2 == 0) return false;
+              if (k1 == 0) return false; // since the topmost is the leftmost
+              if (k2 == 0) return true;
               if (k1 * k2 < 0) return k1 > 0;
               return k1 < k2;
             });
@@ -43,7 +44,7 @@ bool SegmentedRealizableSpadjor<2>::isBounded(Real tol) const {
   auto iterator = [&](const auto &callback) {
     for (const auto &gamma : orientedJordanCurves) {
       const auto &polys = gamma.getPolys();
-      int numPolys = polys.size();
+      auto numPolys = polys.size();
       for (int i = 0; i < numPolys - 1; ++i)
         callback(Segment<2>(polys[i][0], polys[i + 1][0]));
       callback(Segment<2>(polys[numPolys - 1][0], polys[0][0]));
@@ -87,11 +88,11 @@ std::vector<Segment<2>> collapseToSeg(
     const std::vector<OrientedJordanCurve<2, 2>> &bdries,
     std::vector<int> &cIdx, std::vector<int> &pIdx) {
   std::vector<Segment<2>> segs;
-  for (std::size_t c = 0; c < bdries.size(); ++c) {
+  for (auto c = 0; c < bdries.size(); ++c) {
     const auto &gamma = bdries[c];
     const auto &polys = gamma.getPolys();
-    auto numPolys = polys.size();
-    for (std::size_t i = 0; i < numPolys - 1; ++i) {
+    int numPolys = (int)polys.size();
+    for (auto i = 0; i < numPolys - 1; ++i) {
       segs.emplace_back(polys[i][0], polys[i + 1][0]);
       cIdx.push_back(c);
       pIdx.push_back(i);
@@ -113,7 +114,7 @@ void SegmentedRealizableSpadjor<2>::pastSegmentation(
   builder.formClosedLoops(res);
   aSpadjor.clear();
   for (auto &&crv : res) {
-    aSpadjor.push_back(std::move(crv));
+    aSpadjor.emplace_back(std::move(crv));
   }
 }
 
@@ -174,7 +175,7 @@ SegmentedRealizableSpadjor<2> meet(const SegmentedRealizableSpadjor<2> &lhs,
   int numSeg[2];
   for (int m = 0; m < 2; ++m) {
     segs[m] = collapseToSeg(*bdriesOfOperands[m], ci, pi);
-    numSeg[m] = segs[m].size();
+    numSeg[m] = (int)segs[m].size();
   }
 
   // call the intersector
@@ -369,7 +370,7 @@ auto SegmentedRealizableSpadjor<Order>::complement(
 
 template <int Order>
 auto SegmentedRealizableSpadjor<Order>::cutCell(
-    const Box<Dim> &box, const Interval<Dim> &range) const -> Tensor<SRS, 2> {
+    const Box<Dim> &box, const Interval<Dim> &range) const -> Tensor<vector<SRS>, 2> {
   Tensor<vector<SRS>, 2> ret(box);
   auto size = box.size();
   Real tol = distTol();
@@ -377,7 +378,6 @@ auto SegmentedRealizableSpadjor<Order>::cutCell(
   auto lo = range.lo();
   auto hi = range.hi();
   auto h = (hi - lo) / size;
-  auto gridBox = box + Vec<int, 2>(1);
 
   // calculate the intersections' parameters
   auto intersections = CutCellHelper<Order>::intersectGridLine(
@@ -392,7 +392,7 @@ auto SegmentedRealizableSpadjor<Order>::cutCell(
   CutCellHelper<Order>::pastCells(lo, h, gridCurves, ret, tol);
 
   // fill inner cell rectangles.
-  CutCellHelper<Order>::fillInner(*this, ret, tol);
+  CutCellHelper<Order>::fillInner(lo, h, *this, ret, tol);
 
   return ret;
 }

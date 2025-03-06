@@ -68,9 +68,9 @@ class Segment {
 
   ///
   /**
-     Determine if the point p lies on the line segment.
+     Determine if the point q lies on the line segment.
    */
-  bool contain(const rVec &p, Real tol) const;
+  bool contain(const rVec &q, Real tol) const;
 
   ///
   /**
@@ -188,11 +188,11 @@ inline bool isInInterval(const Vec<Real, Dim> &q, const Vec<Real, Dim> &p1,
 }
 
 template <int Dim>
-inline bool Segment<Dim>::contain(const rVec &p, Real tol) const {
-  if (!parallel(Segment<Dim>(p, p[0]), tol)) return false;
+inline bool Segment<Dim>::contain(const rVec &q, Real tol) const {
+  if (!parallel(Segment<Dim>(q, p[0]), tol)) return false;
   auto delta = p[1] - p[0];
   int majorDim = (std::abs(delta[0]) > std::abs(delta[1])) ? (0) : (1);
-  return isInInterval(p, p[0], p[1], tol, majorDim);
+  return isInInterval(q, p[0], p[1], tol, majorDim);
 }
 
 #endif  // SEGMENT_H

@@ -284,22 +284,23 @@ int YinSet<2, Order>::eraseKink(const Vertex &index) {
 
 template <int Order>
 void YinSet<2, Order>::reFitCurve(size_t i) {
-  if (kinks.getSimplexes().empty()) return;
-  const auto &sims = kinks.getSimplexes()[0];
-  SimplicialComplex<Vertex> tmp;
-  vector<Vec<Real, 2>> points;
-  auto start = sims.lower_bound(
-           Simplex<Vertex>{std::initializer_list<Vertex>{{i, 0}}});
-  auto end = sims.lower_bound(
-           Simplex<Vertex>{std::initializer_list<Vertex>{{i + 1, 0}}});
-  while (start != end) {
-    tmp.insert(Simplex<Vertex>{
-        std::initializer_list<Vertex>{{0, start->vertices.begin()->second}}});
-    start++;
-  }
-  for (auto t : orientedJordanCurves[i].getKnots())
-    points.push_back(orientedJordanCurves[i](t));
-  orientedJordanCurves[i].define(points, tmp);
+  // TODO(ytan) Fit Curve is done in Mars.
+  // if (kinks.getSimplexes().empty()) return;
+  // const auto &sims = kinks.getSimplexes()[0];
+  // SimplicialComplex<Vertex> tmp;
+  // vector<Vec<Real, 2>> points;
+  // auto start = sims.lower_bound(
+  //          Simplex<Vertex>{std::initializer_list<Vertex>{{i, 0}}});
+  // auto end = sims.lower_bound(
+  //          Simplex<Vertex>{std::initializer_list<Vertex>{{i + 1, 0}}});
+  // while (start != end) {
+  //   tmp.insert(Simplex<Vertex>{
+  //       std::initializer_list<Vertex>{{0, start->vertices.begin()->second}}});
+  //   start++;
+  // }
+  // for (auto t : orientedJordanCurves[i].getKnots())
+  //   points.push_back(orientedJordanCurves[i](t));
+  // orientedJordanCurves[i].define(points, tmp);
 }
 
 template <int Order>

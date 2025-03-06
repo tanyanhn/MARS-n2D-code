@@ -2,6 +2,7 @@
 #define SPADJORBUILDER_H
 
 #include <map>
+#include <set>
 
 #include "Core/Curve.h"
 #include "Core/VecCompare.h"
@@ -12,18 +13,20 @@ class OutEdgeSelectorByKnots {
   using rVec = Vec<Real, SpaceDim>;
   using Crv = Curve<SpaceDim, Order>;
 
-  OutEdgeSelectorByKnots(Real _tol, const rVec& tail, const Crv& existing)
-      : tol(_tol), standpoint(tail) {
+  OutEdgeSelectorByKnots(Real _tol, const rVec& tail, const Crv& existing, 
+    const std::vector<Crv>& allCrvs_)
+      : tol(_tol), standpoint(tail), allCrvs(allCrvs_) {
     rVec lastbutone = existing.getPolys().back()[0];
     indir = normalize(tail - lastbutone);
   }
 
-  bool operator()(const Crv&, const Crv&);
+  bool operator()(const size_t&, const size_t&);
 
  protected:
   Real tol;
   rVec standpoint;
   rVec indir;
+  const std::vector<Crv>& allCrvs;
 };
 
 //==========================================================
@@ -36,20 +39,28 @@ class PastingMap {
   template <class T>
   using vector = std::vector<T>;
 
-  PastingMap(Real _tol) : tol(_tol), graph(VecCompare<Real, SpaceDim>(tol)) {}
+  PastingMap(Real _tol)
+      : tol(_tol),
+        graph(VecCompare<Real, SpaceDim>(tol)) {}
   void formClosedLoops(vector<Crv>& outCont);
   template <class T_Crv>
-  void addEdge(T_Crv&& newEdge) {
+  void addEdge(T_Crv&& newEdge, bool necessary = true) {
     rVec start = newEdge.startpoint();
-    auto res = graph.insert(std::make_pair(start, vector<Crv>{}));
-    res.first->second.push_back(std::forward<T_Crv>(newEdge));
+    allCrvs.push_back(std::forward<T_Crv>(newEdge));
+    size_t id = allCrvs.size() - 1;
+    auto res = graph.insert(std::make_pair(start, std::set<size_t>{}));
+    res.first->second.insert(id);
+    if (necessary) necessaryEdge.insert(id);
   }
 
  protected:
-  void removeEdge(const rVec& oldtail, vector<Crv>& repo,
-                  typename vector<Crv>::const_iterator eit);
+  using Iter = std::set<size_t>::const_iterator;
+  void removeEdge(const rVec& oldtail, std::set<size_t>& repo,
+                  Iter eit);
   Real tol;
-  std::map<rVec, vector<Crv>, VecCompare<Real, SpaceDim>> graph;
+  std::vector<Crv> allCrvs;
+  std::map<rVec, std::set<size_t>, VecCompare<Real, SpaceDim>> graph;
+  std::set<size_t> necessaryEdge;  // for the necessary edge form loop
 };
 
 #endif  // SPADJORBUILDER_H

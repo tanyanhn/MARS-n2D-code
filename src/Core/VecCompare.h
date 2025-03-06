@@ -38,7 +38,7 @@ class VecCompare<Real, 2> {
   int compare(const rVec &p1, const rVec &p2) const {
     if (std::abs(p1[1] - p2[1]) <= tol) {
       if (std::abs(p1[0] - p2[0]) <= tol) return 0;
-      return (p1[0] > p2[0]) ? (-1) : (1);
+      return (p1[0] < p2[0]) ? (-1) : (1);
     }
     return (p1[1] > p2[1]) ? (-1) : (1);
   }
@@ -92,12 +92,12 @@ class VecCompare_multiComp<int, Dim> : public VecCompare<int, Dim> {
   int compare(const compPair &lhs, const compPair &rhs) const {
     int i = Base::compare(lhs.first, rhs.first);
     if (i != 0) return i;
-    // for (int d = Dim - 1; d >= 0; --d) {
-    //   if (lhs.first[d] < rhs.first[d])
-    //     return -1;
-    //   if (lhs.first[d] > rhs.first[d])
-    //     return 1;
-    // }
+    for (int d = Dim - 1; d >= 0; --d) {
+      if (lhs.first[d] < rhs.first[d])
+        return -1;
+      if (lhs.first[d] > rhs.first[d])
+        return 1;
+    }
     if (lhs.second < rhs.second) return -1;
     if (lhs.second > rhs.second) return 1;
     return 0;

@@ -24,7 +24,7 @@ foreach(test ${LIST_TEST})
 endforeach(test)
 
 # set(LIST_TEST TestCurveFactory TestBA TestIT TestFL)
-set(LIST_TEST TestIT)
+set(LIST_TEST TestIT TestCutCell)
 foreach(test ${LIST_TEST})
   message(STATUS "test ${test}")
   add_executable(${test} ${test}.cpp)

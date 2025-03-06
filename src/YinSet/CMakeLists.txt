@@ -13,5 +13,6 @@ set(YinSet_Files
     YinSet/OrientedJordanCurve.h 
     YinSet/OrientedJordanCurve.cpp 
     YinSet/SimplicialComplex.h
+    YinSet/CutCellHelper.h
     PARENT_SCOPE
     )

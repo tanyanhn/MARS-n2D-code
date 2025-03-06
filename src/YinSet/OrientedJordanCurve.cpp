@@ -7,10 +7,18 @@
 
 #include "Core/Curve.h"
 #include "SimplicialComplex.h"
-#include "YinSet.h"
+#include "YinSet/PointsLocater.h"
 #include "YinSet/SegmentedRealizableSpadjor.h"
+#include "YinSet/YinSet.h"
 
 using std::string;
+
+template <int Dim, int Order>
+auto OrientedJordanCurve<Dim, Order>::locate(const Vec<Real, Dim>& p,
+                                             Real tol) const -> LocateResult {
+  return LocateResult(PointsLocater(tol)(
+      std::vector<OrientedJordanCurve<Dim, Order>>{*this}, {p})[0]);
+}
 
 template <int Dim, int Order>
 void OrientedJordanCurve<Dim, Order>::define(const string& parameters) {
@@ -131,7 +139,8 @@ void OrientedJordanCurve<Dim, Order>::define(
       this->polys = curs[0].getPolys();
     }
   }
-  return;
+
+  makeSelfMonotonic(distTol());
 }
 
 template <int Order>

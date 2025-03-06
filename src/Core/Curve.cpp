@@ -4,13 +4,16 @@
 #include <iostream>
 #include <limits>
 
+#include "Core/VecCompare.h"
 #include "SolveTri.h"
-#include "Wrapper_LAPACKE.h"
+// #include "Wrapper_LAPACKE.h"
 
 template <int Dim, int Order>
 int Curve<Dim, Order>::locatePiece(Real t) const {
   int np = polys.size();
-  int left = 0, right = np - 1, mid;
+  int left = 0;
+  int right = np - 1;
+  int mid;
   for (;;) {
     if (left == right) return left;
     mid = (left + right) / 2;
@@ -121,8 +124,8 @@ Curve<Dim, Order> Curve<Dim, Order>::extract(Real lo, Real hi, Real tol) const {
   if (lo >= knots[ihead + 1] - tol) ihead++;
   if (hi <= knots[itail] + tol) itail--;
   if (ihead > itail) {
-    std::cout << knots[ihead] << std::endl;
-    std::cout << knots[itail] << std::endl;
+    std::cout << knots[ihead] << '\n';
+    std::cout << knots[itail] << '\n';
     assert(ihead <= itail);
   }
   // assert(ihead <= itail);
@@ -258,7 +261,8 @@ Curve<Dim, Order> Curve<Dim, Order>::load(std::istream &is) {
   std::vector<Real> &knots = res.knots;
   std::vector<Polynomial<Order, rVec>> &polys = res.polys;
 
-  int tmp[2], np;
+  int tmp[2];
+  int np;
   is.read((char *)tmp, sizeof(int) * 2);
   assert(tmp[0] == Dim && tmp[1] == Order);
   is.read((char *)&np, sizeof(int));
@@ -597,6 +601,118 @@ Curve<2, 4> fitCurve(const std::vector<Vec<Real, 2>> &vertices,
     return res;
   } else
     exit(-1);
+}
+
+template <int Dim, int Order>
+auto Curve<Dim, Order>::normalVector(Real brk, Real tol) const
+    -> std::vector<Vec<Real, Dim>> {
+  auto i = locatePiece(brk);
+  auto &poly = polys[i];
+  auto t = brk - knots[i];
+  auto dx = getComp(poly, 0).der();
+  auto dy = getComp(poly, 1).der();
+
+  rVec ret = {dy(t), -dx(t)};
+  return {ret / norm(ret)};
+}
+
+template <int Dim, int Order>
+int Curve<Dim, Order>::compare(const Curve &rhs, const rVec &p, int ix, int iy,
+                               Real tol) const {
+  // extract the curve piece around the point p.
+  VecCompare<Real, Dim> vcmp;
+  auto poly = polys[0];
+  Real lo = knots[0];
+  Real hi = knots[1];
+  Real range = hi - lo;
+  Real t0;
+  if (polys.size() > 1) {
+    if (vcmp(p, endpoint()) == 0) {
+      poly = polys.back();
+      lo = knots[knots.size() - 2];
+      hi = knots.back();
+    } else if (vcmp(p, startpoint()) != 0) {
+      assert(false && "point p not curve boundary point.");
+    }
+  }
+  if (vcmp(poly[0], p) == 0)
+    t0 = 0;
+  else
+    t0 = range;
+
+  if (rhs.getPolys().size() > 1)
+    return -rhs.compare(Curve(poly, hi - lo), p, ix, iy, tol);
+
+  auto rhsPoly = rhs.getPolys()[0];
+  auto rhsLo = rhs.getKnots()[0];
+  auto rhsHi = rhs.getKnots()[1];
+  auto rhsRange = rhsHi - rhsLo;
+  Real rhsT0;
+  if (vcmp(rhsPoly[0], p) == 0)
+    rhsT0 = 0;
+  else
+    rhsT0 = rhsRange;
+
+  // find intersection with x = p[ix] - tol / 2.
+  auto t = paraCalculator(poly, ix, p[ix] - tol / 2, t0, tol);
+  auto rhsT = paraCalculator(rhsPoly, ix, p[ix] - tol / 2, rhsT0, tol);
+  if ((t > 0 && t < range) && (rhsT > 0 && rhsT < rhsRange))
+    return poly(t)[iy] < rhsPoly(rhsT)[iy] ? -1 : 1;
+  // find intersection with x = p[ix] + tol / 2.
+  t = paraCalculator(poly, ix, p[ix] + tol / 2, t0, tol);
+  rhsT = paraCalculator(rhsPoly, ix, p[ix] + tol / 2, rhsT0, tol);
+  if ((t > 0 && t < range) && (rhsT > 0 && rhsT < rhsRange))
+    return poly(t)[iy] < rhsPoly(rhsT)[iy] ? -1 : 1;
+
+  // uncomparable in (ix, iy) direction.
+  return 0;
+}
+
+template <int Dim, int Order>
+auto Curve<Dim, Order>::getComparablePoint(const Curve &rhs, Real tol,
+                                           int type) const
+    -> std::pair<rVec, rVec> {
+  Real t0;
+  auto poly = polys[0];
+  Real rhsT0;
+  auto rhsPoly = rhs.getPolys()[0];
+  Real lastRange = knots[knots.size() - 1] - knots[knots.size() - 2];
+  auto &rhsKnots = rhs.getKnots();
+  Real rhsLastRange =
+      rhsKnots[rhsKnots.size() - 1] - rhsKnots[rhsKnots.size() - 2];
+  VecCompare<Real, Dim> vcmp;
+  Real disturbance = tol / 4;
+  if (type == 0) {
+    if (vcmp(startpoint(), rhs.startpoint()) != 0)
+      throw std::runtime_error("wrong type.");
+    t0 = disturbance;
+    rhsT0 = disturbance;
+  } else if (type == 1) {
+    if (vcmp(startpoint(), rhs.endpoint()) != 0)
+      throw std::runtime_error("wrong type.");
+    t0 = disturbance;
+    rhsT0 = rhsLastRange - disturbance;
+    rhsPoly = rhs.getPolys().back();
+  } else if (type == 2) {
+    if (vcmp(endpoint(), rhs.startpoint()) != 0)
+      throw std::runtime_error("wrong type.");
+    t0 = lastRange - disturbance;
+    poly = polys.back();
+    rhsT0 = disturbance;
+  } else if (type == 3) {
+    if (vcmp(endpoint(), rhs.endpoint()) != 0)
+      throw std::runtime_error("wrong type.");
+    t0 = lastRange - disturbance;
+    poly = polys.back();
+    rhsT0 = rhsLastRange - disturbance;
+    rhsPoly = rhs.getPolys().back();
+  } else {
+    throw std::runtime_error("undefine type.");
+  }
+
+  auto p = poly(t0);
+  auto rhsP = rhsPoly(rhsT0);
+  return std::make_pair(p, rhsP);
 }
 
 //=================================================

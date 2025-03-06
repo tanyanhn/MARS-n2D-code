@@ -6,6 +6,7 @@
 
 #include "Core/VecCompare.h"
 #include "Segment.h"
+#include "YinSet/OrientedJordanCurve.h"
 
 /// Determine the relative locations of a set of points to a spadjor forest / an
 /// oriented polygon
@@ -36,6 +37,11 @@ class PointsLocater {
                          const vector<rVec> &queries, bool bounded) {
     return compute(ys, queries, (bounded) ? (-1) : (1));
   }
+  template <int Order>
+  vector<int> operator()(
+      const vector<OrientedJordanCurve<DIM, Order>> &ys,
+      const vector<rVec> &queries,
+      bool bounded = false /* Unused but for compatibility */);
 
  protected:
   vector<int> compute(const vector<Segment<2>> &segs, const vector<rVec> &pts,

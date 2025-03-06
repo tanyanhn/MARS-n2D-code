@@ -11,9 +11,12 @@ using std::ofstream;
 void TestYinSetsBooleanOps::doTest(const string &name1, const string &name2,
                                    Real tol, const rVec &ofs,
                                    const string &answer) {
-  ifstream input1(name1, std::ios::binary);
-  ifstream input2(name2, std::ios::binary);
-  ifstream input3(answer, std::ios::binary);
+  auto file1 = std::string(ROOT_DIR) + "/test/" + name1;
+  auto file2 = std::string(ROOT_DIR) + "/test/" + name2;
+  auto file3 = std::string(ROOT_DIR) + "/test/" + answer;
+  ifstream input1(file1, std::ios::binary);
+  ifstream input2(file2, std::ios::binary);
+  ifstream input3(file3, std::ios::binary);
   assert(input1 && input2 && input3);
 
   const int Dim = 2;
