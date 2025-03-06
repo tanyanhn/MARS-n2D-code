@@ -620,7 +620,7 @@ template <int Dim, int Order>
 int Curve<Dim, Order>::compare(const Curve &rhs, const rVec &p, int ix, int iy,
                                Real tol) const {
   // extract the curve piece around the point p.
-  VecCompare<Real, Dim> vcmp;
+  VecCompare<Real, Dim> vcmp(tol);
   auto poly = polys[0];
   Real lo = knots[0];
   Real hi = knots[1];
@@ -680,7 +680,7 @@ auto Curve<Dim, Order>::getComparablePoint(const Curve &rhs, Real tol,
   auto &rhsKnots = rhs.getKnots();
   Real rhsLastRange =
       rhsKnots[rhsKnots.size() - 1] - rhsKnots[rhsKnots.size() - 2];
-  VecCompare<Real, Dim> vcmp;
+  VecCompare<Real, Dim> vcmp(tol);
   Real disturbance = tol / 4;
   if (type == 0) {
     if (vcmp(startpoint(), rhs.startpoint()) != 0)

@@ -67,13 +67,13 @@ bool OutEdgeSelectorByKnots<Order>::operator()(const size_t &lhsId,
   // TODO(ytan): there is a bug in selecting multi curves.
   const auto &lhs = allCrvs[lhsId];
   const auto &rhs = allCrvs[rhsId];
-  auto getNextPoint = [](const Crv &p) {
-    const auto &knots = p.getKnots();
-    return p.getPolys().front()(knots[1] - knots[0]);
-  };
-  auto lhsPoint = getNextPoint(lhs);
-  auto rhsPoint = getNextPoint(rhs);
-  // auto [lhsPoint, rhsPoint] = lhs.getComparablePoint(rhs, tol, 0);
+  // auto getNextPoint = [](const Crv &p) {
+  //   const auto &knots = p.getKnots();
+  //   return p.getPolys().front()(knots[1] - knots[0]);
+  // };
+  // auto lhsPoint = getNextPoint(lhs);
+  // auto rhsPoint = getNextPoint(rhs);
+  auto [lhsPoint, rhsPoint] = lhs.getComparablePoint(rhs, tol, 0);
   rVec d1 = normalize(lhsPoint - standpoint);
   rVec d2 = normalize(rhsPoint - standpoint);
   Real s1 = cross(indir, d1);

@@ -140,7 +140,7 @@ void OrientedJordanCurve<Dim, Order>::define(
     }
   }
 
-  makeSelfMonotonic(distTol());
+  // makeSelfMonotonic(distTol());
 }
 
 template <int Order>

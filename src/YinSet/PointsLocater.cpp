@@ -129,11 +129,12 @@ vector<int> PointsLocater::operator()(
                                         rVec{0, 0}, rVec{0, 0}, Crv()));
   const int ix = 0;
   const int iy = 1;
-  VecCompare<Real, 2> vcmp;
+  VecCompare<Real, 2> vcmp(tol);
 
-  for (const auto &jordanCurve : ys) {
-    auto &polys = jordanCurve.getPolys();
-    auto &knots = jordanCurve.getKnots();
+  for (const auto &crv : ys) {
+    auto monotonicCurve = crv.makeMonotonic(tol);
+    auto &polys = monotonicCurve.getPolys();
+    auto &knots = monotonicCurve.getKnots();
     for (int i = 0; i < polys.size(); ++i) {
       auto &poly = polys[i];
       auto xPoly = getComp(poly, ix);

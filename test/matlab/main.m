@@ -6,7 +6,7 @@ filedir = "test/data/";
 % round = "No4_";
 % filename = round + "Start.dat";
 % filename = round + "Step160.dat";
-filename = "spadjor-7.input.dat";
+filename = "spadjor-13.input.dat";
 
 hd = fopen(filedir + filename);
 
