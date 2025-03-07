@@ -248,7 +248,9 @@ template <class T, int Dim>
 inline Tensor<T, Dim>& Tensor<T, Dim>::operator=(const Tensor<T, Dim>& rhs) {
   assert(volume() == rhs.volume());
   int vol = volume();
+#ifdef USE_TENSOR_OPENMP
 #pragma omp parallel for default(shared) schedule(static)
+#endif
   for (int i = 0; i < vol; ++i) aData[i] = rhs.aData[i];
   return *this;
 }
@@ -321,7 +323,9 @@ inline Tensor<T, Dim>& Tensor<T, Dim>::operator=(
 template <class T, int Dim>
 inline Tensor<T, Dim>& Tensor<T, Dim>::operator=(const T& a) {
   int vol = volume();
+#ifdef USE_TENSOR_OPENMP
 #pragma omp parallel for default(shared) schedule(static)
+#endif
   for (int i = 0; i < vol; ++i) aData[i] = a;
   return *this;
 }

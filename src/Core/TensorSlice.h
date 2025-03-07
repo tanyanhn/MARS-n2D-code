@@ -84,16 +84,24 @@ inline TensorSlice<T, Dim> &TensorSlice<T, Dim>::operator=(
     const TensorExpr<TExpr> &expr) {
   assert(norm(sz - expr.box().size(), 0) == 0);
   if (Dim == 1) {
-#pragma omp parallel for default(shared) schedule(static)
+    #ifdef USE_TENSOR_OPENMP
+    #pragma omp parallel for default(shared) schedule(static)
+    #endif
     loop_sz_1(sz, i) at(i) = expr.at(i);
   } else if (Dim == 2) {
-#pragma omp parallel for default(shared) schedule(static)
+    #ifdef USE_TENSOR_OPENMP
+    #pragma omp parallel for default(shared) schedule(static)
+    #endif
     loop_sz_2(sz, i, j) at(i, j) = expr.at(i, j);
   } else if (Dim == 3) {
-#pragma omp parallel for default(shared) schedule(static)
+    #ifdef USE_TENSOR_OPENMP
+    #pragma omp parallel for default(shared) schedule(static)
+    #endif
     loop_sz_3(sz, i, j, k) at(i, j, k) = expr.at(i, j, k);
   } else if (Dim == 4) {
-#pragma omp parallel for default(shared) schedule(static)
+    #ifdef USE_TENSOR_OPENMP
+    #pragma omp parallel for default(shared) schedule(static)
+    #endif
     loop_sz_4(sz, i, j, k, l) at(i, j, k, l) = expr.at(i, j, k, l);
   }
   return *this;

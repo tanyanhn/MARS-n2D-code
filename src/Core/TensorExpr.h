@@ -16,16 +16,24 @@ inline Tensor<T, Dim> &Tensor<T, Dim>::operator=(
   assert(norm(size() - expr.box().size(), 0) == 0);
   auto sz = expr.box().size();
   if (Dim == 1) {
+#ifdef USE_TENSOR_OPENMP
 #pragma omp parallel for default(shared) schedule(static)
+#endif
     loop_sz_1(sz, i) at(i) = expr.at(i);
   } else if (Dim == 2) {
+#ifdef USE_TENSOR_OPENMP
 #pragma omp parallel for default(shared) schedule(static)
+#endif
     loop_sz_2(sz, i, j) at(i, j) = expr.at(i, j);
   } else if (Dim == 3) {
+#ifdef USE_TENSOR_OPENMP
 #pragma omp parallel for default(shared) schedule(static)
+#endif
     loop_sz_3(sz, i, j, k) at(i, j, k) = expr.at(i, j, k);
   } else if (Dim == 4) {
+#ifdef USE_TENSOR_OPENMP
 #pragma omp parallel for default(shared) schedule(static)
+#endif
     loop_sz_4(sz, i, j, k, l) at(i, j, k, l) = expr.at(i, j, k, l);
   }
   return *this;
@@ -155,23 +163,35 @@ inline auto reduce(const TensorExpr<TExpr> &expr, const RedcOp &rop,
   T r = static_cast<T>(initVal);
   auto sz = expr.box().size();
   constexpr int Dim = decltype(sz)::Dim;
+#ifdef USE_TENSOR_OPENMP
 #pragma omp parallel default(shared)
+#endif
   {
     T lr = static_cast<T>(initVal);
     if (Dim == 1) {
+#ifdef USE_TENSOR_OPENMP
 #pragma omp for schedule(static)
+#endif
       loop_sz_1(sz, i) lr = rop(lr, expr.at(i));
     } else if (Dim == 2) {
+#ifdef USE_TENSOR_OPENMP
 #pragma omp for schedule(static)
+#endif
       loop_sz_2(sz, i, j) lr = rop(lr, expr.at(i, j));
     } else if (Dim == 3) {
+#ifdef USE_TENSOR_OPENMP
 #pragma omp for schedule(static)
+#endif
       loop_sz_3(sz, i, j, k) lr = rop(lr, expr.at(i, j, k));
     } else if (Dim == 4) {
+#ifdef USE_TENSOR_OPENMP
 #pragma omp for schedule(static)
+#endif
       loop_sz_4(sz, i, j, k, l) lr = rop(lr, expr.at(i, j, k, l));
     }
+#ifdef USE_TENSOR_OPENMP
 #pragma omp critical
+#endif
     r = rop(r, lr);
   }  // end of #omp parallel
   return r;

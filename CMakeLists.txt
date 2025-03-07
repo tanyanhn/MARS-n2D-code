@@ -5,7 +5,7 @@ include(${MARS_COMPILER_FILE})
 project(MARS_n2D)
 
 if(CMAKE_EXPORT_COMPILE_COMMANDS)
-    set(CMAKE_CXX_STANDARD_INCLUDE_DIRECTORIES "${CMAKE_CXX_IMPLICIT_INCLUDE_DIRECTORIES}")
+  set(CMAKE_CXX_STANDARD_INCLUDE_DIRECTORIES "${CMAKE_CXX_IMPLICIT_INCLUDE_DIRECTORIES}")
 endif()
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
@@ -28,14 +28,20 @@ message("CMAKE_CXX_FLAGS : ${CMAKE_CXX_FLAGS}")
 find_package(PkgConfig REQUIRED)
 find_package(spdlog REQUIRED)
 find_package(fmt CONFIG REQUIRED)
-find_package(GSL REQUIRED)  
+find_package(GSL REQUIRED)
 find_package(Eigen3 CONFIG REQUIRED)
 find_package(CppUnit CONFIG REQUIRED)
 pkg_check_modules(LAPACKE REQUIRED lapacke)
 # message("lib: " ${Eigen_LIBRARY})
 
-option(USE_OPENMP "Whether to use the OpenMP parallelism." OFF)
-if (USE_OPENMP)
+# may be slower with ON.
+option(USE_TENSOR_OPENMP "Whether to use the OpenMP parallelism for tensor." OFF)
+if(USE_TENSOR_OPENMP)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DUSE_TENSOR_OPENMP")
+endif()
+
+option(USE_OPENMP "Whether to use the OpenMP parallelism." ON)
+if(USE_OPENMP)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DUSE_OPENMP -fopenmp")
 endif()
 
@@ -49,7 +55,7 @@ add_subdirectory(src)
 
 # TEST
 option(ENABLE_TEST "Whether to enable the tests. " ON)
-if (ENABLE_TEST)
+if(ENABLE_TEST)
   enable_testing()
   add_subdirectory(test)
 endif()
@@ -57,11 +63,11 @@ endif()
 
 # FORMAT
 file(GLOB_RECURSE FORMAT_FILES CONFIGURE_DEPENDS
-    ${CMAKE_SOURCE_DIR}/*.[ch]pp
-    ${CMAKE_SOURCE_DIR}/*.[ch]
+  ${CMAKE_SOURCE_DIR}/*.[ch]pp
+  ${CMAKE_SOURCE_DIR}/*.[ch]
 )
 add_custom_target(format
-COMMAND clang-format -i --style=file ${FORMAT_FILES}
-COMMENT "Formatting source files with clang-format"
-VERBATIM
+  COMMAND clang-format -i --style=file ${FORMAT_FILES}
+  COMMENT "Formatting source files with clang-format"
+  VERBATIM
 )
