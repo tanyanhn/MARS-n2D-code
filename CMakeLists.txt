@@ -16,7 +16,7 @@ endif()
 # Flags
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unknown-pragmas -DDIM=${DIM}")
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wall -g -fsanitize=address")
-set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O2 -DNDEBUG")
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O2 -DNDEBUG -g")
 set(CMAKE_CXX_STANDARD 20)
 
 message("System : ${CMAKE_SYSTEM_NAME}")
@@ -34,7 +34,7 @@ find_package(CppUnit CONFIG REQUIRED)
 pkg_check_modules(LAPACKE REQUIRED lapacke)
 # message("lib: " ${Eigen_LIBRARY})
 
-option(USE_OPENMP "Whether to use the OpenMP parallelism." ON)
+option(USE_OPENMP "Whether to use the OpenMP parallelism." OFF)
 if (USE_OPENMP)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DUSE_OPENMP -fopenmp")
 endif()

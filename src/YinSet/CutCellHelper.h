@@ -43,7 +43,7 @@ auto CutCellHelper<Order>::intersectGridLine(
   for (const auto &jordanCrv : orientedJordanCurves) {
     intersections.emplace_back();
     auto &intersectionsForCurve = intersections.back();
-    auto monotonicCrv = jordanCrv.makeMonotonic(distTol());
+    auto monotonicCrv = jordanCrv.makeMonotonic(tol);
     auto knots = monotonicCrv.getKnots();
     auto polys = monotonicCrv.getPolys();
     auto numPolys = polys.size();
@@ -61,11 +61,11 @@ auto CutCellHelper<Order>::intersectGridLine(
         }
         int startRow = std::ceil((p0 - lo - tol) / h);
         int endRow = std::floor((p1 - lo + tol) / h);
-        if (std::fabs(p0 - lo + h * startRow) < tol) {
+        if (std::fabs(p0 - (lo + h * startRow)) < tol) {
           intersectionsForCurve.insert(!swapped ? knotStart : knotsEnd);
           ++startRow;
         }
-        if (std::fabs(p1 - lo + h * endRow) < tol) {
+        if (std::fabs(p1 - (lo + h * endRow)) < tol) {
           intersectionsForCurve.insert(!swapped ? knotsEnd : knotStart);
           --endRow;
         }
