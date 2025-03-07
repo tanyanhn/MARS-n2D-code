@@ -24,7 +24,7 @@ class VecCompare<Real, 2> {
   /**
      The constructor accepts an absolute tolerance.
    */
-  VecCompare(Real _tol = 0) : tol(_tol) {}
+  VecCompare(Real _tol = 0) noexcept : tol(_tol) {}
 
   ///
   /**

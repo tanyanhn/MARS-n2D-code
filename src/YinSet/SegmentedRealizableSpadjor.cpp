@@ -4,7 +4,6 @@
 
 #include "PointsLocater.h"
 #include "SegmentsIntersector.h"
-#include "YinSet/CutCellHelper.h"
 #include "YinSet/PastingMap.h"
 #include "Core/Tensor.h"
 
@@ -368,34 +367,6 @@ auto SegmentedRealizableSpadjor<Order>::complement(
   return result;
 }
 
-template <int Order>
-auto SegmentedRealizableSpadjor<Order>::cutCell(
-    const Box<Dim> &box, const Interval<Dim> &range) const -> Tensor<vector<SRS>, 2> {
-  Tensor<vector<SRS>, 2> ret(box);
-  auto size = box.size();
-  Real tol = distTol();
-
-  auto lo = range.lo();
-  auto hi = range.hi();
-  auto h = (hi - lo) / size;
-
-  // calculate the intersections' parameters
-  auto intersections = CutCellHelper<Order>::intersectGridLine(
-      lo, hi, h, orientedJordanCurves, tol);
-
-  Tensor<vector<Curve<2, Order>>, 2> gridCurves;
-  // partition the curves to Tensor<Curve<Dim, Order>, 2>
-  CutCellHelper<Order>::splitCurves(lo, h, intersections, orientedJordanCurves,
-                                    gridCurves, tol);
-
-  // past in every cells.
-  CutCellHelper<Order>::pastCells(lo, h, gridCurves, ret, tol);
-
-  // fill inner cell rectangles.
-  CutCellHelper<Order>::fillInner(lo, h, *this, ret, tol);
-
-  return ret;
-}
 
 //============================================================
 template class SegmentedRealizableSpadjor<2>;

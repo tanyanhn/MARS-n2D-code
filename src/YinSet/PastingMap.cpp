@@ -21,7 +21,7 @@ void PastingMap<Order, Selector>::formClosedLoops(vector<Crv> &outCont) {
   //   std::cout << crv.startpoint() << ", " << crv.endpoint() << std::endl;
   // }
 
-  while (!necessaryEdge.empty()) {
+  while (!necessaryEdge.empty() || !jordan.empty()) {
     Iter outEdge;
     std::set<size_t> *cands;
     if (jordan.empty()) {  // start a new loop

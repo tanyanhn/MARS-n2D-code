@@ -7,8 +7,9 @@
 #include <sstream>
 
 #include "Core/Tensor.h"
-#include "PastingMap.h"
 #include "PointsLocater.h"
+#include "YinSet/CutCellHelper.h"
+// #include "YinSet/PastingMap.h"
 
 // re-declarations; their definitions are in SegmentedRealizableSpadjor.cpp.
 template <int Order>
@@ -85,7 +86,7 @@ void YinSet<2, Order>::buildHasse(Real tol) {
   std::vector<int> numAnc(numCurves);  // number of ancestors
   std::vector<int> parent(numCurves);
   for (int i = 0; i < numCurves; ++i) {
-    numAnc[i] = std::count(&mat(0, i), &mat(0, i + 1), 1);
+    numAnc[i] = (int)(std::count(&mat(0, i), &mat(0, i + 1), 1));
     if (numAnc[i] == 0) {
       parent[i] = numCurves;
       diagram[numCurves].depth = (boundedness[i]) ? (-1) : (0);
@@ -96,7 +97,8 @@ void YinSet<2, Order>::buildHasse(Real tol) {
   int numRemain = numCurves;
   int numPositive = 0;
   while (numRemain--) {
-    int j = std::find(numAnc.cbegin(), numAnc.cend(), 0) - numAnc.cbegin();
+    int j =
+        (int)(std::find(numAnc.cbegin(), numAnc.cend(), 0) - numAnc.cbegin());
     numAnc[j] = -1;  // so that j will never be selected again
     diagram[j].parent = parent[j];
     diagram[j].depth = diagram[parent[j]].depth + 1;
@@ -140,8 +142,8 @@ YinSet<2, 2> intersect(const YinSet<2, 2> &lhs, const YinSet<2, 2> &rhs,
 //============================================================
 
 bool equal(const Curve<2, 2> &lhs, const Curve<2, 2> &rhs, Real tol) {
-  std::size_t N;
-  if ((N = lhs.getPolys().size()) != rhs.getPolys().size()) return false;
+  std::size_t N = lhs.getPolys().size();
+  if (N != rhs.getPolys().size()) return false;
   VecCompare<Real, 2> vCmp(tol);
   auto findTopmostIdx = [&vCmp](const Curve<2, 2> &G) {
     Vec<Real, 2> r(-std::numeric_limits<Real>::max());
@@ -254,9 +256,9 @@ void YinSet<2, Order>::resetAllKinks(std::vector<Vertex> vertices) {
   auto numCurves = orientedJordanCurves.size();
   for (size_t i = 0; i < numCurves; ++i) {
     auto start =
-             std::lower_bound(vertices.begin(), vertices.end(), Vertex(i, 0));
-    auto end = std::lower_bound(vertices.begin(), vertices.end(),
-                                Vertex(i + 1, 0));
+        std::lower_bound(vertices.begin(), vertices.end(), Vertex(i, 0));
+    auto end =
+        std::lower_bound(vertices.begin(), vertices.end(), Vertex(i + 1, 0));
     for (auto Iter = start; Iter != end; ++Iter) {
       kinks.insert(Simplex<Vertex>{std::initializer_list<Vertex>{*Iter}});
     }
@@ -295,7 +297,8 @@ void YinSet<2, Order>::reFitCurve(size_t i) {
   //          Simplex<Vertex>{std::initializer_list<Vertex>{{i + 1, 0}}});
   // while (start != end) {
   //   tmp.insert(Simplex<Vertex>{
-  //       std::initializer_list<Vertex>{{0, start->vertices.begin()->second}}});
+  //       std::initializer_list<Vertex>{{0,
+  //       start->vertices.begin()->second}}});
   //   start++;
   // }
   // for (auto t : orientedJordanCurves[i].getKnots())
@@ -308,12 +311,12 @@ vector<Curve<2, Order>> YinSet<2, Order>::getSmoothCurves(Real tol) const {
   vector<Curve<2, Order>> res;
   const auto &sims = kinks.getSimplexes()[0];
   auto numJordanCurve = orientedJordanCurves.size();
-  for (auto i = 0ul; i < numJordanCurve; ++i) {
+  for (auto i = 0UL; i < numJordanCurve; ++i) {
     vector<Real> brks;
     auto start = sims.lower_bound(
-             Simplex<Vertex>{std::initializer_list<Vertex>{{i, 0}}});
+        Simplex<Vertex>{std::initializer_list<Vertex>{{i, 0}}});
     auto end = sims.lower_bound(
-             Simplex<Vertex>{std::initializer_list<Vertex>{{i + 1, 0}}});
+        Simplex<Vertex>{std::initializer_list<Vertex>{{i + 1, 0}}});
     while (start != end) {
       const auto &index = *start->vertices.begin();
       brks.push_back(
@@ -323,6 +326,36 @@ vector<Curve<2, Order>> YinSet<2, Order>::getSmoothCurves(Real tol) const {
     orientedJordanCurves[i].split(brks, res, tol);
   }
   return res;
+}
+
+template <int Order>
+auto YinSet<2, Order>::cutCell(const Box<Dim> &box, const Interval<Dim> &range,
+                               bool addInner) const
+    -> std::pair<Tensor<YinSetPtr, 2>, Tensor<int, 2>> {
+  Tensor<YinSetPtr, 2> ret(box);
+  rVec size(box.size());
+  Real tol = distTol();
+
+  auto lo = range.lo();
+  auto hi = range.hi();
+  auto h = (hi - lo) / size;
+
+  // calculate the intersections' parameters
+  auto intersections = CutCellHelper<Order>::intersectGridLine(
+      lo, hi, h, orientedJordanCurves, tol);
+
+  Tensor<vector<Curve<2, Order>>, 2> gridCurves(box);
+  // partition the curves to Tensor<Curve<Dim, Order>, 2>
+  CutCellHelper<Order>::splitCurves(lo, h, intersections, orientedJordanCurves,
+                                    gridCurves, tol);
+
+  // past in every cells.
+  CutCellHelper<Order>::pastCells(lo, h, gridCurves, ret, tol);
+
+  // fill inner cell rectangles.
+  auto tags = CutCellHelper<Order>::fillInner(lo, h, *this, ret, tol, addInner);
+
+  return {std::move(ret), tags};
 }
 
 //============================================================

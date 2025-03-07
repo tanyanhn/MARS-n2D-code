@@ -64,9 +64,6 @@ class SegmentedRealizableSpadjor {
   /// Calculate the meet of two segmented Spadjors.
   friend SRS meet<Order>(const SRS& lhs, const SRS& rhs, Real tol);
 
-  /// Calculate the Spadjor CutCell.
-  auto cutCell(const Box<Dim>& box, const Interval<Dim>& range) const -> Tensor<vector<SRS>, 2>;
-
   // auto& getOrientedJordanCurves() { return orientedJordanCurves; }
   const auto& getOrientedJordanCurvesRef() const { return orientedJordanCurves; }
 

@@ -63,7 +63,7 @@ inline void keepSleep() {
   }
 }
 
-inline Real distTol(Real tol = 1e-12) {
+inline Real distTol(Real tol = 1e-12) noexcept {
   static Real distTol = tol;
   return distTol;
 }

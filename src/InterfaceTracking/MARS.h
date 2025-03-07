@@ -21,7 +21,7 @@ class MARS {
 
   virtual void trackInterface(const VelocityField<Dim> &v, YS &ys,
                               Real StartTime, Real dt, Real EndTime,
-                              bool output = false, std::string fName = "",
+                              bool output = false, const std::string& fName = "",
                               int opstride = 20);
 };
 

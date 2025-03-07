@@ -1,4 +1,5 @@
 cmake_minimum_required(VERSION 3.22)
+# clang is faster than gcc, O2 is faster than O3
 include(${MARS_COMPILER_FILE})
 # message("MARS_COMPILER_FILE: ${MARS_COMPILER_FILE}")
 project(MARS_n2D)
@@ -15,7 +16,7 @@ endif()
 # Flags
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unknown-pragmas -DDIM=${DIM}")
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wall -g -fsanitize=address")
-set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3 -DNDEBUG -g")
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O2 -DNDEBUG")
 set(CMAKE_CXX_STANDARD 20)
 
 message("System : ${CMAKE_SYSTEM_NAME}")

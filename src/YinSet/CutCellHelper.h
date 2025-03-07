@@ -1,6 +1,6 @@
 #include "YinSet/PastingMap.h"
 #include "YinSet/PointsLocater.h"
-#include "YinSet/SegmentedRealizableSpadjor.h"
+#include "YinSet/YinSet.h"
 
 template <int Order>
 struct CutCellHelper {
@@ -8,6 +8,8 @@ struct CutCellHelper {
   using rVec = Vec<Real, 2>;
   using Crv = Curve<2, Order>;
   using SRS = SegmentedRealizableSpadjor<Order>::SRS;
+  using YinSetPtr = YinSet<2, Order>::YinSetPtr;
+  enum CellType { UNKNOWN = -2, OUTER = -1, BOUNDARY = 0, INNER = 1 };
   static auto intersectGridLine(
       const Vec<Real, 2> &lo, const Vec<Real, 2> &hi, const Vec<Real, 2> &h,
       const std::vector<OrientedJordanCurve<2, Order>> &orientedJordanCurves,
@@ -22,11 +24,12 @@ struct CutCellHelper {
   // past curves in every cell.
   static auto pastCells(rVec lo, rVec h,
                         const Tensor<vector<Curve<2, Order>>, 2> &gridCurves,
-                        Tensor<vector<SRS>, 2> &gridSRS, Real tol);
+                        Tensor<YinSetPtr, 2> &gridSRS, Real tol);
 
   // fill inner grid.
   static auto fillInner(rVec lo, rVec h, const SRS &srs,
-                        Tensor<vector<SRS>, 2> &gridSRS, Real tol);
+                        Tensor<YinSetPtr, 2> &gridSRS, Real tol,
+                        bool addInner = false);
 };
 
 template <int Order>
@@ -92,35 +95,38 @@ auto CutCellHelper<Order>::splitCurves(
     rVec lo, rVec h, std::vector<set<Real>> &intersections,
     const std::vector<OrientedJordanCurve<2, Order>> &orientedJordanCurves,
     Tensor<vector<Curve<2, Order>>, 2> &gridCurves, Real tol) {
-  using Point = Vec<Real, 2>;
   VecCompare<Real, 2> vcmp(tol);
+  // for (auto& t : intersections[0]) {
+  //   auto pt = orientedJordanCurves[0](t);
+  //   std::cout << pt << '\n';
+  // }
   // remove too close intersections
-  for (int i = 0; i < intersections.size(); ++i) {
-    auto &intersectionsForCurve = intersections[i];
-    auto &crv = orientedJordanCurves[i];
-    auto &polys = crv.getPolys();
-    auto &knots = crv.getKnots();
-    size_t numPolys = polys.size();
-    Point prevPoint = polys[0][0];
-    auto it = intersectionsForCurve.begin();
-    for (int j = 0; j < numPolys; ++j) {
-      while (it != intersectionsForCurve.end() && *it < knots[j + 1]) {
-        if (vcmp(prevPoint, polys[j](*it - knots[j])) == 0) {
-          it = intersectionsForCurve.erase(it);
-        } else {
-          prevPoint = polys[j](*it - knots[j]);
-          ++it;
-        }
-      }
-      --it;
-      prevPoint = polys[(j + 1) % numPolys][0];
-      if (vcmp(prevPoint, polys[j](*it - knots[j])) == 0) {
-        it = intersectionsForCurve.erase(it);
-      } else {
-        ++it;
-      }
-    }
-  }
+  // for (int i = 0; i < intersections.size(); ++i) {
+  //   auto &intersectionsForCurve = intersections[i];
+  //   auto &crv = orientedJordanCurves[i];
+  //   auto &polys = crv.getPolys();
+  //   auto &knots = crv.getKnots();
+  //   size_t numPolys = polys.size();
+  //   Point prevPoint = polys[0][0];
+  //   auto it = intersectionsForCurve.begin();
+  //   for (int j = 0; j < numPolys; ++j) {
+  //     while (it != intersectionsForCurve.end() && *it < knots[j + 1]) {
+  //       if (vcmp(prevPoint, polys[j](*it - knots[j])) == 0) {
+  //         it = intersectionsForCurve.erase(it);
+  //       } else {
+  //         prevPoint = polys[j](*it - knots[j]);
+  //         ++it;
+  //       }
+  //     }
+  //     --it;
+  //     prevPoint = polys[(j + 1) % numPolys][0];
+  //     if (vcmp(prevPoint, polys[j](*it - knots[j])) == 0) {
+  //       it = intersectionsForCurve.erase(it);
+  //     } else {
+  //       ++it;
+  //     }
+  //   }
+  // }
 
   // construct split curve on intersections
   for (int i = 0; i < intersections.size(); ++i) {
@@ -137,7 +143,7 @@ auto CutCellHelper<Order>::splitCurves(
     for (auto &&crv : splitRes) {
       rVec mid = crv.midpoint();
       auto id = Vec<int, 2>((mid - lo) / h);
-      gridCurves(id).emplace_back(std::move(crv));
+      gridCurves(id).emplace_back(crv);
     }
   }
 }
@@ -145,8 +151,18 @@ auto CutCellHelper<Order>::splitCurves(
 template <int Order>
 auto CutCellHelper<Order>::pastCells(
     rVec lo, rVec h, const Tensor<vector<Curve<2, Order>>, 2> &gridCurves,
-    Tensor<vector<SRS>, 2> &gridSRS, Real tol) {
+    Tensor<YinSetPtr, 2> &gridSRS, Real tol) {
   loop_box_2(gridCurves.box(), i0, i1) {
+    if (gridCurves(i0, i1).empty()) {
+      gridSRS(i0, i1) = nullptr;
+      continue;
+    }
+
+    // auto crvs = gridCurves(i0, i1);
+    // auto sPoint = crvs.front().startpoint();
+    // auto ePoint = crvs.front().endpoint();
+    // auto mid = crvs.front().midpoint();
+
     auto localLo = lo + h * iVec{i0, i1};
     auto localHi = localLo + h;
     Curve<2, Order> rect = createRect<Order>(localLo, localHi);
@@ -183,66 +199,73 @@ auto CutCellHelper<Order>::pastCells(
 
     vector<Curve<2, Order>> res;
     pasting.formClosedLoops(res);
-    for (auto& crv : res) {
-      gridSRS(i0, i1).emplace_back(vector<OrientedJordanCurve<2, Order>>{crv});
+    for (auto &crv : res) {
+      vector<OrientedJordanCurve<2, Order>> vecCrv = {crv};
+      // gridSRS(i0, i1) = (new YinSet<2, Order>(SRS(vecCrv), tol));
+      gridSRS(i0, i1) = (std::make_shared<YinSet<2, Order>>(SRS(vecCrv), tol));
     }
   }
 }
 
 template <int Order>
 auto CutCellHelper<Order>::fillInner(rVec lo, rVec h, const SRS &srs,
-                                     Tensor<vector<SRS>, 2> &gridSRS,
-                                     Real tol) {
+                                     Tensor<YinSetPtr, 2> &gridSRS, Real tol,
+                                     bool addInner) {
   Tensor<int, 2> tags(gridSRS.box());
-  enum { UNKNOWN = -2, OUTER = -1, BOUNDARY = 0, INNER = 1 };
   loop_box_2(gridSRS.box(), i0, i1) {
-    auto &srs = gridSRS(i0, i1);
-    if (srs.empty()) {
-      tags(i0, i1) = UNKNOWN;
+    auto &srsPtr = gridSRS(i0, i1);
+    if (srsPtr) {
+      tags(i0, i1) = CellType::BOUNDARY;
     } else {
-      tags(i0, i1) = BOUNDARY;
+      tags(i0, i1) = CellType::UNKNOWN;
     }
   }
   auto iLo = gridSRS.box().lo();
   auto iHi = gridSRS.box().hi();
   vector<iVec> queue;
-  std::function<void(int)> dfsMark = [&queue, &tags, iLo, iHi](int tag) {
+  std::function<void(CellType)> dfsMark = [&queue, &tags, iLo,
+                                           iHi](CellType tag) {
     while (!queue.empty()) {
       iVec cur = queue.back();
       queue.pop_back();
       tags(cur) = tag;
-      if (cur[0] > iLo[0] && tags(cur[0] - 1, cur[1]) == UNKNOWN) {
+      if (cur[0] > iLo[0] && tags(cur[0] - 1, cur[1]) == CellType::UNKNOWN) {
         queue.push_back(iVec{cur[0] - 1, cur[1]});
       }
-      if (cur[0] < iHi[0] && tags(cur[0] + 1, cur[1]) == UNKNOWN) {
+      if (cur[0] < iHi[0] && tags(cur[0] + 1, cur[1]) == CellType::UNKNOWN) {
         queue.push_back(iVec{cur[0] + 1, cur[1]});
       }
-      if (cur[1] > iLo[1] && tags(cur[0], cur[1] - 1) == UNKNOWN) {
+      if (cur[1] > iLo[1] && tags(cur[0], cur[1] - 1) == CellType::UNKNOWN) {
         queue.push_back(iVec{cur[0], cur[1] - 1});
       }
-      if (cur[1] < iHi[1] && tags(cur[0], cur[1] + 1) == UNKNOWN) {
+      if (cur[1] < iHi[1] && tags(cur[0], cur[1] + 1) == CellType::UNKNOWN) {
         queue.push_back(iVec{cur[0], cur[1] + 1});
       }
     }
   };
 
   loop_box_2(tags.box(), i0, i1) {
-    if (tags(i0, i1) == UNKNOWN) {
+    if (tags(i0, i1) == CellType::UNKNOWN) {
       queue.push_back(iVec{i0, i1});
       rVec mid = lo + h * iVec{i0, i1} + h * 0.5;
       int tag = PointsLocater(tol).operator()(srs.getOrientedJordanCurvesRef(),
                                               {mid})[0];
-      while (!queue.empty()) dfsMark(tag);
+      while (!queue.empty()) dfsMark(CellType(tag));
+    }
+  }
+  if (addInner) {
+    loop_box_2(tags.box(), i0, i1) {
+      if (tags(i0, i1) == CellType::INNER) {
+        auto localLo = lo + h * iVec{i0, i1};
+        auto localHi = localLo + h;
+        Curve<2, Order> rect = createRect<Order>(localLo, localHi);
+        vector<OrientedJordanCurve<2, Order>> vecCrv = {rect};
+        // gridSRS(i0, i1) = (new YinSet<2, Order>(SRS(vecCrv), tol));
+        gridSRS(i0, i1) =
+            (std::make_shared<YinSet<2, Order>>(SRS(vecCrv), tol));
+      }
     }
   }
 
-  loop_box_2(tags.box(), i0, i1) {
-    if (tags(i0, i1) == INNER) {
-      auto localLo = lo + h * iVec{i0, i1};
-      auto localHi = localLo + h;
-      Curve<2, Order> rect = createRect<Order>(localLo, localHi);
-      gridSRS(i0, i1).emplace_back(
-          std::vector<OrientedJordanCurve<2, Order>>{rect});
-    }
-  }
+  return tags;
 }

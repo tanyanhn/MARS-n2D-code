@@ -1,9 +1,7 @@
 #ifndef YINSET_H
 #define YINSET_H
 
-#include <map>
 
-#include "Core/VecCompare.h"
 #include "YinSet/OrientedJordanCurve.h"
 #include "YinSet/SegmentedRealizableSpadjor.h"
 #include "YinSet/SimplicialComplex.h"
@@ -22,6 +20,8 @@ class YinSet<2, Order> : public SegmentedRealizableSpadjor<Order> {
   using rVec = Vec<Real, 2>;
   using PointIndex = typename OrientedJordanCurve<Dim, Order>::PointIndex;
   using Vertex = typename Simplex<PointIndex>::Vertex;
+  using YinSetPtr = std::shared_ptr<YinSet<Dim, Order>>;
+  // using YinSetPtr = YinSet<Dim, Order>*;
 
   /// Initialize a Yin set from the stream.
   ///
@@ -50,7 +50,7 @@ class YinSet<2, Order> : public SegmentedRealizableSpadjor<Order> {
 
  public:
   /// Get the boundary Jordan curves.
-  const std::vector<OrientedJordanCurve<Dim, Order>> getBoundaryCycles() const {
+  const std::vector<OrientedJordanCurve<Dim, Order>>& getBoundaryCycles() const {
     return orientedJordanCurves;
   }
 
@@ -95,6 +95,11 @@ class YinSet<2, Order> : public SegmentedRealizableSpadjor<Order> {
 
   // split orientedJordanCurves to spline without kinks.
   vector<Curve<2, Order>> getSmoothCurves(Real tol) const;
+
+  /// Calculate CutCell.
+  auto cutCell(const Box<Dim>& box, const Interval<Dim>& range,
+               bool AddInner = false) const
+      -> std::pair<Tensor<YinSetPtr, 2>, Tensor<int, 2>>;
 
  protected:
   ///

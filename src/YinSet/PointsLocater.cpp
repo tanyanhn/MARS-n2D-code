@@ -152,7 +152,7 @@ vector<int> PointsLocater::operator()(
           continue;
 
         auto brk =
-            root(xPoly, (knots[i + 1] - knots[i]) / 2, tol, newtonMaxIter);
+            root(xPoly - x, (knots[i + 1] - knots[i]) / 2, tol, newtonMaxIter);
         if (brk < 0 || brk > knots[i + 1] - knots[i])
           throw std::runtime_error("root not found");
         auto y = poly(brk)[iy];

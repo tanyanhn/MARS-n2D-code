@@ -1,13 +1,16 @@
-function plotYinSet(sf, lineColor, lineWidth, offset)
+function plotYinSet(sf, lineColor, fillColor, lineWidth, offset)
     if numel(sf) == 0
         return;
     end
     
-    if nargin < 4
+    if nargin < 5
         offset = [0 0];
     end
-    if nargin < 3
+    if nargin < 4
         lineWidth = 1;
+    end
+    if nargin < 2
+        fillColor = 'y';
     end
     if nargin < 2
         lineColor = '';
@@ -23,7 +26,7 @@ function plotYinSet(sf, lineColor, lineWidth, offset)
         a = signedArea(linearizeSpline(sf{c})');
         if abs(a) > abs(amax), amax = a; end
         if a > 0
-            fillcolor{c} = 'y';
+            fillcolor{c} = fillColor;
             linestyle{c} = '-';
         else
             fillcolor{c} = 'w';
@@ -34,7 +37,7 @@ function plotYinSet(sf, lineColor, lineWidth, offset)
     % fill the background
     hold on;
     if filled && amax < 0
-        set(gca, 'Color', 'y');
+        set(gca, 'Color', fillColor);
     end
     
     % plot the boundary or fill the interior
@@ -43,7 +46,7 @@ function plotYinSet(sf, lineColor, lineWidth, offset)
         verts = verts + offset;
         if filled
             fill(verts(:,1),verts(:,2), fillcolor{c}, ...
-                'EdgeColor', 'k');
+                'EdgeColor', 'k', 'FaceAlpha', 0.7);
         else
             plot(verts(:,1),verts(:,2), ...
                 [lineColor,linestyle{c}], ...
