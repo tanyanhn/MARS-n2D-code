@@ -91,7 +91,7 @@ void OrientedJordanCurve<Dim, Order>::define(
         vector<Vec<Real, Dim>> subPoints(std::next(points.begin(), pre),
                                          std::next(points.begin(), pos + 1));
         assert(subPoints.size() > 1 && "fitCurve Point num < 2.");
-        auto type = Curve<2, Order>::notAknot;
+        auto type = Curve<2, Order>::notAKnot;
         if (subPoints.size() <= 3) type = Curve<2, Order>::nature;
 
         Curve<Dim, Order> res = fitCurve<Order>(subPoints, type);

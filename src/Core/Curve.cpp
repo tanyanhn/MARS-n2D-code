@@ -487,12 +487,12 @@ Curve<2, 4> fitCurve(const std::vector<Vec<Real, 2>> &vertices,
     res.polys[numPiece - 1][0] =
         Vec<Real, 2>{verts[numPiece - 1][0], verts[numPiece - 1][1]};
     return res;
-  } else if (type == Curve<2, 4>::notAknot || type == Curve<2, 4>::complete ||
+  } else if (type == Curve<2, 4>::notAKnot || type == Curve<2, 4>::complete ||
              type == Curve<2, 4>::second || type == Curve<2, 4>::nature) {
     // prepare the coefficient matrix
     std::vector<Real> a(numPiece), b(numPiece + 1, 2.0), c(numPiece);
     Real d = 0, e = 0, tmp;
-    if (type == Curve<2, 4>::notAknot) {
+    if (type == Curve<2, 4>::notAKnot) {
       if (numPiece <= 2)
         throw std::runtime_error("notAknot curve must have at least 3 pieces");
       tmp = (t[1] - t[0]) * (t[1] - t[0]) / ((t[2] - t[1]) * (t[2] - t[1]));
@@ -521,7 +521,7 @@ Curve<2, 4> fitCurve(const std::vector<Vec<Real, 2>> &vertices,
     // prepare the RHS
     std::vector<Real> rhsx(numPiece + 1), rhsy(numPiece + 1);
     const auto &verts = vertices;
-    if (type == Curve<2, 4>::notAknot) {
+    if (type == Curve<2, 4>::notAKnot) {
       tmp = (t[1] - t[0]) * (t[1] - t[0]) / ((t[2] - t[1]) * (t[2] - t[1]));
       rhsx[0] = -2 * tmp * ((verts[2][0] - verts[1][0]) / (t[2] - t[1])) +
                 2 * ((verts[1][0] - verts[0][0]) / (t[1] - t[0]));
@@ -577,7 +577,7 @@ Curve<2, 4> fitCurve(const std::vector<Vec<Real, 2>> &vertices,
     // solve the linear system
     std::vector<Real> resx;
     std::vector<Real> resy;
-    if (type == Curve<2, 4>::notAknot) {
+    if (type == Curve<2, 4>::notAKnot) {
       resx = solveTrisp(a, b, c, d, e, rhsx);
       resy = solveTrisp(a, b, c, d, e, rhsy);
     } else {

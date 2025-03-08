@@ -10,7 +10,7 @@ template <int Dim, int Order>
 class Curve {
  public:
   // fitCurve's boundary type
-  enum BCType { notAknot = 0, periodic, complete, second, nature, nBC_type };
+  enum BCType { notAKnot = 0, periodic, complete, second, nature, nBC_type };
   using rVec = Vec<Real, Dim>;
   using T_Polynomial = Polynomial<Order, rVec>;
   template <class T>
@@ -194,7 +194,7 @@ Curve<2, Ord> createLineSegment(const Vec<Real, 2>& p0, const Vec<Real, 2>& p1);
 template <int Order>
 Curve<2, Order> fitCurve(
     const std::vector<Vec<Real, 2>>& knots,
-    typename Curve<2, Order>::BCType type = Curve<2, Order>::notAknot,
+    typename Curve<2, Order>::BCType type = Curve<2, Order>::notAKnot,
     const Vec<Real, 2>& start = Vec<Real, 2>(),
     const Vec<Real, 2>& end = Vec<Real, 2>());
 
