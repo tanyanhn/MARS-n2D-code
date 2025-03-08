@@ -2,9 +2,12 @@
 
 #include <algorithm>
 
+
+
 template <int Order, class Selector>
 void PastingMap<Order, Selector>::removeEdge(const rVec &oldtail,
                                              std::set<size_t> &repo, Iter eit) {
+  assert(repo.contains(*eit) && "eit is not in repo");
   necessaryEdge.erase(*eit);
   repo.erase(eit);
   if (repo.empty()) graph.erase(oldtail);
@@ -39,7 +42,7 @@ void PastingMap<Order, Selector>::formClosedLoops(vector<Crv> &outCont) {
       assert(graph.find(oldtail) != graph.end());
       cands = &(graph[oldtail]);
       outEdge = std::min_element(cands->cbegin(), cands->cend(),
-                                 Selector(tol, oldtail, jordan, allCrvs));
+                                 Selector(tol, jordan, allCrvs));
     }
     jordan.concat(allCrvs[*outEdge]);
     newtail = jordan.endpoint();
@@ -63,26 +66,30 @@ void PastingMap<Order, Selector>::formClosedLoops(vector<Crv> &outCont) {
 
 template <int Order>
 bool OutEdgeSelectorByKnots<Order>::operator()(const size_t &lhsId,
-                                               const size_t &rhsId) {
-  // TODO(ytan): there is a bug in selecting multi curves.
+                                               const size_t &rhsId) const {
+  return compare(lhsId, rhsId) == -1;
+}
+template <int Order>
+int OutEdgeSelectorByKnots<Order>::compare(const size_t &lhsId,
+                                           const size_t &rhsId) const {
   const auto &lhs = allCrvs[lhsId];
   const auto &rhs = allCrvs[rhsId];
-  // auto getNextPoint = [](const Crv &p) {
-  //   const auto &knots = p.getKnots();
-  //   return p.getPolys().front()(knots[1] - knots[0]);
-  // };
-  // auto lhsPoint = getNextPoint(lhs);
-  // auto rhsPoint = getNextPoint(rhs);
-  auto [lhsPoint, rhsPoint] = lhs.getComparablePoint(rhs, tol, 0);
+  auto lhsPoint = lhs.getComparablePoint(tol, 0);
+  auto rhsPoint = rhs.getComparablePoint(tol, 0);
   rVec d1 = normalize(lhsPoint - standpoint);
   rVec d2 = normalize(rhsPoint - standpoint);
+  if (norm(d1 - d2) < tol) return 0;
+  bool res;
   Real s1 = cross(indir, d1);
   Real s2 = cross(indir, d2);
-  if (s1 * s2 <= 0) return (s1 >= 0);
+  if (s1 * s2 <= 0) res = s1 >= 0;
   Real c1 = dot(indir, d1);
   Real c2 = dot(indir, d2);
-  if (s1 > 0) return c1 < c2;
-  return c1 > c2;
+  if (s1 > 0)
+    res = c1 < c2;
+  else
+    res = c1 > c2;
+  return res ? -1 : 1;
 }
 
 //==========================================================

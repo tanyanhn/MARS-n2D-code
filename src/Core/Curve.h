@@ -134,11 +134,10 @@ class Curve {
 
   // compare around a point p(boundary point)
   int compare(const Curve& rhs, const rVec& p, int ix, int iy, Real tol) const;
-  // type = 0, startpoint() == rhs.startpoint()
-  // type = 1, startpoint() == rhs.endpoint()
-  // type = 2, endpoint() == rhs.startpoint()
-  // type = 3, endpoint() == rhs.endpoint()
-  auto getComparablePoint(const Curve& rhs, Real tol, int type = 0) const -> std::pair<rVec, rVec>;
+  // type = 0, startpoint() 
+  // type = 1, endpoint()
+  auto getComparablePoint(Real tol, int type = 0) const -> rVec;
+  bool equal(const Curve& rhs, Real tol) const;
   protected:
   static Real paraCalculator(const auto &poly, int ix, Real x, Real t0, Real tol) {
     auto xPoly = getComp(poly, ix);

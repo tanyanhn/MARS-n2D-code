@@ -669,50 +669,29 @@ int Curve<Dim, Order>::compare(const Curve &rhs, const rVec &p, int ix, int iy,
 }
 
 template <int Dim, int Order>
-auto Curve<Dim, Order>::getComparablePoint(const Curve &rhs, Real tol,
-                                           int type) const
-    -> std::pair<rVec, rVec> {
-  Real t0;
-  auto poly = polys[0];
-  Real rhsT0;
-  auto rhsPoly = rhs.getPolys()[0];
-  Real lastRange = knots[knots.size() - 1] - knots[knots.size() - 2];
-  auto &rhsKnots = rhs.getKnots();
-  Real rhsLastRange =
-      rhsKnots[rhsKnots.size() - 1] - rhsKnots[rhsKnots.size() - 2];
-  VecCompare<Real, Dim> vcmp(tol);
+auto Curve<Dim, Order>::getComparablePoint(Real tol, int type) const -> rVec {
   Real disturbance = tol / 4;
   if (type == 0) {
-    if (vcmp(startpoint(), rhs.startpoint()) != 0)
-      throw std::runtime_error("wrong type.");
-    t0 = disturbance;
-    rhsT0 = disturbance;
-  } else if (type == 1) {
-    if (vcmp(startpoint(), rhs.endpoint()) != 0)
-      throw std::runtime_error("wrong type.");
-    t0 = disturbance;
-    rhsT0 = rhsLastRange - disturbance;
-    rhsPoly = rhs.getPolys().back();
-  } else if (type == 2) {
-    if (vcmp(endpoint(), rhs.startpoint()) != 0)
-      throw std::runtime_error("wrong type.");
-    t0 = lastRange - disturbance;
-    poly = polys.back();
-    rhsT0 = disturbance;
-  } else if (type == 3) {
-    if (vcmp(endpoint(), rhs.endpoint()) != 0)
-      throw std::runtime_error("wrong type.");
-    t0 = lastRange - disturbance;
-    poly = polys.back();
-    rhsT0 = rhsLastRange - disturbance;
-    rhsPoly = rhs.getPolys().back();
-  } else {
-    throw std::runtime_error("undefine type.");
+    Real t0 = disturbance;
+    return polys[0](t0);
   }
+  if (type == 1) {
+    Real lastRange = knots[knots.size() - 1] - knots[knots.size() - 2];
+    Real t0 = lastRange - disturbance;
+    return polys.back()(t0);
+  }
+  throw std::runtime_error("type error");
+  return rVec();
+}
 
-  auto p = poly(t0);
-  auto rhsP = rhsPoly(rhsT0);
-  return std::make_pair(p, rhsP);
+template <int Dim, int Order>
+bool Curve<Dim, Order>::equal(const Curve &rhs, Real tol) const {
+  auto startPoint = startpoint();
+  auto lhsPoint = this->getComparablePoint(tol, 0);
+  auto rhsPoint = rhs.getComparablePoint(tol, 0);
+  rVec d1 = normalize(lhsPoint - startPoint);
+  rVec d2 = normalize(rhsPoint - startPoint);
+  return (norm(d1 - d2) < tol);
 }
 
 //=================================================
