@@ -2,7 +2,6 @@
 #define ORIENTEDJORDANCURVE_H
 
 #include <memory>
-#include <sstream>
 #include <string>
 #include <vector>
 

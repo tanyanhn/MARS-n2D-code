@@ -72,8 +72,10 @@ void OrientedJordanCurve<Dim, Order>::define(
     const SimplicialComplex<Vertex>& kinks) {
   this->knots.clear();
   this->polys.clear();
-  int pre = -1, pos = -1, last = -1;
-  if (kinks.getSimplexes().size() == 0) {
+  int pre = -1;
+  int pos = -1;
+  int last = -1;
+  if (kinks.getSimplexes().empty()) {
     Curve<Dim, Order> res = fitCurve<Order>(points, Curve<2, Order>::periodic);
     this->knots = res.getKnots();
     this->polys = res.getPolys();
@@ -89,8 +91,10 @@ void OrientedJordanCurve<Dim, Order>::define(
         vector<Vec<Real, Dim>> subPoints(std::next(points.begin(), pre),
                                          std::next(points.begin(), pos + 1));
         assert(subPoints.size() > 1 && "fitCurve Point num < 2.");
-        Curve<Dim, Order> res =
-            fitCurve<Order>(subPoints, Curve<2, Order>::nature);
+        auto type = Curve<2, Order>::notAknot;
+        if (subPoints.size() <= 3) type = Curve<2, Order>::nature;
+
+        Curve<Dim, Order> res = fitCurve<Order>(subPoints, type);
         Real startT;
         if (this->knots.empty()) {
           startT = 0;

@@ -331,7 +331,8 @@ vector<Curve<2, Order>> YinSet<2, Order>::getSmoothCurves(Real tol) const {
 template <int Order>
 auto YinSet<2, Order>::cutCell(const Box<Dim> &box, const Interval<Dim> &range,
                                bool addInner) const
-    -> std::pair<Tensor<YinSetPtr, 2>, Tensor<int, 2>> {
+    -> std::tuple<Tensor<YinSetPtr, 2>, Tensor<vector<Curve<2, Order>>, 2>,
+                  Tensor<int, 2>> {
   Tensor<YinSetPtr, 2> ret(box);
   rVec size(box.size());
   Real tol = distTol();
@@ -355,7 +356,7 @@ auto YinSet<2, Order>::cutCell(const Box<Dim> &box, const Interval<Dim> &range,
   // fill inner cell rectangles.
   auto tags = CutCellHelper<Order>::fillInner(lo, h, *this, ret, tol, addInner);
 
-  return {std::move(ret), tags};
+  return {std::move(ret), std::move(gridCurves), std::move(tags)};
 }
 
 //============================================================

@@ -1,7 +1,6 @@
 #ifndef YINSET_H
 #define YINSET_H
 
-
 #include "YinSet/OrientedJordanCurve.h"
 #include "YinSet/SegmentedRealizableSpadjor.h"
 #include "YinSet/SimplicialComplex.h"
@@ -50,7 +49,8 @@ class YinSet<2, Order> : public SegmentedRealizableSpadjor<Order> {
 
  public:
   /// Get the boundary Jordan curves.
-  const std::vector<OrientedJordanCurve<Dim, Order>>& getBoundaryCycles() const {
+  const std::vector<OrientedJordanCurve<Dim, Order>>& getBoundaryCycles()
+      const {
     return orientedJordanCurves;
   }
 
@@ -99,7 +99,8 @@ class YinSet<2, Order> : public SegmentedRealizableSpadjor<Order> {
   /// Calculate CutCell.
   auto cutCell(const Box<Dim>& box, const Interval<Dim>& range,
                bool AddInner = false) const
-      -> std::pair<Tensor<YinSetPtr, 2>, Tensor<int, 2>>;
+      -> std::tuple<Tensor<YinSetPtr, 2>, Tensor<vector<Curve<2, Order>>, 2>,
+                    Tensor<int, 2>>;
 
  protected:
   ///

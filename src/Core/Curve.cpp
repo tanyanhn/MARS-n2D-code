@@ -493,6 +493,8 @@ Curve<2, 4> fitCurve(const std::vector<Vec<Real, 2>> &vertices,
     std::vector<Real> a(numPiece), b(numPiece + 1, 2.0), c(numPiece);
     Real d = 0, e = 0, tmp;
     if (type == Curve<2, 4>::notAknot) {
+      if (numPiece <= 2)
+        throw std::runtime_error("notAknot curve must have at least 3 pieces");
       tmp = (t[1] - t[0]) * (t[1] - t[0]) / ((t[2] - t[1]) * (t[2] - t[1]));
       b[0] = 1.0;
       c[0] = 1.0 - tmp;

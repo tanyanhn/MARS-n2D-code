@@ -9,11 +9,11 @@ using namespace std;
 using namespace Catch;
 
 using Point = Vec<Real, 2>;
+using rVec = Point;
 template <int Order>
 using YinSetPtr = YinSet<2, Order>::YinSetPtr;
 
 const std::string rootDir(ROOT_DIR);
-
 
 struct Generator {
   static VecCompare<Real, 2> vCmp;
@@ -21,7 +21,8 @@ struct Generator {
   [[nodiscard]] static auto randomCreateReal() -> Real;
 
   template <int Order>
-  static auto createEllipse(Point center, Real radio, Real hL) -> YinSet<2, Order>;
+  static auto createEllipse(Point center, rVec radio, Real hL)
+      -> YinSet<2, Order>;
 };
 
 const Generator generator;
@@ -34,16 +35,17 @@ auto Generator::randomCreateReal() -> Real {
 }
 
 template <int Order>
-auto Generator::createEllipse(Point center, Real radio, Real hL) -> YinSet<2, Order> {
+auto Generator::createEllipse(Point center, rVec radio, Real hL)
+    -> YinSet<2, Order> {
   vector<Point> pts;
-  Real stepAngle = hL / radio;
+  Real stepAngle = hL / (radio[0] + radio[1]) * 2;
   int step = 2 * M_PI / stepAngle;
   pts.reserve(step + 1);
   for (int i = 0; i < step; i++) {
-    pts.push_back({center[0] + radio * cos(stepAngle * i), center[1] + radio * sin(stepAngle * i)});
+    pts.push_back({center[0] + radio[0] * cos(stepAngle * i),
+                   center[1] + radio[1] * sin(stepAngle * i)});
   }
-  if (vCmp(pts.front(), pts.back()) != 0)
-    pts.push_back(pts.front());
+  if (vCmp(pts.front(), pts.back()) != 0) pts.push_back(pts.front());
 
   auto crv = fitCurve<Order>(pts, Curve<2, Order>::periodic);
   vector<OrientedJordanCurve<2, Order>> vCrv{crv};
@@ -52,14 +54,15 @@ auto Generator::createEllipse(Point center, Real radio, Real hL) -> YinSet<2, Or
 }
 
 template <int Order>
-void dumpTensorYinSet(const Tensor<YinSetPtr<Order>, 2>& data, std::ostream& os) {
+void dumpTensorYinSet(const Tensor<YinSetPtr<Order>, 2>& data,
+                      std::ostream& os) {
   int num = 0;
   loop_box_2(data.box(), i0, i1) {
     if (data(i0, i1)) {
       num++;
     }
   }
-  os.write((char *)&num, sizeof(num));
+  os.write((char*)&num, sizeof(num));
   loop_box_2(data.box(), i0, i1) {
     if (data(i0, i1)) {
       data(i0, i1)->dump(os);
