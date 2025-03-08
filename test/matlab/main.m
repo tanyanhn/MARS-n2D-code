@@ -8,7 +8,11 @@ filedir = "results/CutCell/";
 % filename = round + "Start.dat";
 % filename = round + "Step160.dat";
 % filename = "spadjor-13.input.dat";
-filename = "4Circle128.dat";
+Order = 2;
+N = 512;
+% Shape = "Circle";
+Shape = "Rectangle";
+filename = num2str(Order) + Shape + num2str(N) + ".dat";
 
 hd = fopen(filedir + filename);
 
