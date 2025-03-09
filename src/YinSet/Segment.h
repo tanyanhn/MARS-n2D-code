@@ -72,6 +72,8 @@ class Segment {
    */
   bool contain(const rVec &q, Real tol) const;
 
+  auto operator[](int i) const { return p[i]; }
+
   ///
   /**
    */

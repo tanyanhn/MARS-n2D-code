@@ -50,7 +50,7 @@ void testIT() {
   // set the initial curve
   int n;
   Real dt;
-  int opstride;
+  int opStride;
   Real radio = test.radio;
   Point center = test.center;
   Vector<Curve<2, 4>> crvs;
@@ -64,13 +64,13 @@ void testIT() {
   Vector<Real> time2(2 * stages - 1, 0);
   clock_t begin, end;
   string dir = std::string(ROOT_DIR) + "/results/" + test.name + "/";
-  // auto success = 
+  // auto success =
   mkdir(dir.c_str(), 0755);
   // assert(success == 0);
   for (int lp = 0; lp < loop; lp++) {
     n = test.n;    //
     dt = test.dt;  //
-    opstride = test.opstride;
+    opStride = test.opstride;
     for (int k = 0; k < stages; k++) {
       // get the initial curve
       Vector<Point> pts;
@@ -95,18 +95,15 @@ void testIT() {
       string fname = dir + "No" + tmps.str();
 
       begin = clock();
-      if (plot)
-        CM.trackInterface(*test.velocity, YS, 0, dt, test.T, true, fname,
-                          opstride);
-      else
-        CM.trackInterface(*test.velocity, YS, 0, dt, test.T);
+      CM.trackInterface(*test.velocity, YS, 0, dt, test.T, plot, fname,
+                        opStride);
       end = clock();
       time1[2 * k] += (double)(end - begin) / CLOCKS_PER_SEC;
       // get the curve after tracking
       crv = (YS.getBoundaryCycles())[0];
       crvs.push_back(crv);
       n *= 2;
-      opstride *= 2;
+      opStride *= 2;
       dt /= 2;
     }
   }
@@ -223,7 +220,7 @@ void testKinks_0nk() {
 
   // set the CubicMARS method
   MARS2DIMV<4, VectorFunction> CM(&ERK, 0.3, 0.5);
-  CM.trackInterface(*squareshrink, YS, 0, 0.1, 0.4);
+  CM.trackInterface(*squareshrink, YS, 0, 0.1, 0.4, false, "", 0);
   // CM.trackInterface(*translation, YS, 0, 0.1, 1);
   crv = (YS.getBoundaryCycles())[0];
   auto knots = crv.getKnots();
@@ -291,7 +288,7 @@ void testKinks_0k() {
 
     // set the CubicMARS method
     MARS2DIMV<4, VectorFunction> CM(&ESDIRK4, 2 * h, test.rtiny);
-    CM.trackInterface(*test.velocity, YS, 0, dt, test.T);
+    CM.trackInterface(*test.velocity, YS, 0, dt, test.T, false, "", 0);
     // CM.trackInterface(*translation, YS, 0, 0.1, 1);
     vys.push_back(YS);
 
@@ -329,7 +326,7 @@ void testKinks_circle() {
   // set the initial curve
   int n;
   Real dt;
-  int opstride;
+  int opStride;
   Real radio = test.radio;
   Point center = test.center;
   Vector<Curve<2, 4>> crvs;
@@ -345,7 +342,7 @@ void testKinks_circle() {
 
   n = test.n;    //
   dt = test.dt;  //
-  opstride = test.opstride;
+  opStride = test.opstride;
   for (int k = 0; k < stages; k++) {
     // get the initial curve
     Vector<Point> pts;
@@ -371,15 +368,11 @@ void testKinks_circle() {
 
     ostringstream tmps;
     tmps << k;
-    string fname = "results" + test.name + "/No" + tmps.str();
+    string fName = "results" + test.name + "/No" + tmps.str();
 
     begin = clock();
 
-    if (plot == true)
-      CM.trackInterface(*test.velocity, YS, 0, dt, test.T, true, fname,
-                        opstride);
-    else
-      CM.trackInterface(*test.velocity, YS, 0, dt, test.T);
+    CM.trackInterface(*test.velocity, YS, 0, dt, test.T, plot, fName, opStride);
 
     end = clock();
     time1[2 * k] += (double)(end - begin) / CLOCKS_PER_SEC;
@@ -387,7 +380,7 @@ void testKinks_circle() {
     crv = (YS.getBoundaryCycles())[0];
     crvs.push_back(crv);
     n *= 2;
-    opstride *= 2;
+    opStride *= 2;
     dt /= 2;
   }
 

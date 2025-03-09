@@ -80,7 +80,7 @@ void OrientedJordanCurve<Dim, Order>::define(
     this->knots = res.getKnots();
     this->polys = res.getPolys();
   } else {
-    for (auto& simplex : kinks.getSimplexes()[0]) {
+    for (const auto& simplex : kinks.getSimplexes()[0]) {
       assert(simplex.vertices.begin()->second < points.size() &&
              "kinks value should be points index.");
       if (pre == -1) {

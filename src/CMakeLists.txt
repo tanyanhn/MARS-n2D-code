@@ -2,7 +2,7 @@ add_subdirectory(Core)
 add_subdirectory(YinSet)
 add_subdirectory(InterfaceTracking)
 add_subdirectory(GeometricFlow)
-# add_subdirectory(Marsn2D)
+add_subdirectory(Marsn2D)
 add_subdirectory(Recorder)
 
 add_library(${MAIN_LIB} STATIC ${Core_Files} ${YinSet_Files} ${InterfaceTracking_Files} ${GeometricFlow_Files}

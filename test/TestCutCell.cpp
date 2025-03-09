@@ -11,7 +11,7 @@ TEST_CASE("Circle Cut Cell", "[Circle][CutCell][SegmentedRealizableSpadjor]") {
   string name = "Circle";
   Real lo = 0.0;
   Real hi = 1.0;
-  Real hL = 0.00001;
+  Real hL = 0.0001;
   Interval<2> range{lo, hi};
 
   SECTION("4-th order circle") {

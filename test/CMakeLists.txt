@@ -8,7 +8,7 @@ elseif(CMAKE_BUILD_TYPE STREQUAL "RELEASE")
   SET(COMPLIE_FLAGS "${CMAKE_CXX_FLAGS_RELEASE}")
 endif()
 
-set(LIST_TEST testPolynomial TestCutCell)
+set(LIST_TEST testPolynomial TestCutCell TestInterfaceGraph)
 foreach(test ${LIST_TEST})
   message(STATUS "test ${test}")
   add_executable(${test} ${test}.cpp)
