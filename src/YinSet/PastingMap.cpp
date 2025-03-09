@@ -79,17 +79,15 @@ int OutEdgeSelectorByKnots<Order>::compare(const size_t &lhsId,
   rVec d1 = normalize(lhsPoint - standpoint);
   rVec d2 = normalize(rhsPoint - standpoint);
   if (norm(d1 - d2) < tol) return 0;
-  bool res;
-  Real s1 = cross(indir, d1);
-  Real s2 = cross(indir, d2);
-  if (s1 * s2 <= 0) res = s1 >= 0;
-  Real c1 = dot(indir, d1);
-  Real c2 = dot(indir, d2);
-  if (s1 > 0)
-    res = c1 < c2;
-  else
-    res = c1 > c2;
-  return res ? -1 : 1;
+  Real s1 = cross(d1, indir);
+  Real s2 = cross(d2, indir);
+  Real c1 = dot(d1, indir);
+  Real c2 = dot(d2, indir);
+  Real angle1 = std::atan2(s1, c1);
+  if (angle1 < 0) angle1 += 2 * M_PI;
+  Real angle2 = std::atan2(s2, c2);
+  if (angle2 < 0) angle2 += 2 * M_PI;
+  return angle1 <= angle2 ? -1 : 1;
 }
 
 //==========================================================

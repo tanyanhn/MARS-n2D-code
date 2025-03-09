@@ -17,7 +17,7 @@ class OutEdgeSelectorByKnots {
                          const std::vector<Crv>& allCrvs_)
       : tol(_tol), standpoint(existing.endpoint()), allCrvs(allCrvs_) {
     rVec lastButOne = existing.getComparablePoint(_tol, 1);
-    indir = normalize(standpoint - lastButOne);
+    indir = normalize(lastButOne - standpoint);
   }
 
   int compare(const size_t&, const size_t&) const;

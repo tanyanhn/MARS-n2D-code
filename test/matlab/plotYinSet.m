@@ -2,6 +2,7 @@ function plotYinSet(sf, lineColor, fillColor, lineWidth, offset)
     if numel(sf) == 0
         return;
     end
+    minesVolume = -1e-16;
     
     if nargin < 5
         offset = [0 0];
@@ -28,7 +29,7 @@ function plotYinSet(sf, lineColor, fillColor, lineWidth, offset)
         if a > 0
             fillcolor{c} = fillColor;
             linestyle{c} = '-';
-        else
+        elseif a < minesVolume
             fillcolor{c} = 'w';
             linestyle{c} = ':';
         end
@@ -36,7 +37,7 @@ function plotYinSet(sf, lineColor, fillColor, lineWidth, offset)
     
     % fill the background
     hold on;
-    if filled && amax < 0
+    if filled && amax < minesVolume
         set(gca, 'Color', fillColor);
     end
     
@@ -44,7 +45,7 @@ function plotYinSet(sf, lineColor, fillColor, lineWidth, offset)
     for c=1:numel(sf)
         verts = linearizeSpline(sf{c})';
         verts = verts + offset;
-        if filled
+        if filled && a > -minesVolume
             fill(verts(:,1),verts(:,2), fillcolor{c}, ...
                 'EdgeColor', 'k', 'FaceAlpha', 0.7);
         else

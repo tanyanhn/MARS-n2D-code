@@ -3,15 +3,16 @@
 % filedir = "results/Deformation/";
 % filedir = "results/CircleShrink/";
 % filedir = "test/data/";
-filedir = "results/CutCell/";
+% filedir = "results/CutCell/";
+filedir = "results/InterfaceGraph/";
 % round = "No4_";
 % filename = round + "Start.dat";
 % filename = round + "Step160.dat";
 % filename = "spadjor-13.input.dat";
 Order = 2;
 N = 512;
-% Shape = "Circle";
-Shape = "Rectangle";
+Shape = "Circle";
+% Shape = "Rectangle";
 filename = num2str(Order) + Shape + num2str(N) + ".dat";
 
 hd = fopen(filedir + filename);
