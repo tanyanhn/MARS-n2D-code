@@ -115,7 +115,7 @@ auto PointsLocater::compute(const vector<Segment<2>> &segs,
 template <int Order>
 vector<int> PointsLocater::operator()(
     const vector<OrientedJordanCurve<DIM, Order>> &ys,
-    const vector<rVec> &queries, bool /*unused*/) {
+    const vector<rVec> &queries, bool bounded) {
   std::vector<int> ret;
   if (ys.empty() || queries.empty()) {
     return {};
@@ -162,10 +162,12 @@ vector<int> PointsLocater::operator()(
           auto preCrv = std::get<3>(closest_points[j]);
           auto compareRes = localCrv.compare(preCrv, q, ix, iy, tol);
           if (compareRes * (y - q[iy]) > 0) {
-            closest_points[j] = std::make_tuple(d, aim, localCrv.normalVector(brk, tol)[0], localCrv);
+            closest_points[j] = std::make_tuple(
+                d, aim, localCrv.normalVector(brk, tol)[0], localCrv);
           }
         } else if (d < std::get<0>(closest_points[j])) {
-          closest_points[j] = std::make_tuple(d, aim, localCrv.normalVector(brk, tol)[0], localCrv);
+          closest_points[j] = std::make_tuple(
+              d, aim, localCrv.normalVector(brk, tol)[0], localCrv);
         }
       }
     }
@@ -174,10 +176,13 @@ vector<int> PointsLocater::operator()(
   ret.resize(queries.size());
   for (int i = 0; i < queries.size(); ++i) {
     auto &cp = closest_points[i];
-    if (std::get<0>(cp) > tol)
+    if (std::get<0>(cp) == std::numeric_limits<Real>::max()) {
+      ret[i] = bounded ? -1 : 1;
+    } else if (std::get<0>(cp) > tol) {
       ret[i] = dot(std::get<2>(cp), std::get<1>(cp) - queries[i]) > 0 ? 1 : -1;
-    else
+    } else {
       ret[i] = 0;
+    }
   }
   return ret;
 }

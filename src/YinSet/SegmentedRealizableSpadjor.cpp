@@ -4,6 +4,7 @@
 
 #include "PointsLocater.h"
 #include "SegmentsIntersector.h"
+#include "YinSet/CutCellHelper.h"
 #include "YinSet/PastingMap.h"
 #include "Core/Tensor.h"
 
@@ -27,21 +28,26 @@ bool checkIsBounded(const T &iterator, Real tol) {
   });
   // find the leftmost segment among the ones incident to the topmost vertex
   std::sort(edges.begin(), edges.end(),
-            [](const Segment<2> &lhs, const Segment<2> &rhs) {
-              Real k1 = lhs.slope();
-              Real k2 = rhs.slope();
-              if (k1 == 0) return false; // since the topmost is the leftmost
-              if (k2 == 0) return true;
-              if (k1 * k2 < 0) return k1 > 0;
-              return k1 < k2;
+            [topmost, vcmp](const Segment<2> &lhs, const Segment<2> &rhs) {
+              auto d1 = normalize(lhs.p[1] - lhs.p[0]);
+              if (vcmp.compare(lhs.p[0], topmost) != 0) d1 = d1 * -1;
+              auto d2 = normalize(rhs.p[1] - rhs.p[0]);
+              if (vcmp.compare(rhs.p[0], topmost) != 0) d2 = d2 * -1;
+              static Vec<Real, 2> unit({0, 1});
+              Real angle1 = std::atan2(cross(unit, d1), dot(unit, d1));
+              if (angle1 < 0) angle1 += 2 * M_PI;
+              Real angle2 = std::atan2(cross(unit, d2), dot(unit, d2));
+              if (angle2 < 0) angle2 += 2 * M_PI;
+              return angle1 < angle2;
             });
   return vcmp.compare(topmost, edges[0].p[0]) == 0;
 }
 
-template <>
-bool SegmentedRealizableSpadjor<2>::isBounded(Real tol) const {
+template <int Order>
+bool SegmentedRealizableSpadjor<Order>::isBounded(Real tol) const {
   auto iterator = [&](const auto &callback) {
-    for (const auto &gamma : orientedJordanCurves) {
+    for (const auto &crv : orientedJordanCurves) {
+      auto gamma = crv.makeMonotonic(tol);
       const auto &polys = gamma.getPolys();
       auto numPolys = polys.size();
       for (int i = 0; i < numPolys - 1; ++i)
@@ -55,7 +61,8 @@ bool SegmentedRealizableSpadjor<2>::isBounded(Real tol) const {
 template <int Order>
 bool isBounded(const Curve<2, Order> &polygon, Real tol) {
   auto iterator = [&](const auto &callback) {
-    const auto &polys = polygon.getPolys();
+    auto monotonic = polygon.makeMonotonic(tol);
+    const auto &polys = monotonic.getPolys();
     int numPolys = polys.size();
     for (int i = 0; i < numPolys - 1; ++i)
       callback(Segment<2>(polys[i][0], polys[i + 1][0]));
@@ -109,7 +116,7 @@ void SegmentedRealizableSpadjor<2>::pastSegmentation(
     const vector<Curve<Dim, 2>> &crv, Real tolForSegmentation) {
   PastingMap<2> builder(tolForSegmentation);
   for (const auto &gamma : crv) builder.addEdge(gamma);
-  vector<Curve<2, 2>> res;
+  vector<OrientedJordanCurve<2, 2>> res;
   builder.formClosedLoops(res);
   aSpadjor.clear();
   for (auto &&crv : res) {

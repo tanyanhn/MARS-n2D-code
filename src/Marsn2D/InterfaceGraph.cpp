@@ -78,9 +78,20 @@ approxInterfaceGraph<Order>::approxInterfaceGraph(
     vector<Vertex> knots;
     vector<size_t> brksId;
     vector<Real> brks;
+    VecCompare<Real, DIM> vCmp(tol);
     if (type == Curve<2, Order>::periodic) brksId.push_back(0);
     for (auto crvId : spline) {
-      if (!knots.empty()) knots.pop_back();
+      if (!knots.empty()) { 
+        auto p0 = knots.back();
+        auto p1 = marks_[crvId].front();
+        if (vCmp.compare(p0, p1) != 0) 
+          throw std::runtime_error("Invalid edge id");
+        knots.pop_back();
+        p0 = knots.back();
+        if (vCmp.compare(p0, p1) == 0) 
+          throw std::runtime_error("Invalid edge id");
+        
+      }
       knots.insert(knots.end(), marks_[crvId].begin(), marks_[crvId].end());
       brksId.push_back(knots.size() - 1);
     }

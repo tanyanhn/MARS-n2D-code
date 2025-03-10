@@ -43,46 +43,56 @@ auto Generator::randomCreateReal() -> Real {
 }
 auto Generator::markEllipse(Point center, rVec radio, Real hL, rVec range) {
   vector<Point> pts;
+  VecCompare<Real, DIM> vCmp(distTol());
   Real stepAngle = hL / std::sqrt(radio[0] * radio[1]);
   if (range[1] < range[0]) range[1] += 2 * M_PI;
-  int step = (range[1] - range[0]) / stepAngle;
+  int step = std::ceil((range[1] - range[0]) / stepAngle);
+  stepAngle = (range[1] - range[0]) / step;
   auto eValue = [radio, center, range](Real angle) {
     angle += range[0];
     return Point{center + rVec{radio[0] * cos(angle), radio[1] * sin(angle)}};
   };
   pts.reserve(step + 1);
   pts.push_back(eValue(0));
-  for (int i = 0; i < step - 1; i++) {
+  for (int i = 0; i < step; i++) {
     Real localAngle = stepAngle;
-    Point local = eValue(localAngle);
+    Real angle = stepAngle * i + localAngle;
+    Point local = eValue(angle);
     while (norm(pts.back() - local) > hL) {
       localAngle /= 2;
-      local = eValue(localAngle + stepAngle * i);
+      angle = stepAngle * i + localAngle;
+      local = eValue(angle);
     }
 
-    Real angle = stepAngle * i + localAngle;
-    while (angle <= stepAngle * (i + 1)) {
+    while (angle < stepAngle * (i + 1) - distTol()) {
       pts.push_back(eValue(angle));
       angle += localAngle;
     }
+    pts.push_back(eValue(stepAngle * (i + 1)));
   }
-  if (norm(pts.back() - eValue(range[1] - range[0])) > distTol())
-    pts.push_back(eValue(range[1] - range[0]));
+  auto p1 = eValue(range[1] - range[0]);
+  if (vCmp(pts.back(), p1) == 0) pts.pop_back();
+
+  pts.push_back(p1);
   return pts;
 }
 
 auto Generator::markSegment(Segment<DIM> seg, Real hL) {
   vector<Point> pts;
+  VecCompare<Real, DIM> vCmp(distTol());
   auto p0 = seg[0];
   auto p1 = seg[1];
   Real length = norm(p1 - p0);
-  int num = (int)(length / hL);
+  int num = std::ceil(length / hL);
   rVec piece = (p1 - p0) / num;
   Point loc = p0;
-  for (int i = 0; i <= num; i++) {
+  for (int i = 0; i < num; i++) {
     pts.push_back(loc);
-    loc = loc + piece;
+    loc = p0 + piece * (i + 1);
   }
+
+  if (vCmp(pts.back(), p1) == 0) pts.pop_back();
+  pts.push_back(p1);
 
   return pts;
 }

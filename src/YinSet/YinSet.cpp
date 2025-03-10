@@ -354,7 +354,7 @@ auto YinSet<2, Order>::cutCell(const Box<Dim> &box, const Interval<Dim> &range,
   CutCellHelper<Order>::pastCells(lo, h, gridCurves, ret, tol);
 
   // fill inner cell rectangles.
-  auto tags = CutCellHelper<Order>::fillInner(lo, h, *this, ret, tol, addInner);
+  auto tags = CutCellHelper<Order>::fillInner(lo, h, *this, gridCurves, ret, tol, addInner);
 
   return {std::move(ret), std::move(gridCurves), std::move(tags)};
 }

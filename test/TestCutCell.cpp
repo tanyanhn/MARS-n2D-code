@@ -22,11 +22,13 @@ TEST_CASE("Circle Cut Cell", "[Circle][CutCell][SegmentedRealizableSpadjor]") {
     rVec h = (hi - lo) / N;
     auto [res, boundary, tags] = circle.cutCell(box, range, addInner);
     // output res
-    auto dir = rootDir + "/results/CutCell/";
-    mkdir(dir.c_str(), 0755);
-    string fileName = to_string(Order) + name + to_string(N) + ".dat";
-    std::ofstream of(dir + fileName, std::ios_base::binary);
-    if (output) dumpTensorYinSet<Order>(res, of);
+    if (output) {
+      auto dir = rootDir + "/results/CutCell/";
+      mkdir(dir.c_str(), 0755);
+      string fileName = to_string(Order) + name + to_string(N) + ".dat";
+      std::ofstream of(dir + fileName, std::ios_base::binary);
+      dumpTensorYinSet<Order>(res, of);
+    }
 
     THEN("Integral Area and length.") {
       Real totalArea = 0;
@@ -36,8 +38,10 @@ TEST_CASE("Circle Cut Cell", "[Circle][CutCell][SegmentedRealizableSpadjor]") {
         if (tags(i0, i1) == 1) {
           totalArea += fullCell;
         } else if (tags(i0, i1) == 0) {
-          for (const auto& crv : res(i0, i1)->getBoundaryCycles())
-            totalArea += area(crv);
+          if (res(i0, i1)) {
+            for (const auto& crv : res(i0, i1)->getBoundaryCycles())
+              totalArea += area(crv);
+          }
           for (const auto& crv : boundary(i0, i1)) length += arclength(crv);
         }
       }
@@ -57,11 +61,13 @@ TEST_CASE("Circle Cut Cell", "[Circle][CutCell][SegmentedRealizableSpadjor]") {
     Box<2> box(0, N - 1);
     auto [res, boundary, tags] = circle.cutCell(box, range, addInner);
     // output res
-    auto dir = rootDir + "/results/CutCell/";
-    mkdir(dir.c_str(), 0755);
-    string fileName = to_string(Order) + "Circle" + to_string(N) + ".dat";
-    std::ofstream of(dir + fileName, std::ios_base::binary);
-    if (output) dumpTensorYinSet<Order>(res, of);
+    if (output) {
+      auto dir = rootDir + "/results/CutCell/";
+      mkdir(dir.c_str(), 0755);
+      string fileName = to_string(Order) + "Circle" + to_string(N) + ".dat";
+      std::ofstream of(dir + fileName, std::ios_base::binary);
+      dumpTensorYinSet<Order>(res, of);
+    }
   }
 }
 
@@ -94,11 +100,13 @@ TEST_CASE("Rectangle Cut Cell",
     YinSet<DIM, Order> rectangle({curves}, distTol());
     auto [res, boundary, tags] = rectangle.cutCell(box, range, addInner);
     // output res
-    auto dir = rootDir + "/results/CutCell/";
-    mkdir(dir.c_str(), 0755);
-    string fileName = to_string(Order) + name + to_string(N) + ".dat";
-    std::ofstream of(dir + fileName, std::ios_base::binary);
-    if (output) dumpTensorYinSet<Order>(res, of);
+    if (output) {
+      auto dir = rootDir + "/results/CutCell/";
+      mkdir(dir.c_str(), 0755);
+      string fileName = to_string(Order) + name + to_string(N) + ".dat";
+      std::ofstream of(dir + fileName, std::ios_base::binary);
+      dumpTensorYinSet<Order>(res, of);
+    }
 
     THEN("Integral Area and length.") {
       Real totalArea = 0;
@@ -108,8 +116,10 @@ TEST_CASE("Rectangle Cut Cell",
         if (tags(i0, i1) == 1) {
           totalArea += fullCell;
         } else if (tags(i0, i1) == 0) {
-          for (const auto& crv : res(i0, i1)->getBoundaryCycles())
-            totalArea += area(crv);
+          if (res(i0, i1)) {
+            for (const auto& crv : res(i0, i1)->getBoundaryCycles())
+              totalArea += area(crv);
+          }
           for (const auto& crv : boundary(i0, i1)) length += arclength(crv);
         }
       }
@@ -137,10 +147,12 @@ TEST_CASE("Rectangle Cut Cell",
     YinSet<DIM, Order> rectangle({curves}, distTol());
     auto [res, boundary, tags] = rectangle.cutCell(box, range, addInner);
     // output res
-    auto dir = rootDir + "/results/CutCell/";
-    mkdir(dir.c_str(), 0755);
-    string fileName = to_string(Order) + name + to_string(N) + ".dat";
-    std::ofstream of(dir + fileName, std::ios_base::binary);
-    if (output) dumpTensorYinSet<Order>(res, of);
+    if (output) {
+      auto dir = rootDir + "/results/CutCell/";
+      mkdir(dir.c_str(), 0755);
+      string fileName = to_string(Order) + name + to_string(N) + ".dat";
+      std::ofstream of(dir + fileName, std::ios_base::binary);
+      dumpTensorYinSet<Order>(res, of);
+    }
   }
 }

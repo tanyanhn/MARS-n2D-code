@@ -6,6 +6,7 @@
 
 #include "Core/Curve.h"
 #include "Core/VecCompare.h"
+#include "YinSet/OrientedJordanCurve.h"
 
 template <int Order>
 class OutEdgeSelectorByKnots {
@@ -15,17 +16,16 @@ class OutEdgeSelectorByKnots {
 
   OutEdgeSelectorByKnots(Real _tol, const Crv& existing,
                          const std::vector<Crv>& allCrvs_)
-      : tol(_tol), standpoint(existing.endpoint()), allCrvs(allCrvs_) {
-    rVec lastButOne = existing.getComparablePoint(_tol, 1);
-    indir = normalize(lastButOne - standpoint);
-  }
+      : tol(_tol),
+        indir(existing.getComparableDirection(_tol, 1)),
+        allCrvs(allCrvs_) {}
 
   int compare(const size_t&, const size_t&) const;
   bool operator()(const size_t&, const size_t&) const;
 
  protected:
   Real tol;
-  rVec standpoint;
+  // rVec standpoint;
   rVec indir;
   const std::vector<Crv>& allCrvs;
 };
@@ -41,7 +41,7 @@ class PastingMap {
   using vector = std::vector<T>;
 
   PastingMap(Real _tol) : tol(_tol), graph(VecCompare<Real, SpaceDim>(tol)) {}
-  void formClosedLoops(vector<Crv>& outCont);
+  void formClosedLoops(vector<OrientedJordanCurve<DIM, Order>>& outCont);
   template <class T_Crv>
   void addEdge(T_Crv&& newEdge, bool necessary = true);
 

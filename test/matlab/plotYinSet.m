@@ -24,12 +24,12 @@ function plotYinSet(sf, lineColor, fillColor, lineWidth, offset)
     % bouding box and orientation
     amax = 0;
     for c=1:numel(sf)
-        a = signedArea(linearizeSpline(sf{c})');
-        if abs(a) > abs(amax), amax = a; end
-        if a > 0
+        a(c) = signedArea(linearizeSpline(sf{c})');
+        if abs(a(c)) > abs(amax), amax = a(c); end
+        if a(c) > 0
             fillcolor{c} = fillColor;
             linestyle{c} = '-';
-        elseif a < minesVolume
+        elseif a(c) < minesVolume
             fillcolor{c} = 'w';
             linestyle{c} = ':';
         end
@@ -43,9 +43,9 @@ function plotYinSet(sf, lineColor, fillColor, lineWidth, offset)
     
     % plot the boundary or fill the interior
     for c=1:numel(sf)
-        verts = linearizeSpline(sf{c})';
+        verts = linearizeSpline(sf{c}, 2)';
         verts = verts + offset;
-        if filled && a > -minesVolume
+        if filled && a(c) > -minesVolume
             fill(verts(:,1),verts(:,2), fillcolor{c}, ...
                 'EdgeColor', 'k', 'FaceAlpha', 0.7);
         else

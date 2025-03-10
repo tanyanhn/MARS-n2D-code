@@ -88,9 +88,8 @@ class Segment {
 template <>
 inline Real Segment<2>::slope() const {
   rVec delta = p[0] - p[1];
-  return delta[0] == 0
-             ? std::numeric_limits<Real>::max() * (delta[1] > 0 ? 1 : -1)
-             : (delta[1] / delta[0]);
+  return delta[0] == 0 ? std::numeric_limits<Real>::max()
+                       : (delta[1] / delta[0]);
 }
 
 template <int Dim>
@@ -185,7 +184,8 @@ inline Segment<2>::intsType intersect(const Segment<2> &thisSeg,
 template <int Dim>
 inline bool isInInterval(const Vec<Real, Dim> &q, const Vec<Real, Dim> &p1,
                          const Vec<Real, Dim> &p2, Real tol, int majorDim) {
-  return static_cast<bool>(q[majorDim] >= std::min(p1[majorDim], p2[majorDim]) - tol &&
+  return static_cast<bool>(
+      q[majorDim] >= std::min(p1[majorDim], p2[majorDim]) - tol &&
       q[majorDim] <= std::max(p1[majorDim], p2[majorDim]) + tol);
 }
 

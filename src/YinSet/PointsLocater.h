@@ -41,7 +41,7 @@ class PointsLocater {
   vector<int> operator()(
       const vector<OrientedJordanCurve<DIM, Order>> &ys,
       const vector<rVec> &queries,
-      bool bounded = false /* Unused but for compatibility */);
+      bool bounded);
 
  protected:
   vector<int> compute(const vector<Segment<2>> &segs, const vector<rVec> &pts,

@@ -28,6 +28,7 @@ struct CutCellHelper {
 
   // fill inner grid.
   static auto fillInner(rVec lo, rVec h, const SRS &srs,
+                        const Tensor<vector<Curve<2, Order>>, 2> &gridCurves,
                         Tensor<YinSetPtr, 2> &gridSRS, Real tol,
                         bool addInner = false);
 };
@@ -197,24 +198,28 @@ auto CutCellHelper<Order>::pastCells(
       pasting.addEdge(crv, false);
     }
 
-    vector<Curve<2, Order>> res;
+    vector<OrientedJordanCurve<2, Order>> res;
     pasting.formClosedLoops(res);
-    for (auto &crv : res) {
-      vector<OrientedJordanCurve<2, Order>> vecCrv = {crv};
-      // gridSRS(i0, i1) = (new YinSet<2, Order>(SRS(vecCrv), tol));
-      gridSRS(i0, i1) = (std::make_shared<YinSet<2, Order>>(SRS(vecCrv), tol));
+    vector<OrientedJordanCurve<2, Order>> vecCrv;
+    for (auto &&crv : res) {
+      auto vol = area(crv);
+      if (std::abs(vol) > tol) vecCrv.emplace_back(std::move(crv));
     }
+    // gridSRS(i0, i1) = (new YinSet<2, Order>(SRS(vecCrv), tol));
+    if (!vecCrv.empty())
+      gridSRS(i0, i1) = (std::make_shared<YinSet<2, Order>>(SRS(vecCrv), tol));
   }
 }
 
 template <int Order>
-auto CutCellHelper<Order>::fillInner(rVec lo, rVec h, const SRS &srs,
-                                     Tensor<YinSetPtr, 2> &gridSRS, Real tol,
-                                     bool addInner) {
+auto CutCellHelper<Order>::fillInner(
+    rVec lo, rVec h, const SRS &srs,
+    const Tensor<vector<Curve<2, Order>>, 2> &gridCurves,
+    Tensor<YinSetPtr, 2> &gridSRS, Real tol, bool addInner) {
   Tensor<int, 2> tags(gridSRS.box());
   loop_box_2(gridSRS.box(), i0, i1) {
-    auto &srsPtr = gridSRS(i0, i1);
-    if (srsPtr) {
+    auto &boundaryPtr = gridCurves(i0, i1);
+    if (!boundaryPtr.empty()) {
       tags(i0, i1) = CellType::BOUNDARY;
     } else {
       tags(i0, i1) = CellType::UNKNOWN;
@@ -249,7 +254,7 @@ auto CutCellHelper<Order>::fillInner(rVec lo, rVec h, const SRS &srs,
       queue.push_back(iVec{i0, i1});
       rVec mid = lo + h * iVec{i0, i1} + h * 0.5;
       int tag = PointsLocater(tol).operator()(srs.getOrientedJordanCurvesRef(),
-                                              {mid})[0];
+                                              {mid}, srs.isBounded(tol))[0];
       while (!queue.empty()) dfsMark(CellType(tag));
     }
   }

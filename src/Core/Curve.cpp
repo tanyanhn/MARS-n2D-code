@@ -671,16 +671,16 @@ int Curve<Dim, Order>::compare(const Curve &rhs, const rVec &p, int ix, int iy,
 }
 
 template <int Dim, int Order>
-auto Curve<Dim, Order>::getComparablePoint(Real tol, int type) const -> rVec {
+auto Curve<Dim, Order>::getComparableDirection(Real tol, int type) const -> rVec {
   Real disturbance = tol / 4;
   if (type == 0) {
     Real t0 = disturbance;
-    return polys[0](t0);
+    return normalize(polys[0](t0) - polys[0][0]);
   }
   if (type == 1) {
     Real lastRange = knots[knots.size() - 1] - knots[knots.size() - 2];
     Real t0 = lastRange - disturbance;
-    return polys.back()(t0);
+    return normalize(polys.back()(t0) - polys.back()(lastRange));
   }
   throw std::runtime_error("type error");
   return rVec();
@@ -688,11 +688,8 @@ auto Curve<Dim, Order>::getComparablePoint(Real tol, int type) const -> rVec {
 
 template <int Dim, int Order>
 bool Curve<Dim, Order>::equal(const Curve &rhs, Real tol) const {
-  auto startPoint = startpoint();
-  auto lhsPoint = this->getComparablePoint(tol, 0);
-  auto rhsPoint = rhs.getComparablePoint(tol, 0);
-  rVec d1 = normalize(lhsPoint - startPoint);
-  rVec d2 = normalize(rhsPoint - startPoint);
+  auto d1 = this->getComparableDirection(tol, 0);
+  auto d2 = rhs.getComparableDirection(tol, 0);
   return (norm(d1 - d2) < tol);
 }
 

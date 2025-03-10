@@ -14,7 +14,7 @@ void PastingMap<Order, Selector>::removeEdge(const rVec &oldtail,
 }
 
 template <int Order, class Selector>
-void PastingMap<Order, Selector>::formClosedLoops(vector<Crv> &outCont) {
+void PastingMap<Order, Selector>::formClosedLoops(vector<OrientedJordanCurve<DIM, Order>> &outCont) {
   Crv jordan;
   rVec oldtail;
   rVec newtail;
@@ -40,7 +40,7 @@ void PastingMap<Order, Selector>::formClosedLoops(vector<Crv> &outCont) {
     } else {  // grow
       oldtail = newtail;
       assert(graph.find(oldtail) != graph.end());
-      cands = &(graph[oldtail]);
+      cands = &(graph.find(oldtail)->second);
       outEdge = std::min_element(cands->cbegin(), cands->cend(),
                                  Selector(tol, jordan, allCrvs));
     }
@@ -74,10 +74,8 @@ int OutEdgeSelectorByKnots<Order>::compare(const size_t &lhsId,
                                            const size_t &rhsId) const {
   const auto &lhs = allCrvs[lhsId];
   const auto &rhs = allCrvs[rhsId];
-  auto lhsPoint = lhs.getComparablePoint(tol, 0);
-  auto rhsPoint = rhs.getComparablePoint(tol, 0);
-  rVec d1 = normalize(lhsPoint - standpoint);
-  rVec d2 = normalize(rhsPoint - standpoint);
+  auto d1 = lhs.getComparableDirection(tol, 0);
+  auto d2 = rhs.getComparableDirection(tol, 0);
   if (norm(d1 - d2) < tol) return 0;
   Real s1 = cross(d1, indir);
   Real s2 = cross(d2, indir);

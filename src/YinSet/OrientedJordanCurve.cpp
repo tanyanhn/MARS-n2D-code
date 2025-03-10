@@ -16,8 +16,9 @@ using std::string;
 template <int Dim, int Order>
 auto OrientedJordanCurve<Dim, Order>::locate(const Vec<Real, Dim>& p,
                                              Real tol) const -> LocateResult {
-  return LocateResult(PointsLocater(tol)(
-      std::vector<OrientedJordanCurve<Dim, Order>>{*this}, {p})[0]);
+  SegmentedRealizableSpadjor<Order> srs(
+      std::vector<OrientedJordanCurve<Dim, Order>>{*this});
+  return LocateResult(PointsLocater(tol)(srs.getOrientedJordanCurvesRef(), {p}, srs.isBounded(tol))[0]);
 }
 
 template <int Dim, int Order>

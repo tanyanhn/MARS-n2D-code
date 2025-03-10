@@ -136,7 +136,7 @@ class Curve {
   int compare(const Curve& rhs, const rVec& p, int ix, int iy, Real tol) const;
   // type = 0, startpoint() 
   // type = 1, endpoint()
-  auto getComparablePoint(Real tol, int type = 0) const -> rVec;
+  auto getComparableDirection(Real tol, int type = 0) const -> rVec;
   bool equal(const Curve& rhs, Real tol) const;
   protected:
   static Real paraCalculator(const auto &poly, int ix, Real x, Real t0, Real tol) {
