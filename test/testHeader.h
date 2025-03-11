@@ -27,7 +27,7 @@ struct Generator {
                             rVec range = {0, 2 * M_PI}) -> YinSet<2, Order>;
 
   template <int Order>
-  static auto createDisk(Point center, rVec radio, Real hL, vector<Real> parts)
+  static auto createDiskGraph(Point center, rVec radio, Real hL, vector<Real> parts)
       -> approxInterfaceGraph<Order>;
   static auto markEllipse(Point center, rVec radio, Real hL, rVec range);
   static auto markSegment(Segment<DIM> seg, Real hL);
@@ -41,16 +41,18 @@ auto Generator::randomCreateReal() -> Real {
   STATIC_CHECK(l < r);
   return GENERATE(take(1, random(l, r)));
 }
-auto Generator::markEllipse(Point center, rVec radio, Real hL, rVec range) {
+
+
+inline auto Generator::markEllipse(Point center, rVec radius, Real hL, rVec range) {
   vector<Point> pts;
   VecCompare<Real, DIM> vCmp(distTol());
-  Real stepAngle = hL / std::sqrt(radio[0] * radio[1]);
+  Real stepAngle = hL / std::sqrt(radius[0] * radius[1]);
   if (range[1] < range[0]) range[1] += 2 * M_PI;
   int step = std::ceil((range[1] - range[0]) / stepAngle);
   stepAngle = (range[1] - range[0]) / step;
-  auto eValue = [radio, center, range](Real angle) {
+  auto eValue = [radius, center, range](Real angle) {
     angle += range[0];
-    return Point{center + rVec{radio[0] * cos(angle), radio[1] * sin(angle)}};
+    return Point{center + rVec{radius[0] * cos(angle), radius[1] * sin(angle)}};
   };
   pts.reserve(step + 1);
   pts.push_back(eValue(0));
@@ -77,7 +79,7 @@ auto Generator::markEllipse(Point center, rVec radio, Real hL, rVec range) {
   return pts;
 }
 
-auto Generator::markSegment(Segment<DIM> seg, Real hL) {
+inline auto Generator::markSegment(Segment<DIM> seg, Real hL) {
   vector<Point> pts;
   VecCompare<Real, DIM> vCmp(distTol());
   auto p0 = seg[0];
@@ -98,9 +100,9 @@ auto Generator::markSegment(Segment<DIM> seg, Real hL) {
 }
 
 template <int Order>
-auto Generator::createEllipse(Point center, rVec radio, Real hL, rVec range)
+auto Generator::createEllipse(Point center, rVec radius, Real hL, rVec range)
     -> YinSet<2, Order> {
-  auto pts = markEllipse(center, radio, hL, range);
+  auto pts = markEllipse(center, radius, hL, range);
 
   auto crv = fitCurve<Order>(pts, Curve<2, Order>::periodic);
   vector<OrientedJordanCurve<2, Order>> vCrv{crv};
@@ -109,7 +111,7 @@ auto Generator::createEllipse(Point center, rVec radio, Real hL, rVec range)
 }
 
 template <int Order>
-auto Generator::createDisk(Point center, rVec radio, Real hL,
+auto Generator::createDiskGraph(Point center, rVec radius, Real hL,
                            vector<Real> parts) -> approxInterfaceGraph<Order> {
   using SmoothnessIndicator = InterfaceGraph::SmoothnessIndicator;
   using EdgeIndex = InterfaceGraph::EdgeIndex;
@@ -120,8 +122,8 @@ auto Generator::createDisk(Point center, rVec radio, Real hL,
   vector<vector<EdgeIndex>> cyclesEdgesId(parts.size() + 1);
   vector<vector<size_t>> YinSetId(parts.size() + 1);
 
-  auto eValue = [center, radio](Real angle) {
-    return Point{center + rVec{radio[0] * cos(angle), radio[1] * sin(angle)}};
+  auto eValue = [center, radius](Real angle) {
+    return Point{center + rVec{radius[0] * cos(angle), radius[1] * sin(angle)}};
   };
 
   vector<Segment<DIM>> separateSegment;
@@ -156,7 +158,7 @@ auto Generator::createDisk(Point center, rVec radio, Real hL,
     parts.push_back(parts.front());
 
   for (size_t i = 0; i < parts.size() - 1; ++i) {
-    EdgeMark pts = markEllipse(center, radio, hL, {parts[i], parts[i + 1]});
+    EdgeMark pts = markEllipse(center, radius, hL, {parts[i], parts[i + 1]});
 
     edgeMarks.push_back(std::move(pts));
     smoothConditions.emplace_back(
