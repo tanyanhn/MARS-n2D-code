@@ -4,7 +4,7 @@
 
 bool addInner = true;
 bool output = true;
-
+/* 
 TEST_CASE("Disk 4 part interface.", "[InterfaceGraph][Disk][CutCell][4]") {
   Point center{0.5, 0.5};
   Real radio = 0.25;
@@ -274,41 +274,112 @@ TEST_CASE("Ellipse single.", "[InterfaceGraph][Ellipse][CutCell][1]") {
     }
   }  // end of 4-th order
 }
+ */
+TEST_CASE("Ellipse 3 part interface.",
+          "[InterfaceGraph][Ellipse][CutCell][3]") {
+  Point center{0.5, 0.5};
+  rVec radius = {0.3, 0.2};
+  vector<Real> parts = {0.0, 0.25, 0.5};
+  for (auto& part : parts) part *= 2 * M_PI;
+  // calculate the area
+  Real ellipseArea = M_PI * radius[0] * radius[1];
+  std::function<Real(Real, Real)> calculate_area = [&](Real theta1, Real theta2) -> Real {
+    assert(theta2 > theta1);
+    if(abs(theta2 - 2*M_PI) < 1e-10){
+      return ellipseArea - calculate_area(0, theta1);
+    }
+    auto a = radius[0];
+    auto b = radius[1];
+    auto theta1_conv = atan2(a * sin(theta1), b * cos(theta1));
+    auto theta2_conv = atan2(a * sin(theta2), b * cos(theta2));
+    auto result = a * b / 2.0 * (theta2_conv - theta1_conv);
+    return result;
+  };
+  vector<Real> exactAreas(parts.size());
+  for (size_t i = 0; i < parts.size(); ++i) {
+    if (i == parts.size() - 1) {
+      exactAreas.at(i) = calculate_area(parts.at(i), 2 * M_PI);
+    } else {
+      exactAreas.at(i) = calculate_area(parts.at(i), parts.at(i + 1));
+    }
+  }
 
-// TEST_CASE("Ellipse 3 part interface.",
-//           "[InterfaceGraph][Ellipse][CutCell][3]") {
-//   Point center{0.5, 0.5};
-//   rVec radius = {0.3, 0.2};
-//   vector<Real> parts = {0.0, 0.25, 0.5};
-//   for (auto& part : parts) part *= 2 * M_PI;
-//   // calculate the area
-//   auto calculate_area = [&](Real theta1, Real theta2) {
-//     assert(theta2 > theta1);Graph
-//     auto a = radius[0];
-//     auto b = radius[1];
-//     auto result =
-//         a * b / 2.0 * (atan(a / b * tan(theta2)) - atan(a / b * tan(theta1)));
-//     return result;
-//   };
-//   vector<Real> exactAreas(parts.size());
-//   for (size_t i = 0; i < parts.size(); ++i) {
-//     if(i == parts.size()-1){
-//       exactAreas.at(i) = calculate_area(parts.at(i), 2 * M_PI);
-//     }
-//     else{
-//       exactAreas.at(i) = calculate_area(parts.at(i), parts.at(i+1));
-//     }
-//   }
+  string name = "Ellipse";
+  Real lo = 0.0;
+  Real hi = 1.0;
+  Real hL = 0.0001;
+  Interval<2> range{lo, hi};
 
-//   string name = "Ellipse";
-//   Real lo = 0.0;
-//   Real hi = 1.0;
-//   Real hL = 0.0001;
-//   Interval<2> range{lo, hi};
+  auto dir = rootDir + "/results/InterfaceGraph/";
+  mkdir(dir.c_str(), 0755);
 
-//   auto dir = rootDir + "/results/InterfaceGraph/";
-//   mkdir(dir.c_str(), 0755);
-// }
+  SECTION("2-th order Ellipse") {
+    constexpr int Order = 2;
+    auto ellipse = Generator::createEllipseGraph<Order>(center, radius, hL, parts);
+    int N = 4;
+    Box<2> box(0, N - 1);
+    // rVec h = (hi - lo) / N;
+    auto yinSets = ellipse.approxYinSet();
+
+    for (int i = 0; i < yinSets.size(); ++i) {
+      auto [res, boundary, tags] = yinSets[i].cutCell(box, range, addInner);
+      if (output) {
+        string fileName = to_string(Order) + name + to_string(N) + "_" +
+                          to_string(i + 1) + ".dat";
+        std::ofstream of(dir + fileName, std::ios_base::binary);
+        dumpTensorYinSet<Order>(res, of);
+        // yinSets[i].dump(of);
+      }
+    }
+  } // end of 2-th order ellipse
+  
+  SECTION("4-th order ellipse") {
+    constexpr int Order = 4;
+    auto ellipse = Generator::createEllipseGraph<Order>(center, radius, hL, parts);
+    int N = 8;
+    Box<2> box(0, N - 1);
+    rVec h = (hi - lo) / N;
+    auto yinSets = ellipse.approxYinSet();
+
+    for (int i = 0; i < yinSets.size(); ++i) {
+      auto [res, boundary, tags] = yinSets[i].cutCell(box, range, addInner);
+      if (output) {
+        string fileName = to_string(Order) + name + to_string(N) + "_" +
+                          to_string(i + 1) + ".dat";
+        std::ofstream of(dir + fileName, std::ios_base::binary);
+        dumpTensorYinSet<Order>(res, of);
+        // yinSets[i].dump(of);
+      }
+
+      INFO("Integral Area and length.");
+      Real totalArea = 0;
+      Real fullCell = h[0] * h[1];
+      loop_box_2(res.box(), i0, i1) {
+        if (tags(i0, i1) == 1) {
+          totalArea += fullCell;
+        } else if (tags(i0, i1) == 0) {
+          if (res(i0, i1)) {
+            for (const auto& crv : res(i0, i1)->getBoundaryCycles())
+              totalArea += area(crv);
+          }
+        }
+      }
+      Real exactArea;
+      if (i == yinSets.size() - 1) {
+        exactArea = 1 - ellipseArea;
+      }else{
+        exactArea = exactAreas.at(i);
+      }
+      Real areaError = std::abs(totalArea - exactArea) / (exactArea);
+      // Real lengthError = std::abs(length - exactLength) / (exactLength);
+      std::cout << name + to_string(i) + " areaError = " << areaError << '\n';
+      // std::cout << name + to_string(i) + " lengthError = " << lengthError
+                // << '\n';
+      REQUIRE(std::fabs(areaError) < distTol() / exactArea);
+      // REQUIRE(std::fabs(lengthError) < distTol() / exactLength);
+    }
+  } // end of 4-th order loop
+}
 
 // TEST_CASE("Rose Curve.", "[InterfaceGraph][RoseCurve][CutCell][1]") {
 //   Point center{0.5, 0.5};
