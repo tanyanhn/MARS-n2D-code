@@ -61,6 +61,11 @@ class approxInterfaceGraph {
 
   auto approxYinSet() const -> vector<YinSet<DIM, Order>>;
 
+  auto accessEdges() -> vector<std::pair<typename vector<Edge>::iterator,
+                                         typename vector<EdgeMark>::iterator>>;
+
+  void updateCurve();
+
  private:
   InterfaceGraph undirectGraph;
   vector<Edge> edges_;

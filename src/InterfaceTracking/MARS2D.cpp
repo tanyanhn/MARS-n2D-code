@@ -204,7 +204,7 @@ Vector<unsigned int> MARS2D<Order, VectorFunction>::splitLongEdges(
 template <int Order>
 void MARS2D<Order, VectorFunction>::timeStep(const VectorFunction<2> &v, YS &ys,
                                              Real tn, Real dt) {
-  Vector<Crv> vcrv = ys.getBoundaryCycles();
+  Vector<OrientedJordanCurve<DIM, Order>> vcrv = ys.getBoundaryCycles();
   int id = 1;
   for (auto &crv : vcrv) {
     assert(crv.isClosed(tol));
@@ -368,7 +368,7 @@ Vector<unsigned int> MARS2D<Order, VectorOnHypersurface>::splitLongEdges(
 template <int Order>
 void MARS2D<Order, VectorOnHypersurface>::timeStep(
     const VectorOnHypersurface<2> &v, YS &ys, Real tn, Real dt) {
-  Vector<Crv> vcrv = ys.getBoundaryCycles();
+  Vector<OrientedJordanCurve<DIM, Order>> vcrv = ys.getBoundaryCycles();
   int id = 1;
   for (auto &crv : vcrv) {
     assert(crv.isClosed(tol));

@@ -12,8 +12,6 @@ using namespace MARSn2D;
 
 using Point = Vec<Real, 2>;
 using rVec = Point;
-template <int Order>
-using YinSetPtr = YinSet<2, Order>::YinSetPtr;
 
 const std::string rootDir(ROOT_DIR);
 
@@ -245,21 +243,4 @@ auto Generator::createEllipseGraph(Point center, rVec radius, Real hL,
   return approxInterfaceGraph<Order>(std::move(edgeMarks), smoothConditions,
                                      std::move(cyclesEdgesId),
                                      std::move(YinSetId), distTol());
-}
-
-template <int Order>
-void dumpTensorYinSet(const Tensor<YinSetPtr<Order>, 2>& data,
-                      std::ostream& os) {
-  int num = 0;
-  loop_box_2(data.box(), i0, i1) {
-    if (data(i0, i1)) {
-      num++;
-    }
-  }
-  os.write((char*)&num, sizeof(num));
-  loop_box_2(data.box(), i0, i1) {
-    if (data(i0, i1)) {
-      data(i0, i1)->dump(os);
-    }
-  }
 }

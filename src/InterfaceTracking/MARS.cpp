@@ -38,14 +38,6 @@ void MARS<Dim, Order, VelocityField>::trackInterface(
   }
 }
 
-template <int Dim, int Order, template <int> class VelocityField>
-void MARS<Dim, Order, VelocityField>::timeStep(const VelocityField<Dim> &v,
-                                               IG &ig, Real tn, Real dt) {}
-
-template <int Dim, int Order, template <int> class VelocityField>
-void MARS<Dim, Order, VelocityField>::trackInterface(
-    const VelocityField<Dim> &v, IG &ig, Real StartTime, Real dt, Real EndTime,
-    bool output, const std::string &fName, int opStride) {}
 
 template class MARS<2, 2, VectorFunction>;
 template class MARS<2, 4, VectorFunction>;

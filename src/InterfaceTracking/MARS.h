@@ -10,7 +10,6 @@
 template <int Dim, int Order, template <int> class VelocityField>
 class MARS {
   using YS = YinSet<Dim, Order>;
-  using IG = MARSn2D::approxInterfaceGraph<Order>;
 
  protected:
   TimeIntegrator<Dim, VelocityField> *TI;
@@ -22,14 +21,6 @@ class MARS {
                         Real dt) = 0;
 
   virtual void trackInterface(const VelocityField<Dim> &v, YS &ys,
-                              Real StartTime, Real dt, Real EndTime,
-                              bool output, const std::string &fName,
-                              int opStride);
-
-  // Add for MARn2D.
-  virtual void timeStep(const VelocityField<Dim> &v, IG &ig, Real tn, Real dt);
-
-  virtual void trackInterface(const VelocityField<Dim> &v, IG &ig,
                               Real StartTime, Real dt, Real EndTime,
                               bool output, const std::string &fName,
                               int opStride);

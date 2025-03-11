@@ -671,7 +671,8 @@ int Curve<Dim, Order>::compare(const Curve &rhs, const rVec &p, int ix, int iy,
 }
 
 template <int Dim, int Order>
-auto Curve<Dim, Order>::getComparableDirection(Real tol, int type) const -> rVec {
+auto Curve<Dim, Order>::getComparableDirection(Real tol, int type) const
+    -> rVec {
   Real disturbance = tol / 4;
   if (type == 0) {
     Real t0 = disturbance;
@@ -691,6 +692,36 @@ bool Curve<Dim, Order>::equal(const Curve &rhs, Real tol) const {
   auto d1 = this->getComparableDirection(tol, 0);
   auto d2 = rhs.getComparableDirection(tol, 0);
   return (norm(d1 - d2) < tol);
+}
+
+template <int Dim, int Order>
+Real Curve<Dim, Order>::curvature(const Polynomial<Order, Real> &xPoly,
+                                  const Polynomial<Order, Real> &yPoly,
+                                  Real t) {
+  if (Order <= 2) throw std::runtime_error("Order must be greater than 2.");
+  Real xp;
+  Real xpp;
+  Real yp;
+  Real ypp;
+  if (t < distTol()) {
+    xp = xPoly[1];
+    xpp = xPoly[2] * 2;
+    yp = yPoly[1];
+    ypp = yPoly[2] * 2;
+  } else {
+    auto xPolyDer = xPoly.der();
+    xp = xPolyDer(t);
+    xpp = xPolyDer.der()(t);
+    auto yPolyDer = yPoly.der();
+    yp = yPolyDer(t);
+    ypp = yPolyDer.der()(t);
+  }
+  using std::abs;
+  using std::pow;
+  using std::sqrt;
+  Real numerator = abs(xp * ypp - yp * xpp);
+  Real denominator = sqrt(pow((pow(xp, 2) + pow(yp, 2)), 3));
+  return numerator / denominator;
 }
 
 //=================================================
