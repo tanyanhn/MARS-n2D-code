@@ -4,7 +4,7 @@
     {
       "name": "default",
       "generator": "Ninja",
-      "binaryDir": "/root/shareFolder/github/myrepo/YinSet2D_MARS/build",
+      "binaryDir": "${sourceDir}/build",
       "cacheVariables": {
         "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
         "VCPKG_INSTALLED_DIR": "${sourceDir}/vcpkg_installed",
