@@ -4,7 +4,7 @@
 
 bool addInner = true;
 bool output = true;
-/* 
+
 TEST_CASE("Disk 4 part interface.", "[InterfaceGraph][Disk][CutCell][4]") {
   Point center{0.5, 0.5};
   Real radio = 0.25;
@@ -274,7 +274,7 @@ TEST_CASE("Ellipse single.", "[InterfaceGraph][Ellipse][CutCell][1]") {
     }
   }  // end of 4-th order
 }
- */
+
 TEST_CASE("Ellipse 3 part interface.",
           "[InterfaceGraph][Ellipse][CutCell][3]") {
   Point center{0.5, 0.5};
@@ -315,7 +315,7 @@ TEST_CASE("Ellipse 3 part interface.",
 
   SECTION("2-th order Ellipse") {
     constexpr int Order = 2;
-    auto ellipse = Generator::createEllipseGraph<Order>(center, radius, hL, parts);
+    auto ellipse = Generator::createDiskGraph<Order>(center, radius, hL, parts);
     int N = 4;
     Box<2> box(0, N - 1);
     // rVec h = (hi - lo) / N;
@@ -335,7 +335,7 @@ TEST_CASE("Ellipse 3 part interface.",
   
   SECTION("4-th order ellipse") {
     constexpr int Order = 4;
-    auto ellipse = Generator::createEllipseGraph<Order>(center, radius, hL, parts);
+    auto ellipse = Generator::createDiskGraph<Order>(center, radius, hL, parts);
     int N = 8;
     Box<2> box(0, N - 1);
     rVec h = (hi - lo) / N;
