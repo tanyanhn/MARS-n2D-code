@@ -134,12 +134,18 @@ class Curve {
 
   // compare around a point p(boundary point)
   int compare(const Curve& rhs, const rVec& p, int ix, int iy, Real tol) const;
-  // type = 0, startpoint() 
+  // type = 0, startpoint()
   // type = 1, endpoint()
   auto getComparableDirection(Real tol, int type = 0) const -> rVec;
   bool equal(const Curve& rhs, Real tol) const;
-  protected:
-  static Real paraCalculator(const auto &poly, int ix, Real x, Real t0, Real tol) {
+
+  // curvature at t
+  static Real curvature(const Polynomial<Order, Real>& xPoly,
+                        const Polynomial<Order, Real>& yPoly, Real t);
+
+ protected:
+  static Real paraCalculator(const auto& poly, int ix, Real x, Real t0,
+                             Real tol) {
     auto xPoly = getComp(poly, ix);
     return root(xPoly - x, t0, tol, newtonMaxIter);
   };

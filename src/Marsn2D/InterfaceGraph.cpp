@@ -66,11 +66,18 @@ approxInterfaceGraph<Order>::approxInterfaceGraph(
     vector<vector<size_t>>&& YinSetId, Real tol)
     : undirectGraph(std::move(edgeMarks), smoothConditions),
       cyclesEdgesId_(std::move(cyclesEdgesId)),
-      yinSetId_(std::move(YinSetId)), tol_(tol) {
+      yinSetId_(std::move(YinSetId)),
+      tol_(tol) {
+  updateCurve();
+}
+
+template <int Order>
+void approxInterfaceGraph<Order>::updateCurve() {
   auto& marks_ = undirectGraph.edges_;
   auto& trials_ = undirectGraph.trials_;
   auto& circuits_ = undirectGraph.circuits_;
   edges_.resize(marks_.size());
+  Real tol = this->tol_;
 
   auto fitFunction = [&marks_, tol](const vector<EdgeIndex>& spline,
                                     Curve<2, Order>::BCType type,
@@ -81,16 +88,15 @@ approxInterfaceGraph<Order>::approxInterfaceGraph(
     VecCompare<Real, DIM> vCmp(tol);
     if (type == Curve<2, Order>::periodic) brksId.push_back(0);
     for (auto crvId : spline) {
-      if (!knots.empty()) { 
+      if (!knots.empty()) {
         auto p0 = knots.back();
         auto p1 = marks_[crvId].front();
-        if (vCmp.compare(p0, p1) != 0) 
+        if (vCmp.compare(p0, p1) != 0)
           throw std::runtime_error("Invalid edge id");
         knots.pop_back();
         p0 = knots.back();
-        if (vCmp.compare(p0, p1) == 0) 
+        if (vCmp.compare(p0, p1) == 0)
           throw std::runtime_error("Invalid edge id");
-        
       }
       knots.insert(knots.end(), marks_[crvId].begin(), marks_[crvId].end());
       brksId.push_back(knots.size() - 1);
@@ -148,6 +154,25 @@ auto approxInterfaceGraph<Order>::approxYinSet() const
       boundary.emplace_back(std::move(jordanCurves[id]));
     }
     ret.emplace_back(std::move(boundary), tol_);
+  }
+
+  return ret;
+}
+
+template <int Order>
+auto approxInterfaceGraph<Order>::accessEdges()
+    -> vector<std::pair<typename vector<Edge>::iterator,
+                        typename vector<EdgeMark>::iterator>> {
+  using std::vector;
+  vector<std::pair<typename vector<Edge>::iterator,
+                   typename vector<EdgeMark>::iterator>>
+      ret;
+
+  auto& marks = undirectGraph.edges_;
+  auto iterMarks = marks.begin();
+  auto iterEdges = edges_.begin();
+  for (; iterMarks != marks.cend(); ++iterMarks, ++iterEdges) {
+    ret.emplace_back(iterEdges, iterMarks);
   }
 
   return ret;
