@@ -32,7 +32,8 @@ struct Generator {
   static auto createRoseGraph(Point center, Real a, Real hL, vector<Real> parts,
                               int numPetal = 3) -> approxInterfaceGraph<Order>;
   static auto markEllipse(Point center, rVec radio, Real hL, rVec range);
-  static auto markRoseCurve(Point center, Real a, Real hL, rVec range);
+  static auto markRoseCurve(Point center, Real a, Real hL, rVec range,
+                            int numPetal = 3);
   static auto markSegment(Segment<DIM> seg, Real hL);
 };
 
@@ -45,11 +46,44 @@ auto Generator::randomCreateReal() -> Real {
   return GENERATE(take(1, random(l, r)));
 }
 
-inline auto Generator::markRoseCurve(Point center, Real a, Real hL,
-                                     rVec range) {
+inline auto Generator::markRoseCurve(Point center, Real a, Real hL, rVec range,
+                                     int numPetal) {
   vector<Point> pts;
   VecCompare<Real, DIM> vCmp(distTol());
-  // Real stepAngle = hL / a / a;
+  // |x'(\theta)| \leq 4 a
+  // \sqrt{(x(\theta1) - x(\theta2))^2 + (y(\theta1) - y(\theta2))^2} \leq 4
+  // \sqrt{2} a \Delta \theta.
+  Real stepAngle = hL / a / 4 / sqrt(2);
+  int step = std::ceil((range[1] - range[0]) / stepAngle);
+  stepAngle = (range[1] - range[0]) / step;
+  auto eValue = [a, center, range, numPetal](Real angle) {
+    angle += range[0];
+    Real radius = a * sin(numPetal * angle);
+    return Point{center + rVec{radius * cos(angle), radius * sin(angle)}};
+  };
+  pts.reserve(step + 1);
+  pts.push_back(eValue(0));
+  for (int i = 0; i < step; i++) {
+    Real localAngle = stepAngle;
+    Real angle = stepAngle * i + localAngle;
+    Point local = eValue(angle);
+    while (norm(pts.back() - local) > hL) {
+      localAngle /= 2;
+      angle = stepAngle * i + localAngle;
+      local = eValue(angle);
+    }
+
+    while (angle < stepAngle * (i + 1) - distTol()) {
+      pts.push_back(eValue(angle));
+      angle += localAngle;
+    }
+    pts.push_back(eValue(stepAngle * (i + 1)));
+  }
+  auto p1 = eValue(range[1] - range[0]);
+  if (vCmp(pts.back(), p1) == 0) pts.pop_back();
+
+  pts.push_back(p1);
+  return pts;
 }
 
 inline auto Generator::markEllipse(Point center, rVec radius, Real hL,
@@ -198,13 +232,40 @@ auto Generator::createRoseGraph(Point center, Real a, Real hL,
 
   vector<EdgeMark> edgeMarks;
   vector<SmoothnessIndicator> smoothConditions;
-  vector<vector<EdgeIndex>> cyclesEdgesId(parts.size() + 1);
-  vector<vector<size_t>> YinSetId(parts.size() + 1);
+  vector<vector<EdgeIndex>> cyclesEdgesId(parts.size());
+  vector<vector<size_t>> YinSetId(parts.size());
 
   // r = a sin(n \theta)
   // x = r cos(\theta), y = r sin(\theta)
-  auto eValue = [center, a, numPetal](Real angle) {
-    Real r = a * sin(numPetal * angle);
-    return Point{center + rVec{r * cos(angle), r * sin(angle)}};
-  };
+  // auto eValue = [center, a, numPetal](Real angle) {
+  //   Real r = a * sin(numPetal * angle);
+  //   return Point{center + rVec{r * cos(angle), r * sin(angle)}};
+  // };
+  Real halfAngle = M_PI / numPetal / 2;
+  for (size_t i = 0; i < parts.size() - 1; ++i) {
+    for(size_t j = 0; j < 2; ++j){ // each petal is slitted into two parts
+      EdgeMark pts;
+      if(j == 0){
+        pts = markRoseCurve(center, a, hL, {parts[i], parts[i] + halfAngle});
+        YinSetId[i].push_back(i);
+      }else{
+        pts = markRoseCurve(center, a, hL, {parts[i + 1] - halfAngle, parts[i + 1]});
+      }
+      edgeMarks.push_back(std::move(pts));
+      cyclesEdgesId[i].push_back((int)edgeMarks.size());
+      cyclesEdgesId[parts.size() - 1].push_back(-(int)edgeMarks.size());
+      if(parts.size() == numPetal + 1 || i * 2 + j != parts.size() * 2 - 3){
+        smoothConditions.emplace_back((int)edgeMarks.size(),
+                                      (int)edgeMarks.size() + 1);
+      }
+
+    }
+  }
+  std::reverse(cyclesEdgesId[parts.size() - 1].begin(),
+               cyclesEdgesId[parts.size() - 1].end());
+  YinSetId[parts.size() - 1].push_back(parts.size() - 1);
+
+  return approxInterfaceGraph<Order>(std::move(edgeMarks), smoothConditions,
+                                     std::move(cyclesEdgesId),
+                                     std::move(YinSetId), distTol());
 }
