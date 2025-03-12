@@ -1,3 +1,4 @@
+#pragma once
 // Only include by test file.
 #include "Core/Config.h"
 #include "Core/Vec.h"
@@ -8,7 +9,7 @@
 
 using namespace std;
 using namespace Catch;
-using namespace MARSn2D;
+using namespace Marsn2D;
 
 using Point = Vec<Real, 2>;
 using rVec = Point;
@@ -21,17 +22,17 @@ struct Generator {
   [[nodiscard]] static auto randomCreateReal() -> Real;
 
   template <int Order>
-  static auto createEllipse(Point center, rVec radio, Real hL,
+  static auto createEllipse(Point center, rVec radius, Real hL,
                             rVec range = {0, 2 * M_PI}) -> YinSet<2, Order>;
 
   template <int Order>
-  static auto createDiskGraph(Point center, rVec radio, Real hL,
+  static auto createDiskGraph(Point center, rVec radius, Real hL,
                               vector<Real> parts)
       -> approxInterfaceGraph<Order>;
   template <int Order>
   static auto createRoseGraph(Point center, Real a, Real hL, vector<Real> parts,
                               int numPetal = 3) -> approxInterfaceGraph<Order>;
-  static auto markEllipse(Point center, rVec radio, Real hL, rVec range);
+  static auto markEllipse(Point center, rVec radius, Real hL, rVec range);
   static auto markRoseCurve(Point center, Real a, Real hL, rVec range,
                             int numPetal = 3);
   static auto markSegment(Segment<DIM> seg, Real hL);
@@ -271,3 +272,4 @@ auto Generator::createRoseGraph(Point center, Real a, Real hL,
                                      std::move(cyclesEdgesId),
                                      std::move(YinSetId), distTol());
 }
+

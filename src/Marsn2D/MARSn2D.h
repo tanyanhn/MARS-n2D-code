@@ -4,7 +4,7 @@
 #include "Marsn2D/Elements.h"
 #include "Marsn2D/InterfaceGraph.h"
 
-namespace MARSn2D {
+namespace Marsn2D {
 
 template <int Order, template <int> class VelocityField>
 class MARSn2D {
@@ -37,8 +37,13 @@ class MARSn2D {
  public:
   MARSn2D() = delete;
 
-  MARSn2D(TIPtr TI, Real hL, Real rTiny = 0.1, bool print = false)
-      : TI_(TI), curvConfig_(), hL_(hL), rTiny_(rTiny), printDetail(print) {}
+  MARSn2D(TIPtr TI, Real hL, Real rTiny = 0.1,
+          CurvatureAdaptionConfig curvConfig = {}, bool print = false)
+      : TI_(TI),
+        curvConfig_(curvConfig),
+        hL_(hL),
+        rTiny_(rTiny),
+        printDetail(print) {}
 
   void trackInterface(const VelocityField<DIM> &v, IG &ig, Real StartTime,
                       Real dt, Real EndTime, PlotConfig plotConfig) const;
@@ -68,6 +73,8 @@ class MARSn2D {
   // update hL
   void updateHL(const vector<Real> &curv, const EdgeMark &marks,
                 vector<Real> &hL) const;
+
+  bool checkMarks(const EdgeMark &marks, const vector<Real>& hL) const;
 
  private:
   TIPtr TI_;

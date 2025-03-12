@@ -5,7 +5,7 @@
 #include "Core/Curve.h"
 #include "Core/Vec.h"
 
-namespace MARSn2D {
+namespace Marsn2D {
 using Vertex = Vec<Real, DIM>;
 
 using Junction = Vec<Real, DIM>;

@@ -8,14 +8,14 @@ elseif(CMAKE_BUILD_TYPE STREQUAL "RELEASE")
   SET(COMPLIE_FLAGS "${CMAKE_CXX_FLAGS_RELEASE}")
 endif()
 
-set(LIST_TEST testPolynomial TestCutCell TestInterfaceGraph)
+set(LIST_TEST testPolynomial TestCutCell TestInterfaceGraph TestMARSn2D)
 foreach(test ${LIST_TEST})
   message(STATUS "test ${test}")
   add_executable(${test} ${test}.cpp)
   # Add the -std=c++11 flag as an example
   set_source_files_properties(${test}.cpp PROPERTIES COMPILE_FLAGS "${COMPLIE_FLAGS}" )
   # target_link_libraries(${test} ${MAIN_LIB} ${COMMON_LIB})
-  target_link_libraries(${test} ${MAIN_LIB} Catch fmt::fmt Eigen3::Eigen ${LAPACKE_LIBRARIES})
+  target_link_libraries(${test} ${MAIN_LIB} Catch fmt::fmt Eigen3::Eigen ${LAPACKE_LIBRARIES} nlohmann_json::nlohmann_json)
   add_test(
     NAME ${test}
     COMMAND ${test}

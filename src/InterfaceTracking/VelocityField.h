@@ -47,7 +47,7 @@ class SquareShrink : public VectorFunction<2> {
 
  public:
   const Point operator()(const Point &pt, Real t) const {
-    Real l = std::max(abs(pt[0]), abs(pt[1]));
+    Real l = std::max(std::abs(pt[0]), std::abs(pt[1]));
     Point y;
     y[0] = pt[0] / l;
     y[1] = pt[1] / l;

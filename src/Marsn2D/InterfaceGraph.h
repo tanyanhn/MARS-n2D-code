@@ -4,7 +4,7 @@
 #include "YinSet/OrientedJordanCurve.h"
 #include "YinSet/YinSet.h"
 
-namespace MARSn2D {
+namespace Marsn2D {
 
 template <int Order>
 class approxInterfaceGraph;
@@ -75,4 +75,4 @@ class approxInterfaceGraph {
   vector<vector<size_t>> yinSetId_;
   Real tol_;
 };
-}  // namespace MARSn2D
+}  // namespace Marsn2D

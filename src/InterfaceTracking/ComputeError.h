@@ -4,6 +4,7 @@
 #include <cmath>
 #include <numeric>
 
+#include "Marsn2D/InterfaceGraph.h"
 #include "XorArea.h"
 #include "YinSet/YinSet.h"
 
@@ -115,6 +116,43 @@ Vector<Real> richardsonError(const Vector<Crv> &crvs, Real tol) {
     result[2 * i + 1] = log(result[2 * i] / result[2 * i + 2]) / log(2);
   }
   return result;
+}
+
+using Marsn2D::approxInterfaceGraph;
+template <int Order>
+Vector<Vector<Real>> cutCellError(
+    const vector<approxInterfaceGraph<Order>> &lhss,
+    const approxInterfaceGraph<Order> &rhs, auto &boxs, auto &range) {
+  Vector<Vector<Real>> ret(2);
+  auto calculateVolume = [range](const auto &box, const auto &yinset) {
+    auto h = range / (box.size());
+    Real fullCell = h[0] * h[1];
+    auto N = box.size();
+    Vector<Vector<Real>> volume(N[0], Vector<Real>(N[1]));
+    auto [rhsRes, rhsBoundary, rhsTags] = yinset.cutCell(box, range, false);
+    loop_box_2(rhsRes.box(), i0, i1) {
+      if (rhsTags(i0, i1) == 1) {
+        volume[i0][i1] = fullCell;
+      } else if (rhsTags(i0, i1) == -1) {
+        volume[i0][i1] = 0;
+      } else if (rhsTags(i0, i1) == 0) {
+        volume[i0][i1] = 0;
+        for (const auto &crv : rhsRes(i0, i1)->getBoundaryCycles())
+          volume[i0][i1] += area(crv);
+      }
+    }
+    return volume;
+  };
+  auto &box = boxs.back();
+  const auto &rhsYinsets = rhs.approxYinSet();
+  Vector<Vector<Vector<Real>>> rhsVolumes;
+  for (size_t i = 0; i < rhsYinsets.size(); i++) {
+    rhsVolumes.emplace_back(calculateVolume(box, rhsYinsets[i]));
+  }
+
+  for (size_t i = box.size() - 1; i >= 0; --i) {
+    // localVolumes 
+  }
 }
 
 #endif

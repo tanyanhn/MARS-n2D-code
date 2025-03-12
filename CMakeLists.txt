@@ -31,6 +31,7 @@ find_package(fmt CONFIG REQUIRED)
 find_package(GSL REQUIRED)
 find_package(Eigen3 CONFIG REQUIRED)
 find_package(CppUnit CONFIG REQUIRED)
+find_package(nlohmann_json CONFIG REQUIRED)
 pkg_check_modules(LAPACKE REQUIRED lapacke)
 # message("lib: " ${Eigen_LIBRARY})
 

@@ -1,6 +1,6 @@
 #include "Marsn2D/MARSn2D.h"
 
-namespace MARSn2D {
+namespace Marsn2D {
 
 template <int Order, template <int> class VelocityField>
 void MARSn2D<Order, VelocityField>::discreteFlowMap(const VectorFunction<2> &v,
@@ -13,7 +13,7 @@ template <int Order, template <int> class VelocityField>
 void MARSn2D<Order, VelocityField>::trackInterface(
     const VelocityField<DIM> &v, IG &ig, Real StartTime, Real dt, Real EndTime,
     PlotConfig plotConfig) const {
-  Real T = StartTime;
+  Real tn = StartTime;
   int stages = ceil(abs(EndTime - StartTime) / abs(dt));
   Real k = (EndTime - StartTime) / stages;
   int step = 0;
@@ -35,11 +35,12 @@ void MARSn2D<Order, VelocityField>::trackInterface(
     }
   }
   while (step < stages) {
-    std::cout << "Step: " << step << "     timestep: " << k << '\n';
-    timeStep(v, ig, T, k);
-    std::cout << '\n';
+    if (printDetail)
+      std::cout << "Step: " << step << "     time now: " << tn << '\n';
+    timeStep(v, ig, tn, k);
+    // std::cout << '\n';
     std::cout.flush();
-    T += k;
+    tn += k;
     step++;
   }
 }
@@ -98,25 +99,27 @@ void MARSn2D<Order, VelocityField>::insertMarks(
     newPolys.push_back(polys[i]);
     newKnots.push_back(knots[i]);
     if (curvConfig_.used) newCurv.push_back(curv[i]);
-    auto [j, num] = indices2Num[index];
-    if (i == j) {
-      index++;
-      EdgeMark subMarks;
-      const auto &poly = polys[i];
-      const Real s = knots[i + 1] - knots[i];
-      const Real ds = s / num;
-      for (size_t k = 1; k < num; k++) {
-        Real t = (Real)k * ds;
-        Point pt = poly(t);
-        subMarks.push_back(pt);
-        newPolys.push_back(poly.translate(t));
-        newKnots.push_back(knots[i] + t);
-        if (curvConfig_.used)
-          newCurv.push_back(Edge::curvature(getComp(newPolys.back(), 0),
-                                            getComp(newPolys.back(), 1), 0));
+    if (index < indices2Num.size()) {
+      auto [j, num] = indices2Num[index];
+      if (i == j) {
+        index++;
+        EdgeMark subMarks;
+        const auto &poly = polys[i];
+        const Real s = knots[i + 1] - knots[i];
+        const Real ds = s / num;
+        for (size_t k = 1; k < num; k++) {
+          Real t = (Real)k * ds;
+          Point pt = poly(t);
+          subMarks.push_back(pt);
+          newPolys.push_back(poly.translate(t));
+          newKnots.push_back(knots[i] + t);
+          if (curvConfig_.used)
+            newCurv.push_back(Edge::curvature(getComp(newPolys.back(), 0),
+                                              getComp(newPolys.back(), 1), 0));
+        }
+        discreteFlowMap(v, subMarks, preT, dt);
+        newMarks.insert(newMarks.end(), subMarks.begin(), subMarks.end());
       }
-      discreteFlowMap(v, subMarks, preT, dt);
-      newMarks.insert(newMarks.end(), subMarks.begin(), subMarks.end());
     }
   }
   newMarks.push_back(marks.back());
@@ -141,8 +144,8 @@ void MARSn2D<Order, VelocityField>::removeMarks(
   size_t numEdge = marks.size() - 1;
   size_t index = 0;
   bool continueFlag = false;
-  for (size_t i = 0; i < numEdge; i++) {
-    if (i != indices[index]) {
+  for (size_t i = 0; i < numEdge && index < indices.size(); i++) {
+    if (index < indices.size() && i != indices[index]) {
       newMarks.push_back(marks[i]);
       if (curvConfig_.used) newCurv.push_back(curv[i]);
       continueFlag = false;
@@ -226,9 +229,11 @@ void MARSn2D<Order, VelocityField>::timeStep(const VelocityField<DIM> &v,
        *  edge.
        **/
       locateLongEdges(marks, hL, indices2Num, 1 - rTiny_);
-      insertMarks(v, tn, dt, indices2Num, marks, preEdge, curv);
       inserted = !indices2Num.empty();
-      insertCount++;
+      if (inserted) {
+        insertMarks(v, tn, dt, indices2Num, marks, preEdge, curv);
+        insertCount++;
+      }
     }
 
     bool removed = true;
@@ -236,23 +241,56 @@ void MARSn2D<Order, VelocityField>::timeStep(const VelocityField<DIM> &v,
       updateHL(curv, marks, hL);
       vector<unsigned int> indices;
       locateTinyEdges(marks, hL, indices, rTiny_);
-      if (indices.back() == marks.size() - 1) {
-        indices.pop_back();
-        if (indices.empty() || indices.back() != marks.size() - 2)
-          indices.push_back(marks.size() - 2);
-      }
-      removeMarks(indices, marks, curv);
       removed = !indices.empty();
-      removeCount++;
+      if (inserted) {
+        if (indices.back() == marks.size() - 1) {
+          indices.pop_back();
+          if (indices.empty() || indices.back() != marks.size() - 2)
+            indices.push_back(marks.size() - 2);
+        }
+        removeMarks(indices, marks, curv);
+        removeCount++;
+      }
     }
+
+#ifndef NDEBUG
+    if (!checkMarks(marks, hL)) {
+      std::cout << "Marks are not valid.\n";
+      exit(1);
+    }
+#endif  // !NDEBUG
   };
 
   auto mark_edge = ig.accessEdges();
+// #pragma omp parallel for default(shared) schedule(static)
   for (auto [edgeIter, markIter] : mark_edge) {
     stepCrv(*edgeIter, *markIter);
   }
+  // #pragma omp critical
   ig.updateCurve();
-  std::cout << "Insert: " << insertCount << " Remove: " << removeCount << '\n';
+  if (printDetail)
+    std::cout << "Insert: " << insertCount << " Remove: " << removeCount
+              << '\n';
+}
+
+template <int Order, template <int> class VelocityField>
+bool MARSn2D<Order, VelocityField>::checkMarks(const EdgeMark &marks,
+                                               const vector<Real> &hL) const {
+  size_t numEdge = marks.size() - 1;
+  for (size_t i = 0; i < numEdge; i++) {
+    Real length = norm(marks[i + 1] - marks[i]);
+    Real upBound = std::max(hL[i], hL[i + 1]);
+    Real loBound = std::min(hL[i], hL[i + 1]);
+    if (length < rTiny_ * loBound) {
+      std::cout << "Edge " << i << " is too short.\n";
+      return false;
+    }
+    if (length > upBound) {
+      std::cout << "Edge " << i << " is too long.\n";
+      return false;
+    }
+  }
+  return true;
 }
 
 //===========================================
@@ -260,4 +298,4 @@ void MARSn2D<Order, VelocityField>::timeStep(const VelocityField<DIM> &v,
 template class MARSn2D<2, VectorFunction>;
 template class MARSn2D<4, VectorFunction>;
 
-}  // namespace MARSn2D
+}  // namespace Marsn2D

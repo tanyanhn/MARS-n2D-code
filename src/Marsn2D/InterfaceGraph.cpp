@@ -4,7 +4,7 @@
 
 #include "Core/VecCompare.h"
 
-namespace MARSn2D {
+namespace Marsn2D {
 
 InterfaceGraph::InterfaceGraph(
     vector<EdgeMark>&& edges,

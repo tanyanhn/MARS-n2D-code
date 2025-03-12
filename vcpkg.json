@@ -4,6 +4,7 @@
     "eigen3",
     "fmt",
     "gsl",
-    "spdlog"
+    "spdlog",
+    "nlohmann-json"
   ]
 }
