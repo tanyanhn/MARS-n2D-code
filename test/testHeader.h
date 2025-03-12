@@ -243,22 +243,24 @@ auto Generator::createRoseGraph(Point center, Real a, Real hL,
   // };
   Real halfAngle = M_PI / numPetal / 2;
   for (size_t i = 0; i < parts.size() - 1; ++i) {
-    for(size_t j = 0; j < 2; ++j){ // each petal is slitted into two parts
+    for (size_t j = 0; j < 2; ++j) {  // each petal is slitted into two parts
       EdgeMark pts;
-      if(j == 0){
+      if (j == 0) {
         pts = markRoseCurve(center, a, hL, {parts[i], parts[i] + halfAngle});
         YinSetId[i].push_back(i);
-      }else{
-        pts = markRoseCurve(center, a, hL, {parts[i + 1] - halfAngle, parts[i + 1]});
+      } else {
+        pts = markRoseCurve(center, a, hL,
+                            {parts[i + 1] - halfAngle, parts[i + 1]});
       }
       edgeMarks.push_back(std::move(pts));
       cyclesEdgesId[i].push_back((int)edgeMarks.size());
       cyclesEdgesId[parts.size() - 1].push_back(-(int)edgeMarks.size());
-      if(parts.size() == numPetal + 1 || i * 2 + j != parts.size() * 2 - 3){
+      if (parts.size() == numPetal + 1 && i * 2 + j == parts.size() * 2 - 3) {
+        smoothConditions.emplace_back((int)edgeMarks.size(), 1);
+      } else if (i * 2 + j != parts.size() * 2 - 3) {
         smoothConditions.emplace_back((int)edgeMarks.size(),
                                       (int)edgeMarks.size() + 1);
       }
-
     }
   }
   std::reverse(cyclesEdgesId[parts.size() - 1].begin(),

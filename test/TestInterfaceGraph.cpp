@@ -393,7 +393,7 @@ TEST_CASE("Rose Curve.", "[InterfaceGraph][RoseCurve][CutCell][1]") {
   string name = "Rose";
   Real lo = 0.0;
   Real hi = 1.0;
-  Real hL = 0.001;
+  Real hL = 0.0005;
   Interval<2> range{lo, hi};
 
   auto dir = rootDir + "/results/InterfaceGraph/";
@@ -462,7 +462,7 @@ TEST_CASE("Rose Curve.", "[InterfaceGraph][RoseCurve][CutCell][1]") {
       // std::cout << name + to_string(i) + " lengthError = " <<
       // lengthError
       //           << '\n';
-      // REQUIRE(std::fabs(areaError) < distTol() / exactArea);
+      REQUIRE(std::fabs(areaError) < distTol() / exactArea);
       // REQUIRE(std::fabs(lengthError) < distTol() / exactLength);
     }
   }
