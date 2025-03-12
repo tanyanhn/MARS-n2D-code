@@ -86,7 +86,7 @@ void approxInterfaceGraph<Order>::updateCurve() {
     vector<size_t> brksId;
     vector<Real> brks;
     VecCompare<Real, DIM> vCmp(tol);
-    if (type == Curve<2, Order>::periodic) brksId.push_back(0);
+    brksId.push_back(0);
     for (auto crvId : spline) {
       if (!knots.empty()) {
         auto p0 = knots.back();
