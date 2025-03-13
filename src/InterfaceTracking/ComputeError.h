@@ -151,18 +151,20 @@ Vector<Vector<Vector<Real>>> cutCellError(
     return volume;
   };
   auto coarseVolumes = [](Vector<Vector<Vector<Real>>> volumes) {
-    Vector<Vector<Vector<Real>>> ret(volumes.size());
     const size_t Nx = volumes[0].size();
     const size_t Ny = volumes[0][0].size();
-    for(auto& v : ret){
-      v = Vector<Vector<Real>>(Nx / 2, Vector<Real>(Ny / 2, 0));
-    }
-    
-    for(size_t k = 0; k < volumes.size(); ++ k){
+    Vector<Vector<Vector<Real>>> ret(
+        volumes.size(), Vector<Vector<Real>>(Nx / 2, Vector<Real>(Ny / 2, 0)));
+    // for (auto &v : ret) {
+    //   v = Vector<Vector<Real>>(Nx / 2, Vector<Real>(Ny / 2, 0));
+    // }
+
+    for (size_t k = 0; k < volumes.size(); ++k) {
       for (size_t i = 0; i < Nx / 2; i++) {
         for (size_t j = 0; j < Ny / 2; j++) {
-          ret[k][i][j] = volumes[k][2 * i][2 * j] + volumes[k][2 * i + 1][2 * j] +
-                      volumes[k][2 * i][2 * j + 1] + volumes[k][2 * i + 1][2 * j + 1];
+          ret[k][i][j] =
+              volumes[k][2 * i][2 * j] + volumes[k][2 * i + 1][2 * j] +
+              volumes[k][2 * i][2 * j + 1] + volumes[k][2 * i + 1][2 * j + 1];
         }
       }
     }
@@ -179,28 +181,23 @@ Vector<Vector<Vector<Real>>> cutCellError(
   }
 
   // compute lhss
-  Vector<Vector<Vector<Real>>> ret(numYinsets);
-  for (auto &v : ret) {
-    v.resize(2);
-    for (auto &vv : v) {
-      vv.resize(num);
-    }
-  }
-  for (size_t i = num - 1; i >= 0; --i) {
-    const auto &lhsYinsets = lhss[i].approxYinSet();
-    for (size_t j = 0; j < numYinsets; ++j) {
-      auto &L2 = ret[j][0][2 * i];
-      auto &LInf = ret[j][1][2 * i];
-      auto localVolumes = calculateVolume(boxs[i], lhsYinsets[j]);
-      loop_box_2(boxs[i], i0, i1) {
+  Vector<Vector<Vector<Real>>> ret(
+      numYinsets, Vector<Vector<Real>>(2, Vector<Real>(2 * num - 1, 0)));
+  for (size_t grid = num - 1; grid >= 0; --grid) {
+    const auto &lhsYinsets = lhss[grid].approxYinSet();
+    for (size_t i = 0; i < numYinsets; ++i) {
+      auto &L2 = ret[i][0][2 * grid];
+      auto &LInf = ret[i][1][2 * grid];
+      auto localVolumes = calculateVolume(boxs[grid], lhsYinsets[i]);
+      loop_box_2(boxs[grid], i0, i1) {
         L2 += pow(localVolumes[i0][i1] - rhsVolumes[i][i0][i1], 2);
         LInf =
             std::max(LInf, abs(localVolumes[i0][i1] - rhsVolumes[i][i0][i1]));
       }
-      rhsVolumes = coarseVolumes(rhsVolumes);
     }
+    rhsVolumes = coarseVolumes(rhsVolumes);
   }
-  for (size_t i = 0; i < num - 1; i++) {
+  for (size_t i = 0; i < num - 2; i++) {
     for (size_t j = 0; j < numYinsets; ++j) {
       ret[j][0][2 * i + 1] =
           log(ret[j][0][2 * i] / ret[j][0][2 * i + 2]) / log(2);

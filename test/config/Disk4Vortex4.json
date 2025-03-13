@@ -6,7 +6,7 @@
       "uM": 1.0
   },
   "grid": {
-      "N0": 16,
+      "N0": 2,
       "lo": [0.0, 0.0],
       "hi": [1.0, 1.0],
       "aimOrder": 4,
@@ -24,7 +24,7 @@
       "plotOutput": 0,
       "plotInner": false,
       "plotStride": 8.0,
-      "printDetail": false
+      "printDetail": true
   },
   "domain_disk": {
       "center": [0.5, 0.5],

@@ -143,11 +143,11 @@ void MARSn2D<Order, VelocityField>::removeMarks(
   vector<Real> newCurv;
   newMarks.reserve(marks.size() - indices.size());
   if (curvConfig_.used) newCurv.reserve(curv.size() - indices.size());
-  size_t numEdge = marks.size() - 1;
+  size_t numMarks = marks.size();
   size_t index = 0;
   bool continueFlag = false;
-  for (size_t i = 0; i < numEdge && index < indices.size(); i++) {
-    if (index < indices.size() && i != indices[index]) {
+  for (size_t i = 0; i < numMarks; i++) {
+    if (index == indices.size() || i != indices[index]) {
       newMarks.push_back(marks[i]);
       if (curvConfig_.used) newCurv.push_back(curv[i]);
       continueFlag = false;
@@ -245,7 +245,7 @@ void MARSn2D<Order, VelocityField>::timeStep(const VelocityField<DIM> &v,
       vector<unsigned int> indices;
       locateTinyEdges(marks, hL, indices, rTiny_);
       removed = !indices.empty();
-      if (inserted) {
+      if (removed) {
         if (indices.back() == marks.size() - 1) {
           indices.pop_back();
           if (indices.empty() || indices.back() != marks.size() - 2)

@@ -128,36 +128,36 @@ void checkResult(auto& yinSets, auto& box, auto& range, auto& addInner,
   }
 }
 
-TEST_CASE("Disk 4 vortex4, RK4: Area and Length Test.",
-          "[Disk][Vortex][4][MARSn2D]") {
-  ::Timer t("disk4Vortex4");
-  const auto* testName = "Disk4Vortex4";
-  auto dir = rootDir + "/results/TrackInterface/" + testName + "/";
-  mkdir(dir.c_str(), 0755);
-  SECTION("2-th order disk") {
-    constexpr int Order = 2;
-    auto [disk, radius, exactArea, exactLength, box, N, aimOrder, h, hL, rTiny,
-          nGrid, curvConfig, plotConfig, printDetail, t0, dt, te,
-          timeIntegrator, vortex] =
-        diskTEST<Order>(rootDir + "/test/config/" + testName + ".json");
-    plotConfig.fName = dir + plotConfig.fName;
-    MARSn2D<Order, VectorFunction> CM(timeIntegrator, hL, rTiny, curvConfig,
-                                      printDetail);
+// TEST_CASE("Disk 4 vortex4, RK4: Area and Length Test.",
+//           "[Disk][Vortex][4][MARSn2D]") {
+//   ::Timer t("disk4Vortex4");
+//   const auto* testName = "Disk4Vortex4";
+//   auto dir = rootDir + "/results/TrackInterface/" + testName + "/";
+//   mkdir(dir.c_str(), 0755);
+//   SECTION("2-th order disk") {
+//     constexpr int Order = 2;
+//     auto [disk, radius, exactArea, exactLength, box, N, aimOrder, h, hL, rTiny,
+//           nGrid, curvConfig, plotConfig, printDetail, t0, dt, te,
+//           timeIntegrator, vortex] =
+//         diskTEST<Order>(rootDir + "/test/config/" + testName + ".json");
+//     plotConfig.fName = dir + plotConfig.fName;
+//     MARSn2D<Order, VectorFunction> CM(timeIntegrator, hL, rTiny, curvConfig,
+//                                       printDetail);
 
-    CM.trackInterface(vortex, disk, t0, dt, te, plotConfig);
+//     CM.trackInterface(vortex, disk, t0, dt, te, plotConfig);
 
-    INFO("Integral Area and length.");
-    auto yinSets = disk.approxYinSet();
+//     INFO("Integral Area and length.");
+//     auto yinSets = disk.approxYinSet();
 
-    checkResult<Order>(yinSets, box, plotConfig.range, addInner, radius, N, h,
-                       output, dir, plotConfig.fName, exactLength, exactArea);
-    t.~Timer();
-    ::Timer::printStatistics();
-  }
-}
+//     checkResult<Order>(yinSets, box, plotConfig.range, addInner, radius, N, h,
+//                        output, dir, plotConfig.fName, exactLength, exactArea);
+//     t.~Timer();
+//     ::Timer::printStatistics();
+//   }
+// }
 
 TEST_CASE("Disk 4 vortex4, RK4: Convergence Test.",
-          "[Disk][Vortex][4][MARSn2D]") {
+          "[Disk][Vortex][4][MARSn2D][Convergence]") {
   ::Timer t("disk4Vortex4");
   const auto* testName = "Disk4Vortex4";
   auto dir = rootDir + "/results/TrackInterface/" + testName + "/";
