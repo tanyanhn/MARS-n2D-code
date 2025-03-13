@@ -9,12 +9,12 @@ filedir = "results/InterfaceGraph/";
 % filename = round + "Step160.dat";
 % filename = "spadjor-13.input.dat";
 Order = 4;
-N = 32;
-Shape = "Circle";
+N = 4;
+Shape = "Rose";
 % Shape = "Rectangle";
 tensor = true;
 figure
-for k = 1:1:1
+for k = 3:1:3
 filename = num2str(Order) + Shape + num2str(N) + "_" + num2str(k) + ".dat";
 
 hd = fopen(filedir + filename);

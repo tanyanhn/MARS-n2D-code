@@ -69,6 +69,18 @@ void PastingMap<Order, Selector>::addEdge(T_Crv&& newEdge, bool necessary) {
       }
     }
   }
+  // remove overlap reverse edge.
+  auto reverseCrv = newEdge.reverse();
+  iter = graph.find(reverseCrv.startpoint());
+  if (iter != graph.end()) {
+    for (auto id : iter->second) {
+      if (reverseCrv.equal(allCrvs[id], tol)) {
+        necessaryEdge.erase(id);
+        iter->second.erase(id);
+        return;
+      }
+    }
+  }
   allCrvs.push_back(std::forward<T_Crv>(newEdge));
   size_t id = allCrvs.size() - 1;
   auto res = graph.insert(std::make_pair(start, std::set<size_t>{}));

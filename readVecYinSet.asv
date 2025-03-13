@@ -1,7 +1,0 @@
-function vecSf = readVecYinSet(hd)
-    num = fread(hd, 1, 'int');
-    
-for i = 1:num
-    vecSf{end+1} = readYinSet(hd);
-end
-end

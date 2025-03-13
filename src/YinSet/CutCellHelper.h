@@ -154,8 +154,8 @@ auto CutCellHelper<Order>::pastCells(
     rVec lo, rVec h, const Tensor<vector<Curve<2, Order>>, 2> &gridCurves,
     Tensor<YinSetPtr, 2> &gridSRS, Real tol) {
   loop_box_2(gridCurves.box(), i0, i1) {
+    gridSRS(i0, i1) = nullptr;
     if (gridCurves(i0, i1).empty()) {
-      gridSRS(i0, i1) = nullptr;
       continue;
     }
 
@@ -207,8 +207,15 @@ auto CutCellHelper<Order>::pastCells(
       if (std::abs(vol) > tol) vecCrv.emplace_back(std::move(crv));
     }
     // gridSRS(i0, i1) = (new YinSet<2, Order>(SRS(vecCrv), tol));
-    if (!vecCrv.empty())
-      gridSRS(i0, i1) = (std::make_shared<YinSet<2, Order>>(SRS(vecCrv), tol));
+    if (vecCrv.empty()) continue;
+
+    auto yinsetPtr = std::make_shared<YinSet<2, Order>>(SRS(vecCrv), tol);
+    if (!yinsetPtr->isBounded()) {
+      vecCrv.push_back(rect);
+      yinsetPtr =
+          std::make_shared<YinSet<2, Order>>(SRS(std::move(vecCrv)), tol);
+    }
+    gridSRS(i0, i1) = yinsetPtr;
   }
 }
 

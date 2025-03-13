@@ -20,6 +20,7 @@ function plotYinSet(sf, lineColor, fillColor, lineWidth, offset)
     
     fillcolor = cell(numel(sf), 1);
     linestyle = cell(numel(sf), 1);
+    fillAlpha = cell(numel(sf), 1);
     
     % bouding box and orientation
     amax = 0;
@@ -29,9 +30,11 @@ function plotYinSet(sf, lineColor, fillColor, lineWidth, offset)
         if a(c) > 0
             fillcolor{c} = fillColor;
             linestyle{c} = '-';
+            fillAlpha{c} = 0.7;
         elseif a(c) < minesVolume
             fillcolor{c} = 'w';
             linestyle{c} = ':';
+            fillAlpha{c} = 1;
         end
     end
     
@@ -45,9 +48,9 @@ function plotYinSet(sf, lineColor, fillColor, lineWidth, offset)
     for c=1:numel(sf)
         verts = linearizeSpline(sf{c}, 2)';
         verts = verts + offset;
-        if filled && a(c) > -minesVolume
+        if filled && abs(a(c)) > -minesVolume
             fill(verts(:,1),verts(:,2), fillcolor{c}, ...
-                'EdgeColor', 'k', 'FaceAlpha', 0.7);
+                'EdgeColor', 'k', 'FaceAlpha', fillAlpha{c});
         else
             plot(verts(:,1),verts(:,2), ...
                 [lineColor,linestyle{c}], ...

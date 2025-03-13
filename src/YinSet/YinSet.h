@@ -55,7 +55,7 @@ class YinSet<2, Order> : public SegmentedRealizableSpadjor<Order> {
   }
 
   /// Return if the Yin set is bounded, based on the Hasse diagram.
-  bool isBounded() const { return diagram.back().depth % 2 == 1; }
+  bool isBounded() const { return (diagram.back().depth + 2) % 2 == 1; }
 
   /// Get the orientation of the k-th Jordan curve, based on the Hasse diagram.
   int getOrientation(int k) const {

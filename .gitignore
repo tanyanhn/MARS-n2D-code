@@ -6,5 +6,6 @@ build/
 vcpkg_installed/
 
 *.dat
+*.asv
 
 dirConfig.h

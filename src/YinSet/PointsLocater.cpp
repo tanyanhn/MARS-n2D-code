@@ -146,15 +146,22 @@ vector<int> PointsLocater::operator()(
       for (int j = 0; j < queries.size(); ++j) {
         const auto &q = queries[j];
         Real x = q[ix];
-        if (x < p0[ix] || x > p1[ix]) continue;
+        if (x <= p0[ix] - tol || x >= p1[ix] + tol) continue;
         if (norm(p0[iy] - q[iy]) > std::get<0>(closest_points[j]) &&
             norm(p1[iy] - q[iy]) > std::get<0>(closest_points[j]))
           continue;
 
         auto brk =
             root(xPoly - x, (knots[i + 1] - knots[i]) / 2, tol, newtonMaxIter);
-        if (brk < 0 || brk > knots[i + 1] - knots[i])
-          throw std::runtime_error("root not found");
+        if (brk < tol || brk > knots[i + 1] - knots[i] - tol) {
+          if (brk < tol && brk > -tol)
+            brk = 0;
+          else if (brk > knots[i + 1] - knots[i] - tol &&
+                   brk < knots[i + 1] - knots[i] + tol)
+            brk = knots[i + 1] - knots[i];
+          else
+            throw std::runtime_error("root not found");
+        }
         auto y = poly(brk)[iy];
         auto d = norm(y - q[iy]);
         rVec aim = {x, y};

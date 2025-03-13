@@ -41,6 +41,8 @@ class SegmentedRealizableSpadjor {
       Real tolForSegmentation = 0.0);
   SegmentedRealizableSpadjor(const vector<Curve<Dim, Order>>& aSpadjor,
                              Real tolForSegmentation = 0.0);
+  SegmentedRealizableSpadjor(vector<OrientedJordanCurve<Dim, Order>>&& aSpadjor)
+      : orientedJordanCurves(std::move(aSpadjor)){};
 
   /// Load a segmented Spadjor from the stream. See YinSet::dump().
   /// \param is
@@ -65,7 +67,9 @@ class SegmentedRealizableSpadjor {
   friend SRS meet<Order>(const SRS& lhs, const SRS& rhs, Real tol);
 
   // auto& getOrientedJordanCurves() { return orientedJordanCurves; }
-  const auto& getOrientedJordanCurvesRef() const { return orientedJordanCurves; }
+  const auto& getOrientedJordanCurvesRef() const {
+    return orientedJordanCurves;
+  }
 
  protected:
   SegmentedRealizableSpadjor() = default;

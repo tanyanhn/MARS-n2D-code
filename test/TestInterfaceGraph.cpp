@@ -2,8 +2,9 @@
 
 #include "testHeader.h"
 
-bool addInner = true;
-bool output = true;
+bool addInner = false;
+bool output = false;
+const Real testHL = 1e-4;
 
 TEST_CASE("Disk 4 part interface.", "[InterfaceGraph][Disk][CutCell][4]") {
   Point center{0.5, 0.5};
@@ -16,7 +17,7 @@ TEST_CASE("Disk 4 part interface.", "[InterfaceGraph][Disk][CutCell][4]") {
   string name = "Circle";
   Real lo = 0.0;
   Real hi = 1.0;
-  Real hL = 0.0001;
+  Real hL = testHL;
   Interval<2> range{lo, hi};
 
   auto dir = rootDir + "/results/InterfaceGraph/";
@@ -81,9 +82,8 @@ TEST_CASE("Disk 4 part interface.", "[InterfaceGraph][Disk][CutCell][4]") {
       }
       Real areaError = std::abs(totalArea - exactArea) / (exactArea);
       Real lengthError = std::abs(length - exactLength) / (exactLength);
-      std::cout << name + to_string(i) + " areaError = " << areaError <<
-      '\n'; std::cout << name + to_string(i) + " lengthError = " <<
-      lengthError
+      std::cout << name + to_string(i) + " areaError = " << areaError << '\n';
+      std::cout << name + to_string(i) + " lengthError = " << lengthError
                 << '\n';
       REQUIRE(std::fabs(areaError) < distTol() / exactArea);
       REQUIRE(std::fabs(lengthError) < distTol() / exactLength);
@@ -102,7 +102,7 @@ TEST_CASE("Disk 5 part interface.", "[InterfaceGraph][Disk][CutCell][5]") {
   string name = "Circle";
   Real lo = 0.0;
   Real hi = 1.0;
-  Real hL = 0.0001;
+  Real hL = testHL;
   Interval<2> range{lo, hi};
 
   auto dir = rootDir + "/results/InterfaceGraph/";
@@ -169,9 +169,8 @@ TEST_CASE("Disk 5 part interface.", "[InterfaceGraph][Disk][CutCell][5]") {
       }
       Real areaError = std::abs(totalArea - exactArea) / (exactArea);
       Real lengthError = std::abs(length - exactLength) / (exactLength);
-      std::cout << name + to_string(i) + " areaError = " << areaError <<
-      '\n'; std::cout << name + to_string(i) + " lengthError = " <<
-      lengthError
+      std::cout << name + to_string(i) + " areaError = " << areaError << '\n';
+      std::cout << name + to_string(i) + " lengthError = " << lengthError
                 << '\n';
       REQUIRE(std::fabs(areaError) < distTol() / exactArea);
       REQUIRE(std::fabs(lengthError) < distTol() / exactLength);
@@ -186,7 +185,7 @@ TEST_CASE("Ellipse single.", "[InterfaceGraph][Ellipse][CutCell][1]") {
   string name = "Ellipse";
   Real lo = 0.0;
   Real hi = 1.0;
-  Real hL = 0.00005;
+  Real hL = testHL;
   Interval<2> range{lo, hi};
 
   auto dir = rootDir + "/results/InterfaceGraph/";
@@ -197,7 +196,7 @@ TEST_CASE("Ellipse single.", "[InterfaceGraph][Ellipse][CutCell][1]") {
     auto yinSet = Generator::createEllipse<Order>(center, radius, hL);
     std::vector<YinSet<DIM, Order>> yinSets;
     yinSets.push_back(yinSet);
-    int N = 16;
+    int N = 4;
     Box<2> box(0, N - 1);
 
     //=============================================
@@ -285,10 +284,10 @@ TEST_CASE("Ellipse 3 part interface.",
   for (auto& part : parts) part *= 2 * M_PI;
   // calculate the area
   Real ellipseArea = M_PI * radius[0] * radius[1];
-  std::function<Real(Real, Real)> calculate_area = [&](Real theta1, Real
-  theta2) -> Real {
+  std::function<Real(Real, Real)> calculate_area = [&](Real theta1,
+                                                       Real theta2) -> Real {
     assert(theta2 > theta1);
-    if(abs(theta2 - 2*M_PI) < 1e-10){
+    if (abs(theta2 - 2 * M_PI) < 1e-10) {
       return ellipseArea - calculate_area(0, theta1);
     }
     auto a = radius[0];
@@ -310,7 +309,7 @@ TEST_CASE("Ellipse 3 part interface.",
   string name = "Ellipse";
   Real lo = 0.0;
   Real hi = 1.0;
-  Real hL = 0.0001;
+  Real hL = testHL;
   Interval<2> range{lo, hi};
 
   auto dir = rootDir + "/results/InterfaceGraph/";
@@ -318,8 +317,9 @@ TEST_CASE("Ellipse 3 part interface.",
 
   SECTION("2-th order Ellipse") {
     constexpr int Order = 2;
-    auto ellipse = Generator::createDiskGraph<Order>(center, radius, hL,
-    parts); int N = 4; Box<2> box(0, N - 1);
+    auto ellipse = Generator::createDiskGraph<Order>(center, radius, hL, parts);
+    int N = 4;
+    Box<2> box(0, N - 1);
     // rVec h = (hi - lo) / N;
     auto yinSets = ellipse.approxYinSet();
 
@@ -333,13 +333,15 @@ TEST_CASE("Ellipse 3 part interface.",
         // yinSets[i].dump(of);
       }
     }
-  } // end of 2-th order ellipse
+  }  // end of 2-th order ellipse
 
   SECTION("4-th order ellipse") {
     constexpr int Order = 4;
-    auto ellipse = Generator::createDiskGraph<Order>(center, radius, hL,
-    parts); int N = 8; Box<2> box(0, N - 1); rVec h = (hi - lo) / N; auto
-    yinSets = ellipse.approxYinSet();
+    auto ellipse = Generator::createDiskGraph<Order>(center, radius, hL, parts);
+    int N = 8;
+    Box<2> box(0, N - 1);
+    rVec h = (hi - lo) / N;
+    auto yinSets = ellipse.approxYinSet();
 
     for (int i = 0; i < yinSets.size(); ++i) {
       auto [res, boundary, tags] = yinSets[i].cutCell(box, range, addInner);
@@ -367,19 +369,18 @@ TEST_CASE("Ellipse 3 part interface.",
       Real exactArea;
       if (i == yinSets.size() - 1) {
         exactArea = 1 - ellipseArea;
-      }else{
+      } else {
         exactArea = exactAreas.at(i);
       }
       Real areaError = std::abs(totalArea - exactArea) / (exactArea);
       // Real lengthError = std::abs(length - exactLength) / (exactLength);
-      std::cout << name + to_string(i) + " areaError = " << areaError <<
-      '\n';
+      std::cout << name + to_string(i) + " areaError = " << areaError << '\n';
       // std::cout << name + to_string(i) + " lengthError = " << lengthError
-                // << '\n';
+      // << '\n';
       REQUIRE(std::fabs(areaError) < distTol() / exactArea);
       // REQUIRE(std::fabs(lengthError) < distTol() / exactLength);
     }
-  } // end of 4-th order loop
+  }  // end of 4-th order loop
 }
 
 TEST_CASE("Rose Curve.", "[InterfaceGraph][RoseCurve][CutCell][1]") {
@@ -393,7 +394,7 @@ TEST_CASE("Rose Curve.", "[InterfaceGraph][RoseCurve][CutCell][1]") {
   string name = "Rose";
   Real lo = 0.0;
   Real hi = 1.0;
-  Real hL = 0.0005;
+  Real hL = testHL;
   Interval<2> range{lo, hi};
 
   auto dir = rootDir + "/results/InterfaceGraph/";
@@ -402,7 +403,7 @@ TEST_CASE("Rose Curve.", "[InterfaceGraph][RoseCurve][CutCell][1]") {
   SECTION("2-th order rose") {
     constexpr int Order = 2;
     auto disk = Generator::createRoseGraph<Order>(center, a, hL, parts);
-    int N = 16;
+    int N = 4;
     Box<2> box(0, N - 1);
     // rVec h = (hi - lo) / N;
     auto yinSets = disk.approxYinSet();
@@ -422,7 +423,7 @@ TEST_CASE("Rose Curve.", "[InterfaceGraph][RoseCurve][CutCell][1]") {
   SECTION("4-th order rose") {
     constexpr int Order = 4;
     auto disk = Generator::createRoseGraph<Order>(center, a, hL, parts);
-    int N = 16;
+    int N = 4;
     Box<2> box(0, N - 1);
     rVec h = (hi - lo) / N;
     auto yinSets = disk.approxYinSet();

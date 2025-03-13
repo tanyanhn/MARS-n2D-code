@@ -689,9 +689,23 @@ auto Curve<Dim, Order>::getComparableDirection(Real tol, int type) const
 
 template <int Dim, int Order>
 bool Curve<Dim, Order>::equal(const Curve &rhs, Real tol) const {
-  auto d1 = this->getComparableDirection(tol, 0);
-  auto d2 = rhs.getComparableDirection(tol, 0);
-  return (norm(d1 - d2) < tol);
+  // auto d1 = this->getComparableDirection(tol, 0);
+  // auto d2 = rhs.getComparableDirection(tol, 0);
+  // return (norm(d1 - d2) < tol);
+  VecCompare<Real, Dim> vCmp(tol);
+  if (vCmp.compare(midpoint(), rhs.midpoint()) != 0) return false;
+  const auto &lhs = *this;
+  auto &lhsKnots = this->getKnots();
+  auto &rhsKnots = rhs.getKnots();
+  const int numPoint = std::max(3, Order); // at least contain a midpoint.
+  Real lhsDt = (lhsKnots.back() - lhsKnots.front()) / (numPoint - 1);
+  Real rhsDt = (rhsKnots.back() - rhsKnots.front()) / (numPoint - 1);
+  for (int i = 0; i < numPoint; ++i) {
+    auto pl = lhs(lhsKnots.front() + i * lhsDt);
+    auto pr = rhs(rhsKnots.front() + i * rhsDt);
+    if (vCmp.compare(pl, pr) != 0) return false;
+  }
+  return true;
 }
 
 template <int Dim, int Order>
