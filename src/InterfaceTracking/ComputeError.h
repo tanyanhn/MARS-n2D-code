@@ -183,7 +183,8 @@ Vector<Vector<Vector<Real>>> cutCellError(
   // compute lhss
   Vector<Vector<Vector<Real>>> ret(
       numYinsets, Vector<Vector<Real>>(2, Vector<Real>(2 * num - 1, 0)));
-  for (size_t grid = num - 1; grid >= 0; --grid) {
+  for (size_t g = 0; g < num; g++) {
+    auto grid = num - g - 1;
     const auto &lhsYinsets = lhss[grid].approxYinSet();
     for (size_t i = 0; i < numYinsets; ++i) {
       auto &L2 = ret[i][0][2 * grid];
