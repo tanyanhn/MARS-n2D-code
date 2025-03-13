@@ -3,6 +3,8 @@
 #include "InterfaceTracking/ERK.h"
 #include "InterfaceTracking/RKButcher.h"
 #include "InterfaceTracking/VelocityField.h"
+#include "InterfaceTracking/ComputeError.h"
+#include "Marsn2D/InterfaceGraph.h"
 #include "Marsn2D/MARSn2D.h"
 #include "Recorder/Timer.h"
 #include "mars_readJson.hpp"
@@ -26,16 +28,16 @@ auto diskTEST(const std::string& jsonFile) {
   const Real Cr = params.time.Cr;
   const Real uM = params.time.uM;
   // grid
-  const int N = params.grid.N;
+  const int N0 = params.grid.N0;
   const rVec lo = params.grid.lo;
   const rVec hi = params.grid.hi;
   const int aimOrder = params.grid.aimOrder;
   const Real hLCoefficient = params.grid.hLCoefficient;
   const Real rTiny = params.grid.rTiny;
   const int nGrid = params.grid.nGrid;
-  const rVec h = (hi - lo) / N;
+  const rVec h = (hi - lo) / N0;
   const Real hL = hLCoefficient * std::pow(h[0] * h[1], 0.5 * aimOrder / Order);
-  const Box<2> box(0, N - 1);
+  const Box<2> box(0, N0 - 1);
   const Real dt = std::min(h[0], h[1]) / uM * Cr;
   const auto timeIntegrator =
       make_shared<ERK<2, RK::ClassicRK4, VectorFunction>>();
@@ -63,7 +65,7 @@ auto diskTEST(const std::string& jsonFile) {
   const struct MARSn2D<Order, VectorFunction>::PlotConfig plotConfig {
     .output = plotOutput, .plotInner = plotInner,
     .opStride = (int)std::round(plotStride * te * uM / Cr),
-    .fName = to_string(Order) + "Circle" + "_grid" + to_string(N) + "_T" +
+    .fName = to_string(Order) + "Circle" + "_grid" + to_string(N0) + "_T" +
              to_string((int)T),
     .range = {lo, hi},
   };
@@ -78,9 +80,9 @@ auto diskTEST(const std::string& jsonFile) {
   const auto disk =
       Generator::createDiskGraph<Order>(center, radius, hL, parts);
 
-  return make_tuple(disk, radius, exactArea, exactLength, box, N, h, hL, rTiny,
-                    nGrid, curvConfig, plotConfig, printDetail, t0, dt, te,
-                    timeIntegrator, vortex);
+  return make_tuple(disk, radius, exactArea, exactLength, box, N0, aimOrder, h,
+                    hL, rTiny, nGrid, curvConfig, plotConfig, printDetail, t0,
+                    dt, te, timeIntegrator, vortex);
   // }
 }
 
@@ -126,16 +128,17 @@ void checkResult(auto& yinSets, auto& box, auto& range, auto& addInner,
   }
 }
 
-TEST_CASE("Disk 4 vortex4, RK4.", "[Disk][Vortex][4][MARSn2D]") {
+TEST_CASE("Disk 4 vortex4, RK4: Area and Length Test.",
+          "[Disk][Vortex][4][MARSn2D]") {
   ::Timer t("disk4Vortex4");
   const auto* testName = "Disk4Vortex4";
   auto dir = rootDir + "/results/TrackInterface/" + testName + "/";
   mkdir(dir.c_str(), 0755);
   SECTION("2-th order disk") {
     constexpr int Order = 2;
-    auto [disk, radius, exactArea, exactLength, box, N, h, hL, rTiny, nGrid,
-          curvConfig, plotConfig, printDetail, t0, dt, te, timeIntegrator,
-          vortex] =
+    auto [disk, radius, exactArea, exactLength, box, N, aimOrder, h, hL, rTiny,
+          nGrid, curvConfig, plotConfig, printDetail, t0, dt, te,
+          timeIntegrator, vortex] =
         diskTEST<Order>(rootDir + "/test/config/" + testName + ".json");
     plotConfig.fName = dir + plotConfig.fName;
     MARSn2D<Order, VectorFunction> CM(timeIntegrator, hL, rTiny, curvConfig,
@@ -151,4 +154,59 @@ TEST_CASE("Disk 4 vortex4, RK4.", "[Disk][Vortex][4][MARSn2D]") {
     t.~Timer();
     ::Timer::printStatistics();
   }
+}
+
+TEST_CASE("Disk 4 vortex4, RK4: Convergence Test.",
+          "[Disk][Vortex][4][MARSn2D]") {
+  ::Timer t("disk4Vortex4");
+  const auto* testName = "Disk4Vortex4";
+  auto dir = rootDir + "/results/TrackInterface/" + testName + "/";
+  mkdir(dir.c_str(), 0755);
+
+  SECTION("2-th order disk") {
+    constexpr int Order = 2;
+    auto [disk, radius, exactArea, exactLength, box, N0, aimOrder, h, hL, rTiny,
+          nGrid, curvConfig, plotConfig, printDetail, t0, dt, te,
+          timeIntegrator, vortex] =
+        diskTEST<Order>(rootDir + "/test/config/" + testName + ".json");
+    int N = N0;
+    auto originDisk = disk;
+    vector<approxInterfaceGraph<Order>> interfaceGraphs;
+    vector<Box<2>> boxes;
+
+    for (uint i = 0; i < nGrid; ++i) {
+      disk = originDisk;
+      if (i != 0) {
+        N = N * 2;
+        box = Box<2>(0, N - 1);
+        h = h / 2;
+        hL = hL * std::pow(0.5, aimOrder / Order);
+        dt = dt / 2;
+      }
+      boxes.push_back(box);
+      plotConfig.fName = to_string(Order) + "Circle" + "_grid" + to_string(N) +
+                         "_T" + to_string((int)te),
+      plotConfig.fName = dir + plotConfig.fName;
+      MARSn2D<Order, VectorFunction> CM(timeIntegrator, hL, rTiny, curvConfig,
+                                        printDetail);
+
+      CM.trackInterface(vortex, disk, t0, dt, te, plotConfig);
+      interfaceGraphs.push_back(disk);
+    }
+    auto error = cutCellError(interfaceGraphs, disk, boxes, plotConfig.range);
+    for(auto& i : error){
+      std::cout << "L2: ";
+      for(auto& j : i[0]){
+        std::cout << j << ' ';
+      }
+      std::cout << "\n Linfty: ";
+      for(auto& j : i[1]){
+        std::cout << j << ' ';
+      }
+      std::cout << '\n';
+    }
+
+    t.~Timer();
+    ::Timer::printStatistics();
+  } // test 2-th order disk
 }

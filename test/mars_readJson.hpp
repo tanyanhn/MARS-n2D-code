@@ -16,7 +16,7 @@ struct SimulationParams {
   
   // grid parameters
   struct {
-    int N;
+    int N0;
     Point lo;
     Point hi;
     int aimOrder;
@@ -50,12 +50,12 @@ struct SimulationParams {
 };
 
 // JSON解析适配器
-void from_json(const nlohmann::json& j, Point& p) {
+inline void from_json(const nlohmann::json& j, Point& p) {
   p[0] = j[0].get<Real>();
   p[1] = j[1].get<Real>();
 }
 
-void from_json(const nlohmann::json& j, SimulationParams& params) {
+inline void from_json(const nlohmann::json& j, SimulationParams& params) {
   // 解析时间参数
   const auto& time = j.at("time");
   params.time.te = time.at("te");
@@ -65,7 +65,7 @@ void from_json(const nlohmann::json& j, SimulationParams& params) {
 
   // 解析网格参数
   const auto& grid = j.at("grid");
-  params.grid.N = grid.at("N");
+  params.grid.N0 = grid.at("N0");
   params.grid.lo = grid.at("lo");
   params.grid.hi = grid.at("hi");
   params.grid.aimOrder = grid.at("aimOrder");
@@ -93,7 +93,7 @@ void from_json(const nlohmann::json& j, SimulationParams& params) {
   params.domain.parts = domain.at("parts").get<std::vector<Real>>();
 }
 
-SimulationParams read_config(const std::string& filename) {
+inline SimulationParams read_config(const std::string& filename) {
   std::ifstream ifs(filename);
   nlohmann::json config = nlohmann::json::parse(ifs);
   return config.get<SimulationParams>();

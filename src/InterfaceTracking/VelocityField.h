@@ -175,7 +175,7 @@ class Vortex : public VectorFunction<2> {
                   Eigen::ArrayXXd &output) const override {
     Timer timer("vectorFunction::operator()");
     using namespace Eigen;
-    const long N = pts.cols();
+    // const long N = pts.cols();
 
     const double scale = cos(M_PI * t / T);
     // 预先计算公共因子x = M_PI * pts.array()

@@ -2,6 +2,7 @@
 #define _COMPUTEERROR_H_
 
 #include <cmath>
+#include <cstddef>
 #include <numeric>
 
 #include "Marsn2D/InterfaceGraph.h"
@@ -14,8 +15,8 @@ using Point = Vec<Real, 2>;
 template <class T>
 using Vector = std::vector<T>;
 
-Vector<Real> circleerror(const Vector<Crv> &crvs, const Point &center,
-                         Real radio) {
+inline Vector<Real> circleerror(const Vector<Crv> &crvs, const Point &center,
+                                Real radio) {
   size_t n = crvs.size();
   Vector<Real> result(2 * n - 1);
   for (int i = 0; i < n; i++) {
@@ -92,7 +93,8 @@ Vector<Real> squarerror(const Vector<YinSet<2, 4>> &vys, const Point &center,
   return result;
 }
 
-Vector<Real> exactError(const Vector<Crv> &crvs, const Crv &exact, Real tol) {
+inline Vector<Real> exactError(const Vector<Crv> &crvs, const Crv &exact,
+                               Real tol) {
   int n = crvs.size();
   Vector<Real> result(2 * n - 1);
   for (int i = 0; i < n; i++) {
@@ -105,7 +107,7 @@ Vector<Real> exactError(const Vector<Crv> &crvs, const Crv &exact, Real tol) {
   return result;
 }
 
-Vector<Real> richardsonError(const Vector<Crv> &crvs, Real tol) {
+inline Vector<Real> richardsonError(const Vector<Crv> &crvs, Real tol) {
   int n = crvs.size();
   Vector<Real> result(2 * n - 3);
   for (int i = 0; i < n - 1; i++) {
@@ -118,14 +120,19 @@ Vector<Real> richardsonError(const Vector<Crv> &crvs, Real tol) {
   return result;
 }
 
+// return: each yinset - 2(L^2 and L^\infty) - each grid
 template <int Order>
-Vector<Vector<Real>> cutCellError(
+Vector<Vector<Vector<Real>>> cutCellError(
     const vector<Marsn2D::approxInterfaceGraph<Order>> &lhss,
     const Marsn2D::approxInterfaceGraph<Order> &rhs, auto &boxs, auto &range) {
-  const int num = lhss.size();
-  Vector<Vector<Real>> ret(2, Vector<Real>(2 * num - 1, 0));
+  const int num = lhss.size();  // number of grid layers
+  int numYinsets = 0;           // number of yinsets in each layer
+  // compute volumes in a box domain, return Vector<Vector<Real>>
   auto calculateVolume = [range](const auto &box, const auto &yinset) {
-    auto h = range / (box.size());
+    Vec<Real, 2> h;
+    h[0] = range.hi()[0] - range.lo()[0];
+    h[1] = range.hi()[1] - range.lo()[1];
+    h = h / (box.size());
     Real fullCell = h[0] * h[1];
     auto N = box.size();
     Vector<Vector<Real>> volume(N[0], Vector<Real>(N[1]));
@@ -143,39 +150,63 @@ Vector<Vector<Real>> cutCellError(
     }
     return volume;
   };
-  auto &box = boxs.back();
-  const auto &rhsYinsets = rhs.approxYinSet();
-  Vector<Vector<Vector<Real>>> rhsVolumes;
-  for (size_t i = 0; i < rhsYinsets.size(); i++) {
-    rhsVolumes.emplace_back(calculateVolume(box, rhsYinsets[i]));
-  }
-
-  auto coarseVolumes = [](Vector<Vector<Real>> volumes) {
-    const size_t Nx = volumes.size();
-    const size_t Ny = volumes[0].size();
-    Vector<Vector<Real>> ret(Nx / 2, Vector<Real>(Ny / 2, 0));
-    for (size_t i = 0; i < Nx / 2; i++) {
-      for (size_t j = 0; j < Ny / 2; j++) {
-        ret[i][j] = volumes[2 * i][2 * j] + volumes[2 * i + 1][2 * j] +
-                    volumes[2 * i][2 * j + 1] + volumes[2 * i + 1][2 * j + 1];
+  auto coarseVolumes = [](Vector<Vector<Vector<Real>>> volumes) {
+    Vector<Vector<Vector<Real>>> ret(volumes.size());
+    const size_t Nx = volumes[0].size();
+    const size_t Ny = volumes[0][0].size();
+    for(auto& v : ret){
+      v = Vector<Vector<Real>>(Nx / 2, Vector<Real>(Ny / 2, 0));
+    }
+    
+    for(size_t k = 0; k < volumes.size(); ++ k){
+      for (size_t i = 0; i < Nx / 2; i++) {
+        for (size_t j = 0; j < Ny / 2; j++) {
+          ret[k][i][j] = volumes[k][2 * i][2 * j] + volumes[k][2 * i + 1][2 * j] +
+                      volumes[k][2 * i][2 * j + 1] + volumes[k][2 * i + 1][2 * j + 1];
+        }
       }
     }
     return ret;
   };
 
-  for (size_t i = num - 1; i >= 0; --i) {
-    auto &L2 = ret[0][2 * i];
-    auto &LInf = ret[1][2 * i];
-    auto localVolumes = calculateVolume(boxs[i], lhss[i]);
-    loop_box_2(boxs[i], i0, i1) {
-      L2 += pow(localVolumes[i0][i1] - rhsVolumes[i][i0][i1], 2);
-      LInf = std::max(LInf, abs(localVolumes[i0][i1] - rhsVolumes[i][i0][i1]));
+  // compute rhs
+  auto &box = boxs.back();
+  const auto &rhsYinsets = rhs.approxYinSet();
+  Vector<Vector<Vector<Real>>> rhsVolumes;  // each yinset - each cell (2D)
+  numYinsets = rhsYinsets.size();
+  for (size_t i = 0; i < rhsYinsets.size(); i++) {
+    rhsVolumes.emplace_back(calculateVolume(box, rhsYinsets[i]));
+  }
+
+  // compute lhss
+  Vector<Vector<Vector<Real>>> ret(numYinsets);
+  for (auto &v : ret) {
+    v.resize(2);
+    for (auto &vv : v) {
+      vv.resize(num);
     }
-    rhsVolumes = coarseVolumes(rhsVolumes);
+  }
+  for (size_t i = num - 1; i >= 0; --i) {
+    const auto &lhsYinsets = lhss[i].approxYinSet();
+    for (size_t j = 0; j < numYinsets; ++j) {
+      auto &L2 = ret[j][0][2 * i];
+      auto &LInf = ret[j][1][2 * i];
+      auto localVolumes = calculateVolume(boxs[i], lhsYinsets[j]);
+      loop_box_2(boxs[i], i0, i1) {
+        L2 += pow(localVolumes[i0][i1] - rhsVolumes[i][i0][i1], 2);
+        LInf =
+            std::max(LInf, abs(localVolumes[i0][i1] - rhsVolumes[i][i0][i1]));
+      }
+      rhsVolumes = coarseVolumes(rhsVolumes);
+    }
   }
   for (size_t i = 0; i < num - 1; i++) {
-    ret[0][2 * i + 1] = log(ret[0][2 * i] / ret[0][2 * i + 2]) / log(2);
-    ret[1][2 * i + 1] = log(ret[1][2 * i] / ret[1][2 * i + 2]) / log(2);
+    for (size_t j = 0; j < numYinsets; ++j) {
+      ret[j][0][2 * i + 1] =
+          log(ret[j][0][2 * i] / ret[j][0][2 * i + 2]) / log(2);
+      ret[j][1][2 * i + 1] =
+          log(ret[j][1][2 * i] / ret[j][1][2 * i + 2]) / log(2);
+    }
   }
   return ret;
 }
