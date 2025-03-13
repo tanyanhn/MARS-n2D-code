@@ -2,11 +2,13 @@
 #define _VECTORFUNCTION_H_
 
 // #include <Eigen/Sparse>
+#include <eigen3/Eigen/Dense>
 #include <vector>
 
 #include "Core/Config.h"
 #include "Core/Tensor.h"
 #include "Core/Vec.h"
+#include "Recorder/Timer.h"
 
 template <int Dim>
 class VectorFunction {
@@ -27,6 +29,7 @@ class VectorFunction {
 
   virtual const Vector<Point> operator()(const Vector<Point>& pts,
                                          Real t = 0) const {
+    Timer timer("VectorFunction::operator()");
     int num = pts.size();
     Vector<Point> vel(num);
     for (int i = 0; i < num; i++) {
@@ -34,6 +37,9 @@ class VectorFunction {
     }
     return vel;
   }
+
+  virtual void operator()(const Eigen::ArrayXXd& pts, Real t,
+                          Eigen::ArrayXXd& output) const {}
 
   /*
   virtual const Tensor<Real, 2> getJacobi(const Vector<Point> &pts, Real t = 0)

@@ -4,6 +4,7 @@
 #include "InterfaceTracking/RKButcher.h"
 #include "InterfaceTracking/VelocityField.h"
 #include "Marsn2D/MARSn2D.h"
+#include "Recorder/Timer.h"
 #include "mars_readJson.hpp"
 #include "testHeader.h"
 using namespace nlohmann;
@@ -31,6 +32,7 @@ auto diskTEST(const std::string& jsonFile) {
   const int aimOrder = params.grid.aimOrder;
   const Real hLCoefficient = params.grid.hLCoefficient;
   const Real rTiny = params.grid.rTiny;
+  const int nGrid = params.grid.nGrid;
   const rVec h = (hi - lo) / N;
   const Real hL = hLCoefficient * std::pow(h[0] * h[1], 0.5 * aimOrder / Order);
   const Box<2> box(0, N - 1);
@@ -77,7 +79,8 @@ auto diskTEST(const std::string& jsonFile) {
       Generator::createDiskGraph<Order>(center, radius, hL, parts);
 
   return make_tuple(disk, radius, exactArea, exactLength, box, N, h, hL, rTiny,
-                    curvConfig, plotConfig, printDetail, t0, dt, te, timeIntegrator, vortex);
+                    nGrid, curvConfig, plotConfig, printDetail, t0, dt, te,
+                    timeIntegrator, vortex);
   // }
 }
 
@@ -124,18 +127,19 @@ void checkResult(auto& yinSets, auto& box, auto& range, auto& addInner,
 }
 
 TEST_CASE("Disk 4 vortex4, RK4.", "[Disk][Vortex][4][MARSn2D]") {
+  ::Timer t("disk4Vortex4");
   const auto* testName = "Disk4Vortex4";
   auto dir = rootDir + "/results/TrackInterface/" + testName + "/";
   mkdir(dir.c_str(), 0755);
   SECTION("2-th order disk") {
     constexpr int Order = 2;
-    auto [disk, radius, exactArea, exactLength, box, N, h, hL, rTiny,
+    auto [disk, radius, exactArea, exactLength, box, N, h, hL, rTiny, nGrid,
           curvConfig, plotConfig, printDetail, t0, dt, te, timeIntegrator,
           vortex] =
         diskTEST<Order>(rootDir + "/test/config/" + testName + ".json");
     plotConfig.fName = dir + plotConfig.fName;
     MARSn2D<Order, VectorFunction> CM(timeIntegrator, hL, rTiny, curvConfig,
-      printDetail);
+                                      printDetail);
 
     CM.trackInterface(vortex, disk, t0, dt, te, plotConfig);
 
@@ -144,5 +148,7 @@ TEST_CASE("Disk 4 vortex4, RK4.", "[Disk][Vortex][4][MARSn2D]") {
 
     checkResult<Order>(yinSets, box, plotConfig.range, addInner, radius, N, h,
                        output, dir, plotConfig.fName, exactLength, exactArea);
+    t.~Timer();
+    ::Timer::printStatistics();
   }
 }

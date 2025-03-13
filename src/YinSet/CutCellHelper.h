@@ -198,6 +198,7 @@ auto CutCellHelper<Order>::pastCells(
       pasting.addEdge(crv, false);
     }
 
+    // TODO(ytan) deal jordanCurve completely inside rect.
     vector<OrientedJordanCurve<2, Order>> res;
     pasting.formClosedLoops(res);
     vector<OrientedJordanCurve<2, Order>> vecCrv;

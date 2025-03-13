@@ -1,4 +1,5 @@
 #include "Marsn2D/MARSn2D.h"
+#include "Recorder/Timer.h"
 
 namespace Marsn2D {
 
@@ -6,6 +7,7 @@ template <int Order, template <int> class VelocityField>
 void MARSn2D<Order, VelocityField>::discreteFlowMap(const VectorFunction<2> &v,
                                                     EdgeMark &marks, Real tn,
                                                     Real dt) const {
+  Timer t("discreteFlowMap");
   TI_->timeStep(v, marks, tn, dt);
 }
 
@@ -199,6 +201,7 @@ void MARSn2D<Order, VelocityField>::updateHL(const vector<Real> &curv,
 template <int Order, template <int> class VelocityField>
 void MARSn2D<Order, VelocityField>::timeStep(const VelocityField<DIM> &v,
                                              IG &ig, Real tn, Real dt) const {
+  Timer t("timeStep");
   int insertCount = 0;
   int removeCount = 0;
   auto stepCrv = [this, &v, tn, dt, &insertCount, &removeCount](

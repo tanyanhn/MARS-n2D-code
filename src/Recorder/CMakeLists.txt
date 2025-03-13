@@ -10,6 +10,7 @@ set(Recorder_Files
     Recorder/SpdlogWrapper.h
     Recorder/StageRecorder.cpp
     Recorder/StageRecorder.h
+    Recorder/Timer.h
     PARENT_SCOPE
 )
 

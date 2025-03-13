@@ -22,6 +22,7 @@ struct SimulationParams {
     int aimOrder;
     Real hLCoefficient;
     Real rTiny;
+    int nGrid;
   } grid;
 
   // Curvature adaption parameters
@@ -70,6 +71,7 @@ void from_json(const nlohmann::json& j, SimulationParams& params) {
   params.grid.aimOrder = grid.at("aimOrder");
   params.grid.hLCoefficient = grid.at("hLCoefficient");
   params.grid.rTiny = grid.at("rTiny");
+  params.grid.nGrid = grid.at("nGrid");
 
   // 解析曲率参数
   const auto& curvature = j.at("curvature_adaption");

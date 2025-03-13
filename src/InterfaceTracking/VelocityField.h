@@ -162,7 +162,7 @@ class Vortex : public VectorFunction<2> {
   using Vector = std::vector<T>;
 
  public:
-  const Point operator()(const Point &pt, Real t) const {
+  const Point operator()(const Point &pt, Real t) const override {
     Point y;
     y[0] =
         cos(M_PI * t / T) * pow(sin(M_PI * pt[0]), 2) * sin(2 * M_PI * pt[1]);
@@ -171,7 +171,27 @@ class Vortex : public VectorFunction<2> {
     return y;
   }
 
-  const Vector<Real> getJacobi(const Point &pt, Real t) const {
+  void operator()(const Eigen::ArrayXXd &pts, Real t,
+                  Eigen::ArrayXXd &output) const override {
+    Timer timer("vectorFunction::operator()");
+    using namespace Eigen;
+    const long N = pts.cols();
+
+    const double scale = cos(M_PI * t / T);
+    // 预先计算公共因子x = M_PI * pts.array()
+    const ArrayXXd x = M_PI * pts.array();
+    const ArrayXXd cos_term = x.cos();
+    const ArrayXXd sin_term = x.sin();
+    const ArrayXXd squared_sin = sin_term.square();
+    const ArrayXXd double_sin = 2 * sin_term * cos_term;
+    // const ArrayXXd double_sin = (2 * x).sin();
+
+    // ArrayXXd result(2, N);
+    output.row(0) = scale * squared_sin.row(0) * double_sin.row(1);
+    output.row(1) = -scale * squared_sin.row(1) * double_sin.row(0);
+  }
+
+  const Vector<Real> getJacobi(const Point &pt, Real t) const override {
     Vector<Real> ptjac(4);
     ptjac[0] = cos(M_PI * t / T) * 2 * M_PI * sin(M_PI * pt[0]) *
                cos(M_PI * pt[0]) * sin(2 * M_PI * pt[1]);
