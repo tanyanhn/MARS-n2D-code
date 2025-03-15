@@ -329,7 +329,9 @@ vector<Curve<2, Order>> YinSet<2, Order>::getSmoothCurves(Real tol) const {
 }
 
 template <int Order>
-// __attribute__((optnone))
+#ifdef OPTNONE
+__attribute__((optnone))
+#endif  // OPTNONE
 auto YinSet<2, Order>::cutCell(const Box<Dim> &box, const Interval<Dim> &range,
                                bool addInner) const
     -> std::tuple<vector<vector<YinSetPtr>>,
@@ -348,20 +350,25 @@ auto YinSet<2, Order>::cutCell(const Box<Dim> &box, const Interval<Dim> &range,
 
   // calculate the intersections' parameters
   auto intersections = CutCellHelper<Order>::intersectGridLine(
-      lo, hi, h, orientedJordanCurves, tol);
+      lo, hi, h, orientedJordanCurves, newtonTol);
 
   vector<vector<vector<Curve<2, Order>>>> gridCurves(
       N0, vector<vector<Curve<2, Order>>>(N1));
+  // for (auto v : intersections[0]) {
+  //   auto p = orientedJordanCurves[0](v);
+  //   auto r = Vec<Real, 2>((p - lo) / h);
+  //   std::cout << "p = " << p << ", r = " << r << std::endl;
+  // }
   // partition the curves to vector<vector<Curve<Dim, Order>>>
   CutCellHelper<Order>::splitCurves(lo, h, intersections, orientedJordanCurves,
-                                    gridCurves, tol);
+                                    gridCurves, newtonTol);
 
   // past in every cells.
   CutCellHelper<Order>::pastCells(lo, h, box, gridCurves, ret, tol);
 
   // fill inner cell rectangles.
-  auto tags = CutCellHelper<Order>::fillInner(lo, h, box, *this, gridCurves, ret,
-                                              tol, addInner);
+  auto tags = CutCellHelper<Order>::fillInner(lo, h, box, *this, gridCurves,
+                                              ret, tol, addInner);
 
   return {std::move(ret), std::move(gridCurves), std::move(tags)};
 }

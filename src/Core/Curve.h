@@ -47,6 +47,9 @@ class Curve {
   // helpers
   int locatePiece(Real t) const;
 
+  #ifdef OPTNONE
+  __attribute__((optnone))
+  #endif  // OPTNONE
   rVec operator()(Real t) const {
     int p = locatePiece(t);
     return (polys[p])(t - knots[p]);
@@ -114,10 +117,11 @@ class Curve {
 
   // advanved operations
  public:
-  Curve<Dim, Order> extract(Real lo, Real hi, Real tol) const;
+ // extact 
+  Curve<Dim, Order> extract(Real lo, Real hi, Real tol, bool exact = false) const;
 
   void split(const vector<Real>& brks, vector<Curve<Dim, Order>>& out,
-             Real tol) const;
+             Real tol, bool exact = false) const;
   ///
   /**
      Return a copy of this curve,

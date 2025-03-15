@@ -66,9 +66,9 @@ TEST_CASE("Disk 4 part interface.", "[InterfaceGraph][Disk][CutCell][4]") {
       Real length = 0;
       Real fullCell = h[0] * h[1];
       loop_box_2(box, i0, i1) {
-        if (tags[i0][i1] == 1) {
+        if (tags[i0][i1] == 1 || tags[i0][i1] == 2) {
           totalArea += fullCell;
-        } else if (tags[i0][i1] == 0) {
+        } else if (tags[i0][i1] == 0 || tags[i0][i1] == -2 || tags[i0][i1] == 2) {
           if (res[i0][i1]) {
             for (const auto& crv : res[i0][i1]->getBoundaryCycles())
               totalArea += area(crv);
@@ -151,9 +151,9 @@ TEST_CASE("Disk 5 part interface.", "[InterfaceGraph][Disk][CutCell][5]") {
       Real length = 0;
       Real fullCell = h[0] * h[1];
       loop_box_2(box, i0, i1) {
-        if (tags[i0][i1] == 1) {
+        if (tags[i0][i1] == 1 || tags[i0][i1] == 2) {
           totalArea += fullCell;
-        } else if (tags[i0][i1] == 0) {
+        } else if (tags[i0][i1] == 0 || tags[i0][i1] == -2 || tags[i0][i1] == 2) {
           if (res[i0][i1]) {
             for (const auto& crv : res[i0][i1]->getBoundaryCycles())
               totalArea += area(crv);
@@ -206,9 +206,9 @@ TEST_CASE("Ellipse single.", "[InterfaceGraph][Ellipse][CutCell][1]") {
     rVec h = (hi - lo) / N;
     Real fullCell = h[0] * h[1];
     loop_box_2(box, i0, i1) {
-      if (tags[i0][i1] == 1) {
+      if (tags[i0][i1] == 1 || tags[i0][i1] == 2) {
         totalArea += fullCell;
-      } else if (tags[i0][i1] == 0) {
+      } else if (tags[i0][i1] == 0 || tags[i0][i1] == -2 || tags[i0][i1] == 2) {
         if (res[i0][i1]) {
           for (const auto& crv : res[i0][i1]->getBoundaryCycles())
             totalArea += area(crv);
@@ -248,9 +248,9 @@ TEST_CASE("Ellipse single.", "[InterfaceGraph][Ellipse][CutCell][1]") {
     rVec h = (hi - lo) / N;
     Real fullCell = h[0] * h[1];
     loop_box_2(box, i0, i1) {
-      if (tags[i0][i1] == 1) {
+      if (tags[i0][i1] == 1 || tags[i0][i1] == 2) {
         totalArea += fullCell;
-      } else if (tags[i0][i1] == 0) {
+      } else if (tags[i0][i1] == 0 || tags[i0][i1] == -2 || tags[i0][i1] == 2) {
         if (res[i0][i1]) {
           for (const auto& crv : res[i0][i1]->getBoundaryCycles())
             totalArea += area(crv);
@@ -355,9 +355,9 @@ TEST_CASE("Ellipse 3 part interface.",
       Real totalArea = 0;
       Real fullCell = h[0] * h[1];
       loop_box_2(box, i0, i1) {
-        if (tags[i0][i1] == 1) {
+        if (tags[i0][i1] == 1 || tags[i0][i1] == 2) {
           totalArea += fullCell;
-        } else if (tags[i0][i1] == 0) {
+        } else if (tags[i0][i1] == 0 || tags[i0][i1] == -2 || tags[i0][i1] == 2) {
           if (res[i0][i1]) {
             for (const auto& crv : res[i0][i1]->getBoundaryCycles())
               totalArea += area(crv);
@@ -441,9 +441,9 @@ TEST_CASE("Rose Curve.", "[InterfaceGraph][RoseCurve][CutCell][1]") {
       // Real length = 0;
       Real fullCell = h[0] * h[1];
       loop_box_2(box, i0, i1) {
-        if (tags[i0][i1] == 1) {
+        if (tags[i0][i1] == 1 || tags[i0][i1] == 2) {
           totalArea += fullCell;
-        } else if (tags[i0][i1] == 0) {
+        } else if (tags[i0][i1] == 0 || tags[i0][i1] == -2 || tags[i0][i1] == 2) {
           if (res[i0][i1]) {
             for (const auto& crv : res[i0][i1]->getBoundaryCycles())
               totalArea += area(crv);

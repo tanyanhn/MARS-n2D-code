@@ -40,6 +40,9 @@ class Polynomial {
      Evaluate the polynomial at x.
    */
   template <class T2>
+  #ifdef OPTNONE
+  __attribute__((optnone))
+  #endif  // OPTNONE
   CoefType operator()(const T2 &x) const {
     CoefType val = coefs[0];
     T2 basis = static_cast<T2>(1.);

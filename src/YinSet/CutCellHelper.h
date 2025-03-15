@@ -9,7 +9,14 @@ struct CutCellHelper {
   using Crv = Curve<2, Order>;
   using SRS = SegmentedRealizableSpadjor<Order>::SRS;
   using YinSetPtr = YinSet<2, Order>::YinSetPtr;
-  enum CellType { UNKNOWN = -2, OUTER = -1, BOUNDARY = 0, INNER = 1 };
+  enum CellType {
+    UNKNOWN = -3,
+    OUTER = -1,
+    BOUNDARY = 0,
+    INNER = 1,
+    BOUNDOUTER = -2,  // for classify include boundary bug total outer cell.
+    BOUNDINNER = 2   // same as above.
+  };
   static auto intersectGridLine(
       const Vec<Real, 2> &lo, const Vec<Real, 2> &hi, const Vec<Real, 2> &h,
       const std::vector<OrientedJordanCurve<2, Order>> &orientedJordanCurves,
@@ -35,6 +42,9 @@ struct CutCellHelper {
 };
 
 template <int Order>
+#ifdef OPTNONE
+__attribute__((optnone))
+#endif  // OPTNONE
 auto CutCellHelper<Order>::intersectGridLine(
     const Vec<Real, 2> &lo, const Vec<Real, 2> &hi, const Vec<Real, 2> &h,
     const std::vector<OrientedJordanCurve<2, Order>> &orientedJordanCurves,
@@ -53,7 +63,11 @@ auto CutCellHelper<Order>::intersectGridLine(
       // lambda for xRow and yCol
       auto intersect = [tol](int k, Real lo, const auto &xPoly, Real h,
                              Real knotStart, Real knotsEnd,
-                             auto &intersectionsForCurve, int newtonMaxIter) {
+                             auto &intersectionsForCurve, int newtonMaxIter)
+#ifdef OPTNONE
+          __attribute__((optnone))
+#endif  // OPTNONE
+      {
         Real p0 = xPoly[0];
         Real p1 = xPoly(knotsEnd - knotStart);
         bool swapped = false;
@@ -64,11 +78,15 @@ auto CutCellHelper<Order>::intersectGridLine(
         int startRow = std::ceil((p0 - lo - tol) / h);
         int endRow = std::floor((p1 - lo + tol) / h);
         if (std::fabs(p0 - (lo + h * startRow)) < tol) {
-          intersectionsForCurve.insert(!swapped ? knotStart : knotsEnd);
+          auto value = !swapped ? knotStart : knotsEnd;
+          intersectionsForCurve.insert(value);
+          // auto p = xPoly(value);
           ++startRow;
         }
         if (std::fabs(p1 - (lo + h * endRow)) < tol) {
-          intersectionsForCurve.insert(!swapped ? knotsEnd : knotStart);
+          auto value = !swapped ? knotsEnd : knotStart;
+          intersectionsForCurve.insert(value);
+          // auto p = xPoly(value);
           --endRow;
         }
 
@@ -76,8 +94,11 @@ auto CutCellHelper<Order>::intersectGridLine(
           Real row = lo + r * h;
           auto intersection =
               root(xPoly - row, (knotsEnd - knotStart) / 2, tol, newtonMaxIter);
-          if (intersection > 0 && intersection < knotsEnd - knotStart)
+          if (intersection > 0 && intersection < knotsEnd - knotStart) {
             intersectionsForCurve.insert(intersection + knotStart);
+            // auto p = xPoly(intersection);
+            // auto k = (p - row);
+          }
         }
       };
 
@@ -93,6 +114,9 @@ auto CutCellHelper<Order>::intersectGridLine(
 }
 
 template <int Order>
+#ifdef OPTNONE
+__attribute__((optnone))
+#endif  // OPTNONE
 auto CutCellHelper<Order>::splitCurves(
     rVec lo, rVec h, std::vector<set<Real>> &intersections,
     const std::vector<OrientedJordanCurve<2, Order>> &orientedJordanCurves,
@@ -101,24 +125,36 @@ auto CutCellHelper<Order>::splitCurves(
   for (int i = 0; i < intersections.size(); ++i) {
     auto &intersectionsForCurve = intersections[i];
     auto &crv = orientedJordanCurves[i];
+    if (!crv.isClosed(tol)) throw std::runtime_error("Curve must be closed.");
     // auto &polys = crv.getPolys();
     // auto &knots = crv.getKnots();
 
     vector<Curve<2, Order>> splitRes;
     vector<Real> splitKnots(intersectionsForCurve.begin(),
                             intersectionsForCurve.end());
-    crv.split(splitKnots, splitRes, tol);
+    crv.split(splitKnots, splitRes, tol, true);
 
     for (auto &&crv : splitRes) {
+      // if (crv.empty()) continue;
+      auto start = crv.startpoint();
+      auto end = crv.endpoint();
       rVec mid = crv.midpoint();
       auto id = Vec<int, 2>((mid - lo) / h);
+      auto i0 = id[0];
+      auto i1 = id[1];
       gridCurves[id[0]][id[1]].emplace_back(crv);
+      // for (auto v : splitKnots) {
+      //   auto p = crv(v);
+      //   auto id = Vec<int, 2>((p - lo) / h);
+      // }
     }
   }
 }
 
 template <int Order>
-// __attribute__((optnone))
+#ifdef OPTNONE
+__attribute__((optnone))
+#endif  // OPTNONE
 auto CutCellHelper<Order>::pastCells(
     rVec lo, rVec h, Box<DIM> box,
     const vector<vector<vector<Curve<2, Order>>>> &gridCurves,
@@ -139,52 +175,55 @@ auto CutCellHelper<Order>::pastCells(
     Real pre2 = pre1 + h[1];
     Real pre3 = pre2 + h[0];
     PastingMap<Order> pasting(tol * 2);
+    pasting.setPeriod(pre3 + h[1]);
     for (auto &crv : gridCurves[i0][i1]) {
       auto points = {crv.startpoint(), crv.endpoint()};
       for (auto p : points) {
         if (std::fabs(p[1] - localLo[1]) < tol) {
-          p[1] = localLo[1];
+          // p[1] = localLo[1];
           if (std::fabs(p[0] - localLo[0]) < tol) {
-            p[0] = localLo[0];
+            // p[0] = localLo[0];
             brks.push_back(pre0);
           } else if (std::fabs(p[0] - localHi[0]) < tol) {
-            p[0] = localHi[0];
+            // p[0] = localHi[0];
             brks.push_back(pre1);
           } else {
             brks.push_back(pre0 + p[0] - localLo[0]);
           }
         } else if (std::fabs(p[1] - localHi[1]) < tol) {
-          p[1] = localHi[1];
+          // p[1] = localHi[1];
           if (std::fabs(p[0] - localLo[0]) < tol) {
-            p[0] = localLo[0];
+            // p[0] = localLo[0];
             brks.push_back(pre3);
           } else if (std::fabs(p[0] - localHi[0]) < tol) {
-            p[0] = localHi[0];
+            // p[0] = localHi[0];
             brks.push_back(pre2);
           } else {
             brks.push_back(pre2 + localHi[0] - p[0]);
           }
-          brks.push_back(pre2 + localHi[0] - p[0]);
         } else if (std::fabs(p[0] - localLo[0]) < tol) {
-          p[0] = localLo[0];
+          // p[0] = localLo[0];
           brks.push_back(pre3 + localHi[1] - p[1]);
         } else if (std::fabs(p[0] - localHi[0]) < tol) {
-          p[0] = localHi[0];
+          // p[0] = localHi[0];
           brks.push_back(pre1 + p[1] - localLo[1]);
+        } else {
+          throw std::runtime_error("endpoint can't attach to cell.");
         }
 
-        pasting.addVertex(p);
+        // pasting.addVertex(p);
       }
+      pasting.addCellEdge(crv, *(++brks.rbegin()), brks.back(), true);
     }
     std::sort(brks.begin(), brks.end());
     std::vector<Crv> rectCrvs;
     rect.split(brks, rectCrvs, tol);
 
-    for (auto &crv : gridCurves[i0][i1]) {
-      pasting.addEdge(crv, true);
-    }
+    // for (auto &crv : gridCurves[i0][i1]) {
+    //   pasting.addEdge(crv, true);
+    // }
     for (auto &crv : rectCrvs) {
-      pasting.addEdge(crv, false);
+      pasting.addCellEdge(crv, crv.getKnots()[0], crv.getKnots().back(), false);
     }
 
     vector<OrientedJordanCurve<2, Order>> res;
@@ -213,7 +252,7 @@ auto CutCellHelper<Order>::fillInner(
     rVec lo, rVec h, Box<DIM> box, const SRS &srs,
     const vector<vector<vector<Curve<2, Order>>>> &gridCurves,
     vector<vector<YinSetPtr>> &gridSRS, Real tol, bool addInner) {
-      const int N0 = box.hi()[0] - box.lo()[0] + 1;
+  const int N0 = box.hi()[0] - box.lo()[0] + 1;
   const int N1 = box.hi()[1] - box.lo()[1] + 1;
   vector<vector<int>> tags(N0, vector<int>(N1, CellType::UNKNOWN));
   loop_box_2(box, i0, i1) {
@@ -248,18 +287,33 @@ auto CutCellHelper<Order>::fillInner(
     }
   };
 
+  bool bounded = srs.isBounded(tol);
   loop_box_2(box, i0, i1) {
     if (tags[i0][i1] == CellType::UNKNOWN) {
       queue.push_back(iVec{i0, i1});
       rVec mid = lo + h * iVec{i0, i1} + h * 0.5;
       int tag = PointsLocater(tol).operator()(srs.getOrientedJordanCurvesRef(),
-                                              {mid}, srs.isBounded(tol))[0];
+                                              {mid}, bounded)[0];
       while (!queue.empty()) dfsMark(CellType(tag));
+    }
+  }
+  loop_box_2(box, i0, i1) {
+    if (tags[i0][i1] == CellType::BOUNDARY && gridSRS[i0][i1] == nullptr) {
+      rVec mid = lo + h * iVec{i0, i1} + h * 0.5;
+      int tag = PointsLocater(tol).operator()(srs.getOrientedJordanCurvesRef(),
+                                              {mid}, bounded)[0];
+      if (tag == CellType::INNER) {
+        tags[i0][i1] = CellType::BOUNDINNER;
+      } else if (tag == CellType::OUTER) {
+        tags[i0][i1] = CellType::BOUNDOUTER;
+      } else {
+        throw std::runtime_error("Boundary cell must be inner or outer.");
+      }
     }
   }
   if (addInner) {
     loop_box_2(box, i0, i1) {
-      if (tags[i0][i1] == CellType::INNER) {
+      if (tags[i0][i1] == CellType::INNER || tags[i0][i1] == CellType::BOUNDINNER) {
         auto localLo = lo + h * iVec{i0, i1};
         auto localHi = localLo + h;
         Curve<2, Order> rect = createRect<Order>(localLo, localHi);

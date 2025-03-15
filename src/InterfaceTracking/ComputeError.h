@@ -5,10 +5,10 @@
 #include <cstddef>
 #include <numeric>
 
-#include "Marsn2D/InterfaceGraph.h"
 #include "InterfaceTracking/XorArea.h"
-#include "YinSet/YinSet.h"
+#include "Marsn2D/InterfaceGraph.h"
 #include "Recorder/Recorder.h"
+#include "YinSet/YinSet.h"
 
 using Crv = Curve<2, 4>;
 using Point = Vec<Real, 2>;
@@ -136,10 +136,13 @@ inline void dumpError(const Vector<Vector<Real>> &errors,
 
 // return: each yinset - 2(L^2 and L^\infty) - each grid
 template <int Order>
-// __attribute__((optnone))
-Vector<Vector<Vector<Real>>> cutCellError(
-    const vector<Marsn2D::approxInterfaceGraph<Order>> &lhss,
-    const Marsn2D::approxInterfaceGraph<Order> &rhs, auto &boxs, auto &range) {
+#ifdef OPTNONE
+__attribute__((optnone))
+#endif  // OPTNONE
+Vector<Vector<Vector<Real>>>
+cutCellError(const vector<Marsn2D::approxInterfaceGraph<Order>> &lhss,
+             const Marsn2D::approxInterfaceGraph<Order> &rhs, auto &boxs,
+             auto &range) {
   const int num = lhss.size();  // number of grid layers
   int numYinsets = 0;           // number of yinsets in each layer
   // compute volumes in a box domain, return Vector<Vector<Real>>
@@ -153,9 +156,9 @@ Vector<Vector<Vector<Real>>> cutCellError(
     Vector<Vector<Real>> volume(N[0], Vector<Real>(N[1]));
     auto [rhsRes, rhsBoundary, rhsTags] = yinset.cutCell(box, range, false);
     loop_box_2(box, i0, i1) {
-      if (rhsTags[i0][i1] == 1) {
+      if (rhsTags[i0][i1] == 1 || rhsTags[i0][i1] == 2) {
         volume[i0][i1] = fullCell;
-      } else if (rhsTags[i0][i1] == -1) {
+      } else if (rhsTags[i0][i1] == -1 || rhsTags[i0][i1] == -2) {
         volume[i0][i1] = 0;
       } else if (rhsTags[i0][i1] == 0) {
         volume[i0][i1] = 0;
@@ -163,6 +166,8 @@ Vector<Vector<Vector<Real>>> cutCellError(
           for (const auto &crv : rhsRes[i0][i1]->getBoundaryCycles())
             volume[i0][i1] += area(crv);
         }
+      } else {
+        throw std::runtime_error("Invalid tag");
       }
     }
     return volume;
@@ -204,16 +209,17 @@ Vector<Vector<Vector<Real>>> cutCellError(
       auto &L1 = ret[i][0][2 * grid];
       auto &LInf = ret[i][1][2 * grid];
       auto localVolumes = calculateVolume(boxs[grid], lhsYinsets[i]);
-      if (i == 2) {
-        dumpError(rhsVolumes[i],
-                  getExportDir() + "localVolumes" + ".dat");
-        dumpError(localVolumes,
-                  getExportDir() + "localVolumes" + std::to_string(i) + ".dat");
-        }
+      // if (i == 2) {
+      //   dumpError(rhsVolumes[i], getExportDir() + "localVolumes" + ".dat");
+      //   dumpError(localVolumes,
+      //             getExportDir() + "localVolumes" + std::to_string(i) +
+      //             ".dat");
+      // }
       loop_box_2(boxs[grid], i0, i1) {
         L1 += std::fabs(localVolumes[i0][i1] - rhsVolumes[i][i0][i1]);
         LInf =
             std::max(LInf, abs(localVolumes[i0][i1] - rhsVolumes[i][i0][i1]));
+        // if (LInf > 1e-6) breakpoint();
       }
     }
     rhsVolumes = coarseVolumes(rhsVolumes);

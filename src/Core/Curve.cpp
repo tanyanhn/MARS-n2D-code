@@ -103,30 +103,32 @@ Curve<Dim, Order>::extract(Real lo, Real hi, Real tol) const
 */
 
 template <int Dim, int Order>
-Curve<Dim, Order> Curve<Dim, Order>::extract(Real lo, Real hi, Real tol) const {
-  if (hi <= lo + tol) return Curve<Dim, Order>();
+#ifdef OPTNONE
+__attribute__((optnone))
+#endif  // OPTNONE
+Curve<Dim, Order> Curve<Dim, Order>::extract(Real lo, Real hi, Real tol,
+                                             bool exact) const {
+  if (!exact && hi <= lo + tol) return Curve<Dim, Order>();
 
   int ihead = locatePiece(lo);
   int itail = locatePiece(hi);
 
-  if ((lo >= knots[ihead + 1] - tol) && (hi <= knots[itail] + tol) &&
-      (ihead + 1 == itail)) {
-    Curve<Dim, Order> res;
-    res.knots.resize(2);
-    res.polys.resize(1);
-    res.knots[0] = lo;
-    res.polys[0] = polys[ihead + 1].translate(lo - knots[ihead + 1]);
-    res.knots[1] = hi;
-    return res;
-  }
+  // if ((lo >= knots[ihead + 1] - tol) && (hi <= knots[itail] + tol) &&
+  //     (ihead + 1 == itail)) {
+  //   Curve<Dim, Order> res;
+  //   res.knots.resize(2);
+  //   res.polys.resize(1);
+  //   res.knots[0] = lo;
+  //   res.polys[0] = polys[ihead + 1].translate(lo - knots[ihead + 1]);
+  //   res.knots[1] = hi;
+  //   return res;
+  // }
 
   // avoid pieces with tiny length
-  if (lo >= knots[ihead + 1] - tol) ihead++;
-  if (hi <= knots[itail] + tol) itail--;
+  if (!exact && lo >= knots[ihead + 1] - tol) ihead++;
+  if (!exact && hi <= knots[itail] + tol) itail--;
   if (ihead > itail) {
-    std::cout << knots[ihead] << '\n';
-    std::cout << knots[itail] << '\n';
-    assert(ihead <= itail);
+    throw std::runtime_error("Curve::extract: invalid range.");
   }
   // assert(ihead <= itail);
 
@@ -146,22 +148,26 @@ Curve<Dim, Order> Curve<Dim, Order>::extract(Real lo, Real hi, Real tol) const {
 }
 
 template <int Dim, int Order>
-inline void Curve<Dim, Order>::split(const vector<Real> &brks,
-                                     vector<Curve<Dim, Order>> &out,
-                                     Real tol) const {
+#ifdef OPTNONE
+__attribute__((optnone))
+#endif  // OPTNONE
+inline void
+Curve<Dim, Order>::split(const vector<Real> &brks,
+                         vector<Curve<Dim, Order>> &out, Real tol,
+                         bool exact) const {
   bool closed = isClosed(tol);
   if (brks.empty()) {
     out.push_back(*this);
     return;
   }
-  auto head = extract(knots.front(), brks.front(), tol);
+  auto head = extract(knots.front(), brks.front(), tol, exact);
   if (!closed && !head.empty()) out.push_back(std::move(head));
   std::size_t i = 0;
   for (; i < brks.size() - 1; ++i) {
-    if (brks[i + 1] > brks[i] + tol)
-      out.push_back(extract(brks[i], brks[i + 1], tol));
+    if (exact || brks[i + 1] > brks[i] + tol)
+      out.push_back(extract(brks[i], brks[i + 1], tol, exact));
   }
-  auto tail = extract(brks[i], knots.back(), tol);
+  auto tail = extract(brks[i], knots.back(), tol, exact);
   if (!closed) {
     if (!tail.empty()) out.push_back(std::move(tail));
   } else {
@@ -673,24 +679,38 @@ int Curve<Dim, Order>::compare(const Curve &rhs, const rVec &p, int ix, int iy,
 }
 
 template <int Dim, int Order>
+#ifdef OPTNONE
+__attribute__((optnone))
+#endif  // OPTNONE
 auto Curve<Dim, Order>::getComparableDirection(Real tol, int type) const
     -> rVec {
-  Real disturbance = tol / 4;
   if (type == 0) {
+    int i = 0;
+    // ignore tiny curve pieces
+    while (i < polys.size() - 1 && tol / 4 > knots[i + 1] - knots[0]) ++i;
+    auto der = polys[i].der();
+    Real lastRange = knots[i + 1] - knots[i];
+    Real disturbance = std::min(tol, lastRange) / 4;
     Real t0 = disturbance;
-    return normalize(polys[0](t0) - polys[0][0]);
+    return normalize(der(t0));
   }
   if (type == 1) {
-    Real lastRange = knots[knots.size() - 1] - knots[knots.size() - 2];
+    int i = polys.size() - 1;
+    while (i > 0 && tol / 4 > knots[knots.size() - 1] - knots[i]) --i;
+    auto der = polys[i].der();
+    Real lastRange = knots[i + 1] - knots[i];
+    Real disturbance = std::min(tol, lastRange) / 4;
     Real t0 = lastRange - disturbance;
-    return normalize(polys.back()(t0) - polys.back()(lastRange));
+    return normalize(-der(t0));
   }
   throw std::runtime_error("type error");
   return rVec();
 }
 
 template <int Dim, int Order>
-// __attribute__((optnone))
+#ifdef OPTNONE
+__attribute__((optnone))
+#endif  // OPTNONE
 bool Curve<Dim, Order>::equal(const Curve &rhs, Real tol) const {
   // auto d1 = this->getComparableDirection(tol, 0);
   // auto d2 = rhs.getComparableDirection(tol, 0);
@@ -700,7 +720,7 @@ bool Curve<Dim, Order>::equal(const Curve &rhs, Real tol) const {
   const auto &lhs = *this;
   auto &lhsKnots = this->getKnots();
   auto &rhsKnots = rhs.getKnots();
-  const int numPoint = std::max(3, Order); // at least contain a midpoint.
+  const int numPoint = std::max(3, Order);  // at least contain a midpoint.
   Real lhsDt = (lhsKnots.back() - lhsKnots.front()) / (numPoint - 1);
   Real rhsDt = (rhsKnots.back() - rhsKnots.front()) / (numPoint - 1);
   for (int i = 0; i < numPoint; ++i) {

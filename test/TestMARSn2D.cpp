@@ -103,6 +103,7 @@ auto diskTEST(const std::string& jsonFile) {
   }
 
   // accurate solution
+  N *= 2;
   rVec h = (hi - lo) / N;
   Real hL = hLCoefficient * std::pow(h[0] * h[1], 0.5 * aimOrder / Order);
   auto exactDisk = Generator::createDiskGraph<Order>(center, radius, hL, parts);
@@ -132,9 +133,9 @@ void checkResult(auto& yinSets, auto& box, auto& range, auto& addInner,
     Real length = 0;
     Real fullCell = h[0] * h[1];
     loop_box_2(res.box(), i0, i1) {
-      if (tags(i0, i1) == 1) {
+      if (tags[i0][i1] == 1 || tags[i0][i1] == 2) {
         totalArea += fullCell;
-      } else if (tags(i0, i1) == 0) {
+      } else if (tags[i0][i1] == 0 || tags[i0][i1] == -2 || tags[i0][i1] == 2) {
         if (res(i0, i1)) {
           for (const auto& crv : res(i0, i1)->getBoundaryCycles())
             totalArea += area(crv);
@@ -186,10 +187,11 @@ void checkResult(auto& yinSets, auto& box, auto& range, auto& addInner,
 //   }
 // }
 
-TEST_CASE("Disk 4 vortex4, RK4: Convergence Test.",
+TEST_CASE("Disk 4 vortex T = 4/8, RK4: Convergence Test.",
           "[Disk][Vortex][4][MARSn2D][Convergence]") {
-  ::Timer t("disk4Vortex4");
-  const auto* testName = "Disk4Vortex4";
+  // const auto* testName = "Disk4Vortex4";
+  const auto* testName = "Disk4Vortex8";
+  ::Timer t(testName);
   auto dir = rootDir + "/results/TrackInterface/" + testName + "/";
   mkdir(dir.c_str(), 0755);
   RecorderInitialize(RecorderInfo{DebugLevel::INFO, dir});

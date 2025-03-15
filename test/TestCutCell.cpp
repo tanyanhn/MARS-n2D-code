@@ -35,9 +35,9 @@ TEST_CASE("Circle Cut Cell", "[Circle][CutCell][SegmentedRealizableSpadjor]") {
       Real length = 0;
       Real fullCell = h[0] * h[1];
       loop_box_2(box, i0, i1) {
-        if (tags[i0][i1] == 1) {
+        if (tags[i0][i1] == 1 || tags[i0][i1] == 2) {
           totalArea += fullCell;
-        } else if (tags[i0][i1] == 0) {
+        } else if (tags[i0][i1] == 0 || tags[i0][i1] == -2 || tags[i0][i1] == 2) {
           if (res[i0][i1]) {
             for (const auto& crv : res[i0][i1]->getBoundaryCycles())
               totalArea += area(crv);
@@ -113,9 +113,9 @@ TEST_CASE("Rectangle Cut Cell",
       Real length = 0;
       Real fullCell = h[0] * h[1];
       loop_box_2(box, i0, i1) {
-        if (tags[i0][i1] == 1) {
+        if (tags[i0][i1] == 1 || tags[i0][i1] == 2) {
           totalArea += fullCell;
-        } else if (tags[i0][i1] == 0) {
+        } else if (tags[i0][i1] == 0 || tags[i0][i1] == -2 || tags[i0][i1] == 2) {
           if (res[i0][i1]) {
             for (const auto& crv : res[i0][i1]->getBoundaryCycles())
               totalArea += area(crv);

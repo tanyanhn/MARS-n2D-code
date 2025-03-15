@@ -34,8 +34,10 @@ class VecCompare<Real, 2> {
 
      Two points are considered equal if their distance
      is about or less than the scale of tol.
-  */ 
-  // __attribute__((optnone))
+  */
+#ifdef OPTNONE
+  __attribute__((optnone))
+#endif  // OPTNONE
   int compare(const rVec &p1, const rVec &p2) const {
     if (std::abs(p1[1] - p2[1]) <= tol) {
       if (std::abs(p1[0] - p2[0]) <= tol) return 0;
@@ -49,6 +51,28 @@ class VecCompare<Real, 2> {
      Return true if p1<p2.
      It is a binary operator subject to strict weak ordering.
    */
+  bool operator()(const rVec &p1, const rVec &p2) const {
+    return (compare(p1, p2) == -1);
+  }
+
+ protected:
+  Real tol;
+};
+
+template <>
+class VecCompare<Real, 1> {
+ public:
+  enum { Dim = 1 };
+  using rVec = Vec<Real, Dim>;
+  VecCompare(Real _tol = 0) noexcept : tol(_tol) {}
+
+#ifdef OPTNONE
+  __attribute__((optnone))
+#endif  // OPTNONE
+  int compare(const rVec &p1, const rVec &p2) const {
+    if (std::abs(p1[0] - p2[0]) <= tol) return 0;
+    return (p1[0] < p2[0]) ? (-1) : (1);
+  }
   bool operator()(const rVec &p1, const rVec &p2) const {
     return (compare(p1, p2) == -1);
   }
@@ -94,10 +118,8 @@ class VecCompare_multiComp<int, Dim> : public VecCompare<int, Dim> {
     int i = Base::compare(lhs.first, rhs.first);
     if (i != 0) return i;
     for (int d = Dim - 1; d >= 0; --d) {
-      if (lhs.first[d] < rhs.first[d])
-        return -1;
-      if (lhs.first[d] > rhs.first[d])
-        return 1;
+      if (lhs.first[d] < rhs.first[d]) return -1;
+      if (lhs.first[d] > rhs.first[d]) return 1;
     }
     if (lhs.second < rhs.second) return -1;
     if (lhs.second > rhs.second) return 1;
