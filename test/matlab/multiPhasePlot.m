@@ -3,29 +3,37 @@ close all
 lineColor = '';
 fillColor = 'bcrgmy';
 % filedir = "results/CutCell/";
-filedir = "results/InterfaceGraph/";
+% filedir = "results/InterfaceGraph/";
+filedir = "results/TrackInterface/Disk4Vortex4/";
 % round = "No4_";
+
 % filename = round + "Start.dat";
 % filename = round + "Step160.dat";
 % filename = "spadjor-13.input.dat";
+filename = "localVolumes.dat";
+
 Order = 4;
 N = 4;
 Shape = "Rose";
 % Shape = "Rectangle";
-tensor = true;
-figure
-for k = 3:1:3
-filename = num2str(Order) + Shape + num2str(N) + "_" + num2str(k) + ".dat";
-
+% filename = num2str(Order) + Shape + num2str(N) + "_" + num2str(k) + ".dat";
 hd = fopen(filedir + filename);
-
-if ~tensor
-    sf = readYinSet(hd);
-    plotYinSet(sf, lineColor, fillColor(k)); hold on
+tensor = true;
+volume = true;
+if volume
+    dat = readCellVolume(hd);
 else
-    vecSf = readVecYinSet(hd);
-    for i=1:length(vecSf)
-        plotYinSet(vecSf{i}, lineColor, fillColor(k)); hold on
+    figure
+    for k = 3:1:3
+
+        if ~tensor
+            sf = readYinSet(hd);
+            plotYinSet(sf, lineColor, fillColor(k)); hold on
+        else
+            vecSf = readVecYinSet(hd);
+            for i=1:length(vecSf)
+                plotYinSet(vecSf{i}, lineColor, fillColor(k)); hold on
+            end
+        end
     end
-end
 end

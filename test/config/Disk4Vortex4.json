@@ -12,7 +12,7 @@
       "aimOrder": 4,
       "hLCoefficient": 0.2,
       "rTiny": 0.1,
-      "nGrid": 2
+      "nGrid": 8
   },
   "curvature_adaption": {
       "curvUsed": false,
@@ -24,7 +24,7 @@
       "plotOutput": 0,
       "plotInner": false,
       "plotStride": 8.0,
-      "printDetail": true
+      "printDetail": false
   },
   "domain_disk": {
       "center": [0.5, 0.5],

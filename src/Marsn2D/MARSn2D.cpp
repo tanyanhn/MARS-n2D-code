@@ -1,4 +1,5 @@
 #include "Marsn2D/MARSn2D.h"
+
 #include "Recorder/Timer.h"
 
 namespace Marsn2D {
@@ -32,7 +33,7 @@ void MARSn2D<Order, VelocityField>::trackInterface(
         auto [res, boundary, tags] = yinSet.cutCell(
             plotConfig.box, plotConfig.range, plotConfig.plotInner);
         std::ofstream of(fileName + "_c.dat", std::ios_base::binary);
-        dumpTensorYinSet<Order>(res, of);
+        dumpVecYinSet<Order>(res, of);
       }
     }
   }
@@ -147,7 +148,7 @@ void MARSn2D<Order, VelocityField>::removeMarks(
   size_t index = 0;
   bool continueFlag = false;
   for (size_t i = 0; i < numMarks; i++) {
-    if (index == indices.size() || i != indices[index]) {
+    if (index == indices.size() || i != indices[index] + 1) {
       newMarks.push_back(marks[i]);
       if (curvConfig_.used) newCurv.push_back(curv[i]);
       continueFlag = false;
@@ -246,10 +247,10 @@ void MARSn2D<Order, VelocityField>::timeStep(const VelocityField<DIM> &v,
       locateTinyEdges(marks, hL, indices, rTiny_);
       removed = !indices.empty();
       if (removed) {
-        if (indices.back() == marks.size() - 1) {
+        if (indices.back() == marks.size() - 2) {
           indices.pop_back();
-          if (indices.empty() || indices.back() != marks.size() - 2)
-            indices.push_back(marks.size() - 2);
+          if (indices.empty() || indices.back() != marks.size() - 3)
+            indices.push_back(marks.size() - 3);
         }
         removeMarks(indices, marks, curv);
         removeCount++;
@@ -265,15 +266,21 @@ void MARSn2D<Order, VelocityField>::timeStep(const VelocityField<DIM> &v,
   };
 
   auto mark_edge = ig.accessEdges();
-// #pragma omp parallel for default(shared) schedule(static)
+  // #pragma omp parallel for default(shared) schedule(static)
   for (auto [edgeIter, markIter] : mark_edge) {
     stepCrv(*edgeIter, *markIter);
   }
   // #pragma omp critical
   ig.updateCurve();
-  if (printDetail)
-    std::cout << "Insert: " << insertCount << " Remove: " << removeCount
+  if (printDetail) {
+    std::cout << std::format("Insert: {}, Remove: {}. updateCurve", insertCount,
+                             removeCount)
               << '\n';
+    // pushLogEvent(std::format("Insert: {}, Remove: {}. updateCurve", insertCount,
+    //                          removeCount),
+    //              "MARSn2D", DebugLevel::INFO);
+    // popLogEvent();
+  }
 }
 
 template <int Order, template <int> class VelocityField>

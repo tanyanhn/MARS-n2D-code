@@ -147,7 +147,8 @@ inline Real fzero(const T_Func &f, const T_Der &df, Real x0, int maxIter,
     fx = f(x0);
   }
   if (maxIter == 0 && std::abs(fx) > tol)
-    dbgcout2 << "Newton iteration may not converge, f(x) = " << fx << std::endl;
+    throw std::runtime_error(
+        std::format("Newton iteration may not converge, f(x) = {} \n", fx));
   return x0;
 }
 

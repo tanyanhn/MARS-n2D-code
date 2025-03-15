@@ -6,7 +6,6 @@
 #include "SegmentsIntersector.h"
 #include "YinSet/CutCellHelper.h"
 #include "YinSet/PastingMap.h"
-#include "Core/Tensor.h"
 
 template <class T>
 bool checkIsBounded(const T &iterator, Real tol) {

@@ -321,6 +321,7 @@ Curve<2, Order> createRect(const Vec<Real, 2> &lo, const Vec<Real, 2> &hi) {
 template <int Order>
 Real area(const Curve<2, Order> &gon) {
   Real a = 0.0;
+  if (gon.empty()) return a;
   if (!gon.isClosed(distTol()))
     throw std::runtime_error("unclosed Curve calculate area.");
   const auto &knots = gon.getKnots();
@@ -339,6 +340,7 @@ Real area(const Curve<2, Order> &gon) {
 template <int Order>
 Real arclength(const Curve<2, Order> &c) {
   Real l = 0.0;
+  if (c.empty()) return l;
   const auto &knots = c.getKnots();
   const auto &polys = c.getPolys();
   for (std::size_t k = 0; k < polys.size(); ++k) {
@@ -688,6 +690,7 @@ auto Curve<Dim, Order>::getComparableDirection(Real tol, int type) const
 }
 
 template <int Dim, int Order>
+// __attribute__((optnone))
 bool Curve<Dim, Order>::equal(const Curve &rhs, Real tol) const {
   // auto d1 = this->getComparableDirection(tol, 0);
   // auto d2 = rhs.getComparableDirection(tol, 0);

@@ -4,6 +4,7 @@
 #include "YinSet/OrientedJordanCurve.h"
 #include "YinSet/SegmentedRealizableSpadjor.h"
 #include "YinSet/SimplicialComplex.h"
+#include "Core/Box.h"
 
 template <int Order>
 YinSet<2, Order> intersect(const YinSet<2, Order>& lhs,
@@ -99,8 +100,9 @@ class YinSet<2, Order> : public SegmentedRealizableSpadjor<Order> {
   /// Calculate CutCell.
   auto cutCell(const Box<Dim>& box, const Interval<Dim>& range,
                bool AddInner = false) const
-      -> std::tuple<Tensor<YinSetPtr, 2>, Tensor<vector<Curve<2, Order>>, 2>,
-                    Tensor<int, 2>>;
+      -> std::tuple<vector<vector<YinSetPtr>>,
+                    vector<vector<vector<Curve<2, Order>>>>,
+                    vector<vector<int>>>;
 
  protected:
   ///
@@ -118,18 +120,24 @@ template <int Order>
 using YinSetPtr = YinSet<2, Order>::YinSetPtr;
 
 template <int Order>
-void dumpTensorYinSet(const Tensor<YinSetPtr<Order>, 2>& data,
+void dumpVecYinSet(const vector<vector<YinSetPtr<Order>>>& data,
                       std::ostream& os) {
   int num = 0;
-  loop_box_2(data.box(), i0, i1) {
-    if (data(i0, i1)) {
-      num++;
+  int N1 = data.size();
+  int N2 = data[0].size();
+  for (int i0 = 0; i0 < N1; i0++) {
+    for (int i1 = 0; i1 < N2; i1++) {
+      if (data[i0][i1]) {
+        num++;
+      }
     }
   }
   os.write((char*)&num, sizeof(num));
-  loop_box_2(data.box(), i0, i1) {
-    if (data(i0, i1)) {
-      data(i0, i1)->dump(os);
+  for (int i0 = 0; i0 < N1; i0++) {
+    for (int i1 = 0; i1 < N2; i1++) {
+      if (data[i0][i1]) {
+        data[i0][i1]->dump(os);
+      }
     }
   }
 }

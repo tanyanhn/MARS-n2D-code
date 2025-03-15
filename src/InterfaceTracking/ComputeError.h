@@ -6,8 +6,9 @@
 #include <numeric>
 
 #include "Marsn2D/InterfaceGraph.h"
-#include "XorArea.h"
+#include "InterfaceTracking/XorArea.h"
 #include "YinSet/YinSet.h"
+#include "Recorder/Recorder.h"
 
 using Crv = Curve<2, 4>;
 using Point = Vec<Real, 2>;
@@ -119,9 +120,23 @@ inline Vector<Real> richardsonError(const Vector<Crv> &crvs, Real tol) {
   }
   return result;
 }
+inline void dumpError(const Vector<Vector<Real>> &errors,
+                      const std::string &filename) {
+  std::ofstream of(filename);
+  auto N1 = errors.size();
+  auto N2 = errors[0].size();
+  of.write((char *)&N1, sizeof(int));
+  of.write((char *)&N2, sizeof(int));
+  for (int i = 0; i < N1; i++) {
+    for (int j = N2 - 1; j >= 0; j--) {
+      of.write((char *)&errors[i][j], sizeof(Real));
+    }
+  }
+}
 
 // return: each yinset - 2(L^2 and L^\infty) - each grid
 template <int Order>
+// __attribute__((optnone))
 Vector<Vector<Vector<Real>>> cutCellError(
     const vector<Marsn2D::approxInterfaceGraph<Order>> &lhss,
     const Marsn2D::approxInterfaceGraph<Order> &rhs, auto &boxs, auto &range) {
@@ -137,15 +152,17 @@ Vector<Vector<Vector<Real>>> cutCellError(
     auto N = box.size();
     Vector<Vector<Real>> volume(N[0], Vector<Real>(N[1]));
     auto [rhsRes, rhsBoundary, rhsTags] = yinset.cutCell(box, range, false);
-    loop_box_2(rhsRes.box(), i0, i1) {
-      if (rhsTags(i0, i1) == 1) {
+    loop_box_2(box, i0, i1) {
+      if (rhsTags[i0][i1] == 1) {
         volume[i0][i1] = fullCell;
-      } else if (rhsTags(i0, i1) == -1) {
+      } else if (rhsTags[i0][i1] == -1) {
         volume[i0][i1] = 0;
-      } else if (rhsTags(i0, i1) == 0) {
+      } else if (rhsTags[i0][i1] == 0) {
         volume[i0][i1] = 0;
-        for (const auto &crv : rhsRes(i0, i1)->getBoundaryCycles())
-          volume[i0][i1] += area(crv);
+        if (rhsRes[i0][i1]) {
+          for (const auto &crv : rhsRes[i0][i1]->getBoundaryCycles())
+            volume[i0][i1] += area(crv);
+        }
       }
     }
     return volume;
@@ -155,9 +172,6 @@ Vector<Vector<Vector<Real>>> cutCellError(
     const size_t Ny = volumes[0][0].size();
     Vector<Vector<Vector<Real>>> ret(
         volumes.size(), Vector<Vector<Real>>(Nx / 2, Vector<Real>(Ny / 2, 0)));
-    // for (auto &v : ret) {
-    //   v = Vector<Vector<Real>>(Nx / 2, Vector<Real>(Ny / 2, 0));
-    // }
 
     for (size_t k = 0; k < volumes.size(); ++k) {
       for (size_t i = 0; i < Nx / 2; i++) {
@@ -187,18 +201,24 @@ Vector<Vector<Vector<Real>>> cutCellError(
     auto grid = num - g - 1;
     const auto &lhsYinsets = lhss[grid].approxYinSet();
     for (size_t i = 0; i < numYinsets; ++i) {
-      auto &L2 = ret[i][0][2 * grid];
+      auto &L1 = ret[i][0][2 * grid];
       auto &LInf = ret[i][1][2 * grid];
       auto localVolumes = calculateVolume(boxs[grid], lhsYinsets[i]);
+      if (i == 2) {
+        dumpError(rhsVolumes[i],
+                  getExportDir() + "localVolumes" + ".dat");
+        dumpError(localVolumes,
+                  getExportDir() + "localVolumes" + std::to_string(i) + ".dat");
+        }
       loop_box_2(boxs[grid], i0, i1) {
-        L2 += pow(localVolumes[i0][i1] - rhsVolumes[i][i0][i1], 2);
+        L1 += std::fabs(localVolumes[i0][i1] - rhsVolumes[i][i0][i1]);
         LInf =
             std::max(LInf, abs(localVolumes[i0][i1] - rhsVolumes[i][i0][i1]));
       }
     }
     rhsVolumes = coarseVolumes(rhsVolumes);
   }
-  for (size_t i = 0; i < num - 2; i++) {
+  for (size_t i = 0; i < num - 1; i++) {
     for (size_t j = 0; j < numYinsets; ++j) {
       ret[j][0][2 * i + 1] =
           log(ret[j][0][2 * i] / ret[j][0][2 * i + 2]) / log(2);
@@ -207,6 +227,30 @@ Vector<Vector<Vector<Real>>> cutCellError(
     }
   }
   return ret;
+}
+
+template <typename Range>
+std::string join(const Range &range) {
+  std::ostringstream oss;
+  bool first = true;
+  int count = 0;
+  for (const auto &elem : range) {
+    if (!first) oss << ' ';
+    if (++count % 2)
+      oss << std::format("{:.2e} ", elem);
+    else
+      oss << std::format("{:.2f} ", elem);
+    first = false;
+  }
+  return oss.str();
+}
+
+inline void printCellError(const Vector<Vector<Vector<Real>>> &errors) {
+  int count = 0;
+  for (const auto &i : errors) {
+    std::cout << std::format("YinSet-{} L1    : {}\n         Linfty: {}\n\n",
+                             count++, join(i[0]), join(i[1]));
+  }
 }
 
 #endif

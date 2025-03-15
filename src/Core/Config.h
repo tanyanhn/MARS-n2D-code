@@ -69,5 +69,6 @@ inline Real distTol(Real tol = 1e-12) noexcept {
 }
 
 const int newtonMaxIter = 10;
+const Real newtonTol = distTol() / 1000;
 
 #endif  // CONFIG_H

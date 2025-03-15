@@ -27,22 +27,22 @@ TEST_CASE("Circle Cut Cell", "[Circle][CutCell][SegmentedRealizableSpadjor]") {
       mkdir(dir.c_str(), 0755);
       string fileName = to_string(Order) + name + to_string(N) + ".dat";
       std::ofstream of(dir + fileName, std::ios_base::binary);
-      dumpTensorYinSet<Order>(res, of);
+      dumpVecYinSet<Order>(res, of);
     }
 
     THEN("Integral Area and length.") {
       Real totalArea = 0;
       Real length = 0;
       Real fullCell = h[0] * h[1];
-      loop_box_2(res.box(), i0, i1) {
-        if (tags(i0, i1) == 1) {
+      loop_box_2(box, i0, i1) {
+        if (tags[i0][i1] == 1) {
           totalArea += fullCell;
-        } else if (tags(i0, i1) == 0) {
-          if (res(i0, i1)) {
-            for (const auto& crv : res(i0, i1)->getBoundaryCycles())
+        } else if (tags[i0][i1] == 0) {
+          if (res[i0][i1]) {
+            for (const auto& crv : res[i0][i1]->getBoundaryCycles())
               totalArea += area(crv);
           }
-          for (const auto& crv : boundary(i0, i1)) length += arclength(crv);
+          for (const auto& crv : boundary[i0][i1]) length += arclength(crv);
         }
       }
       Real areaError = std::abs(totalArea - exactArea) / (exactArea);
@@ -66,7 +66,7 @@ TEST_CASE("Circle Cut Cell", "[Circle][CutCell][SegmentedRealizableSpadjor]") {
       mkdir(dir.c_str(), 0755);
       string fileName = to_string(Order) + "Circle" + to_string(N) + ".dat";
       std::ofstream of(dir + fileName, std::ios_base::binary);
-      dumpTensorYinSet<Order>(res, of);
+      dumpVecYinSet<Order>(res, of);
     }
   }
 }
@@ -105,22 +105,22 @@ TEST_CASE("Rectangle Cut Cell",
       mkdir(dir.c_str(), 0755);
       string fileName = to_string(Order) + name + to_string(N) + ".dat";
       std::ofstream of(dir + fileName, std::ios_base::binary);
-      dumpTensorYinSet<Order>(res, of);
+      dumpVecYinSet<Order>(res, of);
     }
 
     THEN("Integral Area and length.") {
       Real totalArea = 0;
       Real length = 0;
       Real fullCell = h[0] * h[1];
-      loop_box_2(res.box(), i0, i1) {
-        if (tags(i0, i1) == 1) {
+      loop_box_2(box, i0, i1) {
+        if (tags[i0][i1] == 1) {
           totalArea += fullCell;
-        } else if (tags(i0, i1) == 0) {
-          if (res(i0, i1)) {
-            for (const auto& crv : res(i0, i1)->getBoundaryCycles())
+        } else if (tags[i0][i1] == 0) {
+          if (res[i0][i1]) {
+            for (const auto& crv : res[i0][i1]->getBoundaryCycles())
               totalArea += area(crv);
           }
-          for (const auto& crv : boundary(i0, i1)) length += arclength(crv);
+          for (const auto& crv : boundary[i0][i1]) length += arclength(crv);
         }
       }
       Real areaError = std::abs(totalArea - exactArea) / (exactArea);
@@ -152,7 +152,7 @@ TEST_CASE("Rectangle Cut Cell",
       mkdir(dir.c_str(), 0755);
       string fileName = to_string(Order) + name + to_string(N) + ".dat";
       std::ofstream of(dir + fileName, std::ios_base::binary);
-      dumpTensorYinSet<Order>(res, of);
+      dumpVecYinSet<Order>(res, of);
     }
   }
 }

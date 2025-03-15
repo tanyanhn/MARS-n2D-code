@@ -286,7 +286,7 @@ int YinSet<2, Order>::eraseKink(const Vertex &index) {
 
 template <int Order>
 void YinSet<2, Order>::reFitCurve(size_t i) {
-  // TODO(ytan) Fit Curve is done in Mars.
+  // Fit Curve is done in Mars.
   // if (kinks.getSimplexes().empty()) return;
   // const auto &sims = kinks.getSimplexes()[0];
   // SimplicialComplex<Vertex> tmp;
@@ -329,13 +329,18 @@ vector<Curve<2, Order>> YinSet<2, Order>::getSmoothCurves(Real tol) const {
 }
 
 template <int Order>
+// __attribute__((optnone))
 auto YinSet<2, Order>::cutCell(const Box<Dim> &box, const Interval<Dim> &range,
                                bool addInner) const
-    -> std::tuple<Tensor<YinSetPtr, 2>, Tensor<vector<Curve<2, Order>>, 2>,
-                  Tensor<int, 2>> {
-  Tensor<YinSetPtr, 2> ret(box);
+    -> std::tuple<vector<vector<YinSetPtr>>,
+                  vector<vector<vector<Curve<2, Order>>>>, vector<vector<int>>> {
+  const int N0 = box.hi()[0] - box.lo()[0] + 1;
+  const int N1 = box.hi()[1] - box.lo()[1] + 1;
   rVec size(box.size());
-  Real tol = distTol();
+  vector<vector<YinSetPtr>> ret(N0, vector<YinSetPtr>(N1, nullptr));
+  // since in pastCells will attach curve boundary to grid line, and will
+  // increase tol error.
+  Real tol = distTol() / 2;
 
   auto lo = range.lo();
   auto hi = range.hi();
@@ -345,16 +350,18 @@ auto YinSet<2, Order>::cutCell(const Box<Dim> &box, const Interval<Dim> &range,
   auto intersections = CutCellHelper<Order>::intersectGridLine(
       lo, hi, h, orientedJordanCurves, tol);
 
-  Tensor<vector<Curve<2, Order>>, 2> gridCurves(box);
-  // partition the curves to Tensor<Curve<Dim, Order>, 2>
+  vector<vector<vector<Curve<2, Order>>>> gridCurves(
+      N0, vector<vector<Curve<2, Order>>>(N1));
+  // partition the curves to vector<vector<Curve<Dim, Order>>>
   CutCellHelper<Order>::splitCurves(lo, h, intersections, orientedJordanCurves,
                                     gridCurves, tol);
 
   // past in every cells.
-  CutCellHelper<Order>::pastCells(lo, h, gridCurves, ret, tol);
+  CutCellHelper<Order>::pastCells(lo, h, box, gridCurves, ret, tol);
 
   // fill inner cell rectangles.
-  auto tags = CutCellHelper<Order>::fillInner(lo, h, *this, gridCurves, ret, tol, addInner);
+  auto tags = CutCellHelper<Order>::fillInner(lo, h, box, *this, gridCurves, ret,
+                                              tol, addInner);
 
   return {std::move(ret), std::move(gridCurves), std::move(tags)};
 }

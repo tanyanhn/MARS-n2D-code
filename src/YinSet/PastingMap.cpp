@@ -13,7 +13,8 @@ void PastingMap<Order, Selector>::removeEdge(const rVec &oldtail,
   if (repo.empty()) graph.erase(oldtail);
 }
 
-template <int Order, class Selector>
+template <int Order, class Selector> 
+// __attribute__((optnone))
 void PastingMap<Order, Selector>::formClosedLoops(vector<OrientedJordanCurve<DIM, Order>> &outCont) {
   Crv jordan;
   rVec oldtail;
@@ -26,6 +27,7 @@ void PastingMap<Order, Selector>::formClosedLoops(vector<OrientedJordanCurve<DIM
 
   while (!necessaryEdge.empty() || !jordan.empty()) {
     Iter outEdge;
+    size_t tmp;
     std::set<size_t> *cands;
     if (jordan.empty()) {  // start a new loop
       auto id = *necessaryEdge.begin();
@@ -39,10 +41,13 @@ void PastingMap<Order, Selector>::formClosedLoops(vector<OrientedJordanCurve<DIM
       footprint.front() = std::make_pair(oldtail, jordan.domain().lo()[0]);
     } else {  // grow
       oldtail = newtail;
-      assert(graph.find(oldtail) != graph.end());
-      cands = &(graph.find(oldtail)->second);
+      auto iter = graph.find(oldtail);
+      if(iter == graph.end()) breakpoint();
+      iter = graph.find(oldtail);
+      cands = &(iter->second);
       outEdge = std::min_element(cands->cbegin(), cands->cend(),
                                  Selector(tol, jordan, allCrvs));
+      tmp = *outEdge;
     }
     jordan.concat(allCrvs[*outEdge]);
     newtail = jordan.endpoint();
@@ -70,6 +75,7 @@ bool OutEdgeSelectorByKnots<Order>::operator()(const size_t &lhsId,
   return compare(lhsId, rhsId) == -1;
 }
 template <int Order>
+// __attribute__((optnone))
 int OutEdgeSelectorByKnots<Order>::compare(const size_t &lhsId,
                                            const size_t &rhsId) const {
   const auto &lhs = allCrvs[lhsId];

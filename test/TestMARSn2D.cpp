@@ -1,9 +1,9 @@
 #include <nlohmann/json.hpp>
 
+#include "InterfaceTracking/ComputeError.h"
 #include "InterfaceTracking/ERK.h"
 #include "InterfaceTracking/RKButcher.h"
 #include "InterfaceTracking/VelocityField.h"
-#include "InterfaceTracking/ComputeError.h"
 #include "Marsn2D/InterfaceGraph.h"
 #include "Marsn2D/MARSn2D.h"
 #include "Recorder/Timer.h"
@@ -35,10 +35,11 @@ auto diskTEST(const std::string& jsonFile) {
   const Real hLCoefficient = params.grid.hLCoefficient;
   const Real rTiny = params.grid.rTiny;
   const int nGrid = params.grid.nGrid;
-  const rVec h = (hi - lo) / N0;
-  const Real hL = hLCoefficient * std::pow(h[0] * h[1], 0.5 * aimOrder / Order);
-  const Box<2> box(0, N0 - 1);
-  const Real dt = std::min(h[0], h[1]) / uM * Cr;
+  // const rVec h0 = (hi - lo) / N0;
+  // const Real hL0 =
+  //     hLCoefficient * std::pow(h0[0] * h0[1], 0.5 * aimOrder / Order);
+  // const Box<DIM> box(0, N0 - 1);
+  // const Real dt0 = std::min(h0[0], h0[1]) / uM * Cr;
   const auto timeIntegrator =
       make_shared<ERK<2, RK::ClassicRK4, VectorFunction>>();
   const Real T = te;
@@ -77,12 +78,38 @@ auto diskTEST(const std::string& jsonFile) {
   for (auto& part : parts) part *= 2 * M_PI;
   const Real exactArea = M_PI * radius[0] * radius[1] / parts.size();
   const Real exactLength = 2 * M_PI * radius[0] / parts.size() + 2 * radius[0];
-  const auto disk =
-      Generator::createDiskGraph<Order>(center, radius, hL, parts);
 
-  return make_tuple(disk, radius, exactArea, exactLength, box, N0, aimOrder, h,
-                    hL, rTiny, nGrid, curvConfig, plotConfig, printDetail, t0,
-                    dt, te, timeIntegrator, vortex);
+  // for multi grid.
+  vector<approxInterfaceGraph<Order>> vecDisk;
+  vector<int> vecN;
+  vector<Box<DIM>> vecBox;
+  // vector<rVec> vecH;
+  vector<Real> vecHL;
+  vector<Real> vecDt;
+  Real N = N0;
+  for (uint i = 0; i < nGrid; ++i) {
+    rVec h = (hi - lo) / N;
+    Real hL = hLCoefficient * std::pow(h[0] * h[1], 0.5 * aimOrder / Order);
+    Real dt = std::min(h[0], h[1]) / uM * Cr;
+    const auto disk =
+        Generator::createDiskGraph<Order>(center, radius, hL, parts);
+    vecDisk.emplace_back(std::move(disk));
+    vecN.emplace_back(N);
+    vecBox.emplace_back(0, N - 1);
+    // vecH.emplace_back(h);
+    vecHL.emplace_back(hL);
+    vecDt.emplace_back(dt);
+    N = N * 2;
+  }
+
+  // accurate solution
+  rVec h = (hi - lo) / N;
+  Real hL = hLCoefficient * std::pow(h[0] * h[1], 0.5 * aimOrder / Order);
+  auto exactDisk = Generator::createDiskGraph<Order>(center, radius, hL, parts);
+
+  return make_tuple(vecDisk, exactDisk, radius, exactArea, exactLength, vecBox,
+                    vecN, aimOrder, vecHL, rTiny, nGrid, curvConfig, plotConfig,
+                    printDetail, t0, vecDt, te, timeIntegrator, vortex);
   // }
 }
 
@@ -136,7 +163,8 @@ void checkResult(auto& yinSets, auto& box, auto& range, auto& addInner,
 //   mkdir(dir.c_str(), 0755);
 //   SECTION("2-th order disk") {
 //     constexpr int Order = 2;
-//     auto [disk, radius, exactArea, exactLength, box, N, aimOrder, h, hL, rTiny,
+//     auto [disk, radius, exactArea, exactLength, box, N, aimOrder, h, hL,
+//     rTiny,
 //           nGrid, curvConfig, plotConfig, printDetail, t0, dt, te,
 //           timeIntegrator, vortex] =
 //         diskTEST<Order>(rootDir + "/test/config/" + testName + ".json");
@@ -149,8 +177,10 @@ void checkResult(auto& yinSets, auto& box, auto& range, auto& addInner,
 //     INFO("Integral Area and length.");
 //     auto yinSets = disk.approxYinSet();
 
-//     checkResult<Order>(yinSets, box, plotConfig.range, addInner, radius, N, h,
-//                        output, dir, plotConfig.fName, exactLength, exactArea);
+//     checkResult<Order>(yinSets, box, plotConfig.range, addInner, radius, N,
+//     h,
+//                        output, dir, plotConfig.fName, exactLength,
+//                        exactArea);
 //     t.~Timer();
 //     ::Timer::printStatistics();
 //   }
@@ -162,51 +192,36 @@ TEST_CASE("Disk 4 vortex4, RK4: Convergence Test.",
   const auto* testName = "Disk4Vortex4";
   auto dir = rootDir + "/results/TrackInterface/" + testName + "/";
   mkdir(dir.c_str(), 0755);
+  RecorderInitialize(RecorderInfo{DebugLevel::INFO, dir});
 
-  SECTION("2-th order disk") {
-    constexpr int Order = 2;
-    auto [disk, radius, exactArea, exactLength, box, N0, aimOrder, h, hL, rTiny,
-          nGrid, curvConfig, plotConfig, printDetail, t0, dt, te,
-          timeIntegrator, vortex] =
+  SECTION("4-th order disk") {
+    constexpr int Order = 4;
+    pushLogStage("Initialize");
+    auto [vecDisk, exactDisk, radius, exactArea, exactLength, vecBox, vecN,
+          aimOrder, vecHL, rTiny, nGrid, curvConfig, plotConfig, printDetail,
+          t0, vecDt, te, timeIntegrator, vortex] =
         diskTEST<Order>(rootDir + "/test/config/" + testName + ".json");
-    int N = N0;
-    auto originDisk = disk;
-    vector<approxInterfaceGraph<Order>> interfaceGraphs;
-    vector<Box<2>> boxes;
+    popLogStage();
 
+    pushLogStage("TrackInterface");
     for (uint i = 0; i < nGrid; ++i) {
-      disk = originDisk;
-      if (i != 0) {
-        N = N * 2;
-        box = Box<2>(0, N - 1);
-        h = h / 2;
-        hL = hL * std::pow(0.5, aimOrder / Order);
-        dt = dt / 2;
-      }
-      boxes.push_back(box);
-      plotConfig.fName = to_string(Order) + "Circle" + "_grid" + to_string(N) +
-                         "_T" + to_string((int)te),
+      plotConfig.fName = to_string(Order) + "Circle" + "_grid" +
+                         to_string(vecN[i]) + "_T" + to_string((int)te),
       plotConfig.fName = dir + plotConfig.fName;
-      MARSn2D<Order, VectorFunction> CM(timeIntegrator, hL, rTiny, curvConfig,
-                                        printDetail);
+      MARSn2D<Order, VectorFunction> CM(timeIntegrator, vecHL[i], rTiny,
+                                        curvConfig, printDetail);
 
-      CM.trackInterface(vortex, disk, t0, dt, te, plotConfig);
-      interfaceGraphs.push_back(disk);
+      CM.trackInterface(vortex, vecDisk[i], t0, vecDt[i], te, plotConfig);
     }
-    auto error = cutCellError(interfaceGraphs, disk, boxes, plotConfig.range);
-    for(auto& i : error){
-      std::cout << "L2: ";
-      for(auto& j : i[0]){
-        std::cout << j << ' ';
-      }
-      std::cout << "\n Linfty: ";
-      for(auto& j : i[1]){
-        std::cout << j << ' ';
-      }
-      std::cout << '\n';
-    }
+    popLogStage();
+
+    pushLogStage("CheckResult");
+    auto errors = cutCellError(vecDisk, exactDisk, vecBox, plotConfig.range);
+    printCellError(errors);
 
     t.~Timer();
     ::Timer::printStatistics();
-  } // test 2-th order disk
+    popLogStage();
+    RecorderFinalize();
+  }  // test 2-th order disk
 }

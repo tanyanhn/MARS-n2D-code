@@ -37,7 +37,7 @@ TEST_CASE("Disk 4 part interface.", "[InterfaceGraph][Disk][CutCell][4]") {
         string fileName = to_string(Order) + name + to_string(N) + "_" +
                           to_string(i + 1) + ".dat";
         std::ofstream of(dir + fileName, std::ios_base::binary);
-        dumpTensorYinSet<Order>(res, of);
+        dumpVecYinSet<Order>(res, of);
         // yinSets[i].dump(of);
       }
     }
@@ -57,7 +57,7 @@ TEST_CASE("Disk 4 part interface.", "[InterfaceGraph][Disk][CutCell][4]") {
         string fileName = to_string(Order) + name + to_string(N) + "_" +
                           to_string(i + 1) + ".dat";
         std::ofstream of(dir + fileName, std::ios_base::binary);
-        dumpTensorYinSet<Order>(res, of);
+        dumpVecYinSet<Order>(res, of);
         // yinSets[i].dump(of);
       }
 
@@ -65,15 +65,15 @@ TEST_CASE("Disk 4 part interface.", "[InterfaceGraph][Disk][CutCell][4]") {
       Real totalArea = 0;
       Real length = 0;
       Real fullCell = h[0] * h[1];
-      loop_box_2(res.box(), i0, i1) {
-        if (tags(i0, i1) == 1) {
+      loop_box_2(box, i0, i1) {
+        if (tags[i0][i1] == 1) {
           totalArea += fullCell;
-        } else if (tags(i0, i1) == 0) {
-          if (res(i0, i1)) {
-            for (const auto& crv : res(i0, i1)->getBoundaryCycles())
+        } else if (tags[i0][i1] == 0) {
+          if (res[i0][i1]) {
+            for (const auto& crv : res[i0][i1]->getBoundaryCycles())
               totalArea += area(crv);
           }
-          for (const auto& crv : boundary(i0, i1)) length += arclength(crv);
+          for (const auto& crv : boundary[i0][i1]) length += arclength(crv);
         }
       }
       if (i == yinSets.size() - 1) {
@@ -122,7 +122,7 @@ TEST_CASE("Disk 5 part interface.", "[InterfaceGraph][Disk][CutCell][5]") {
         string fileName = to_string(Order) + name + to_string(N) + "_" +
                           to_string(i + 1) + ".dat";
         std::ofstream of(dir + fileName, std::ios_base::binary);
-        dumpTensorYinSet<Order>(res, of);
+        dumpVecYinSet<Order>(res, of);
         // yinSets[i].dump(of);
       }
     }
@@ -142,7 +142,7 @@ TEST_CASE("Disk 5 part interface.", "[InterfaceGraph][Disk][CutCell][5]") {
         string fileName = to_string(Order) + name + to_string(N) + "_" +
                           to_string(i + 1) + ".dat";
         std::ofstream of(dir + fileName, std::ios_base::binary);
-        dumpTensorYinSet<Order>(res, of);
+        dumpVecYinSet<Order>(res, of);
         // yinSets[i].dump(of);
       }
 
@@ -150,17 +150,15 @@ TEST_CASE("Disk 5 part interface.", "[InterfaceGraph][Disk][CutCell][5]") {
       Real totalArea = 0;
       Real length = 0;
       Real fullCell = h[0] * h[1];
-      loop_box_2(res.box(), i0, i1) {
-        if (tags(i0, i1) == 1) {
+      loop_box_2(box, i0, i1) {
+        if (tags[i0][i1] == 1) {
           totalArea += fullCell;
-        } else if (tags(i0, i1) == 0) {
-          if (res(i0, i1)) {
-            if (res(i0, i1)) {
-              for (const auto& crv : res(i0, i1)->getBoundaryCycles())
-                totalArea += area(crv);
-            }
+        } else if (tags[i0][i1] == 0) {
+          if (res[i0][i1]) {
+            for (const auto& crv : res[i0][i1]->getBoundaryCycles())
+              totalArea += area(crv);
           }
-          for (const auto& crv : boundary(i0, i1)) length += arclength(crv);
+          for (const auto& crv : boundary[i0][i1]) length += arclength(crv);
         }
       }
       if (i == yinSets.size() - 1) {
@@ -207,12 +205,12 @@ TEST_CASE("Ellipse single.", "[InterfaceGraph][Ellipse][CutCell][1]") {
     Real totalArea = 0;
     rVec h = (hi - lo) / N;
     Real fullCell = h[0] * h[1];
-    loop_box_2(res.box(), i0, i1) {
-      if (tags(i0, i1) == 1) {
+    loop_box_2(box, i0, i1) {
+      if (tags[i0][i1] == 1) {
         totalArea += fullCell;
-      } else if (tags(i0, i1) == 0) {
-        if (res(i0, i1)) {
-          for (const auto& crv : res(i0, i1)->getBoundaryCycles())
+      } else if (tags[i0][i1] == 0) {
+        if (res[i0][i1]) {
+          for (const auto& crv : res[i0][i1]->getBoundaryCycles())
             totalArea += area(crv);
         }
       }
@@ -227,7 +225,7 @@ TEST_CASE("Ellipse single.", "[InterfaceGraph][Ellipse][CutCell][1]") {
         string fileName = to_string(Order) + name + to_string(N) + "_" +
                           to_string(i + 1) + ".dat";
         std::ofstream of(dir + fileName, std::ios_base::binary);
-        dumpTensorYinSet<Order>(res, of);
+        dumpVecYinSet<Order>(res, of);
         // yinSets[i].dump(of);
       }
     }
@@ -249,12 +247,12 @@ TEST_CASE("Ellipse single.", "[InterfaceGraph][Ellipse][CutCell][1]") {
     Real totalArea = 0;
     rVec h = (hi - lo) / N;
     Real fullCell = h[0] * h[1];
-    loop_box_2(res.box(), i0, i1) {
-      if (tags(i0, i1) == 1) {
+    loop_box_2(box, i0, i1) {
+      if (tags[i0][i1] == 1) {
         totalArea += fullCell;
-      } else if (tags(i0, i1) == 0) {
-        if (res(i0, i1)) {
-          for (const auto& crv : res(i0, i1)->getBoundaryCycles())
+      } else if (tags[i0][i1] == 0) {
+        if (res[i0][i1]) {
+          for (const auto& crv : res[i0][i1]->getBoundaryCycles())
             totalArea += area(crv);
         }
       }
@@ -269,7 +267,7 @@ TEST_CASE("Ellipse single.", "[InterfaceGraph][Ellipse][CutCell][1]") {
         string fileName = to_string(Order) + name + to_string(N) + "_" +
                           to_string(i + 1) + ".dat";
         std::ofstream of(dir + fileName, std::ios_base::binary);
-        dumpTensorYinSet<Order>(res, of);
+        dumpVecYinSet<Order>(res, of);
         // yinSets[i].dump(of);
       }
     }
@@ -329,7 +327,7 @@ TEST_CASE("Ellipse 3 part interface.",
         string fileName = to_string(Order) + name + to_string(N) + "_" +
                           to_string(i + 1) + ".dat";
         std::ofstream of(dir + fileName, std::ios_base::binary);
-        dumpTensorYinSet<Order>(res, of);
+        dumpVecYinSet<Order>(res, of);
         // yinSets[i].dump(of);
       }
     }
@@ -349,19 +347,19 @@ TEST_CASE("Ellipse 3 part interface.",
         string fileName = to_string(Order) + name + to_string(N) + "_" +
                           to_string(i + 1) + ".dat";
         std::ofstream of(dir + fileName, std::ios_base::binary);
-        dumpTensorYinSet<Order>(res, of);
+        dumpVecYinSet<Order>(res, of);
         // yinSets[i].dump(of);
       }
 
       INFO("Integral Area and length.");
       Real totalArea = 0;
       Real fullCell = h[0] * h[1];
-      loop_box_2(res.box(), i0, i1) {
-        if (tags(i0, i1) == 1) {
+      loop_box_2(box, i0, i1) {
+        if (tags[i0][i1] == 1) {
           totalArea += fullCell;
-        } else if (tags(i0, i1) == 0) {
-          if (res(i0, i1)) {
-            for (const auto& crv : res(i0, i1)->getBoundaryCycles())
+        } else if (tags[i0][i1] == 0) {
+          if (res[i0][i1]) {
+            for (const auto& crv : res[i0][i1]->getBoundaryCycles())
               totalArea += area(crv);
           }
         }
@@ -414,7 +412,7 @@ TEST_CASE("Rose Curve.", "[InterfaceGraph][RoseCurve][CutCell][1]") {
         string fileName = to_string(Order) + name + to_string(N) + "_" +
                           to_string(i + 1) + ".dat";
         std::ofstream of(dir + fileName, std::ios_base::binary);
-        dumpTensorYinSet<Order>(res, of);
+        dumpVecYinSet<Order>(res, of);
         // yinSets[i].dump(of);
       }
     }
@@ -434,7 +432,7 @@ TEST_CASE("Rose Curve.", "[InterfaceGraph][RoseCurve][CutCell][1]") {
         string fileName = to_string(Order) + name + to_string(N) + "_" +
                           to_string(i + 1) + ".dat";
         std::ofstream of(dir + fileName, std::ios_base::binary);
-        dumpTensorYinSet<Order>(res, of);
+        dumpVecYinSet<Order>(res, of);
         // yinSets[i].dump(of);
       }
 
@@ -442,12 +440,12 @@ TEST_CASE("Rose Curve.", "[InterfaceGraph][RoseCurve][CutCell][1]") {
       Real totalArea = 0;
       // Real length = 0;
       Real fullCell = h[0] * h[1];
-      loop_box_2(res.box(), i0, i1) {
-        if (tags(i0, i1) == 1) {
+      loop_box_2(box, i0, i1) {
+        if (tags[i0][i1] == 1) {
           totalArea += fullCell;
-        } else if (tags(i0, i1) == 0) {
-          if (res(i0, i1)) {
-            for (const auto& crv : res(i0, i1)->getBoundaryCycles())
+        } else if (tags[i0][i1] == 0) {
+          if (res[i0][i1]) {
+            for (const auto& crv : res[i0][i1]->getBoundaryCycles())
               totalArea += area(crv);
           }
           // for (const auto& crv : boundary(i0, i1)) length += arclength(crv);

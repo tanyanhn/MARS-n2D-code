@@ -4,6 +4,7 @@
 #include <vector>
 
 #include "Core/Interval.h"
+#include "Core/VecCompare.h"
 #include "Polynomial.h"
 
 template <int Dim, int Order>
@@ -71,7 +72,8 @@ class Curve {
   }
 
   bool isClosed(Real tol) const {
-    return norm(endpoint() - startpoint(), 2) <= tol;
+    VecCompare<Real, Dim> vCmp(tol);
+    return vCmp.compare(startpoint(), endpoint()) == 0;
   }
 
   const std::vector<Real>& getKnots() const { return knots; }

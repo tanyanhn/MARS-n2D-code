@@ -4,7 +4,6 @@
 #include <vector>
 
 #include "Core/Curve.h"
-#include "Core/Tensor.h"
 #include "Segment.h"
 #include "YinSet/OrientedJordanCurve.h"
 

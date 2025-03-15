@@ -44,6 +44,7 @@ class PastingMap {
   void formClosedLoops(vector<OrientedJordanCurve<DIM, Order>>& outCont);
   template <class T_Crv>
   void addEdge(T_Crv&& newEdge, bool necessary = true);
+  void addVertex(const rVec& newVertex) { graph.insert({newVertex, {}}); }
 
  protected:
   using Iter = std::set<size_t>::const_iterator;
@@ -56,6 +57,7 @@ class PastingMap {
 
 template <int Order, class Selector>
 template <class T_Crv>
+// __attribute__((optnone))
 void PastingMap<Order, Selector>::addEdge(T_Crv&& newEdge, bool necessary) {
   rVec start = newEdge.startpoint();
   auto iter = graph.find(start);
@@ -77,6 +79,7 @@ void PastingMap<Order, Selector>::addEdge(T_Crv&& newEdge, bool necessary) {
       if (reverseCrv.equal(allCrvs[id], tol)) {
         necessaryEdge.erase(id);
         iter->second.erase(id);
+        if (iter->second.empty()) graph.erase(iter);
         return;
       }
     }

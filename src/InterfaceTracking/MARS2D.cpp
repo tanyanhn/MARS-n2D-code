@@ -10,7 +10,6 @@
 #include <type_traits>
 
 #include "Core/Polynomial.h"
-#include "Core/Tensor.h"
 
 Real tol = 1e-15;
 

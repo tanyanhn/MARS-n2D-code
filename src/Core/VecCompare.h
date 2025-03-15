@@ -34,7 +34,8 @@ class VecCompare<Real, 2> {
 
      Two points are considered equal if their distance
      is about or less than the scale of tol.
-  */
+  */ 
+  // __attribute__((optnone))
   int compare(const rVec &p1, const rVec &p2) const {
     if (std::abs(p1[1] - p2[1]) <= tol) {
       if (std::abs(p1[0] - p2[0]) <= tol) return 0;
