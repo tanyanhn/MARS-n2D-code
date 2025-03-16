@@ -62,15 +62,14 @@ class ERK<Dim, Type, VectorFunction>
     }
     return result;
   }
-
   void timeStep(const VectorFunction<Dim> &v, Vector<Point> &pts, Real tn,
                 Real dt) {
     using namespace Eigen;
     int num = pts.size();
-    Vector<ArrayXXd> step;
-    step.resize(ButcherTab::nStages, ArrayXXd(2, num));
-    ArrayXXd tmPts;
-    ArrayXXd result(2, num);
+    Vector<ArrayXXd> step(ButcherTab::nStages, ArrayXXd(2, num));
+    ArrayXXd result = ArrayXXd::Zero(2, num);
+
+    // Initialize result with current points
     for (int i = 0; i < num; i++) {
       result(0, i) = pts[i][0];
       result(1, i) = pts[i][1];
@@ -78,20 +77,18 @@ class ERK<Dim, Type, VectorFunction>
     ArrayXXd start = result;
 
     for (int i = 0; i < ButcherTab::nStages; i++) {
-      tmPts = start;
+      ArrayXXd tmPts = start;
       for (int j = 0; j < i; j++) {
-        for (int k = 0; k < num; k++) {
-          tmPts(0, k) = tmPts(0, k) + step[j](0, k) * ButcherTab::a[i][j] * dt;
-          tmPts(1, k) = tmPts(1, k) + step[j](1, k) * ButcherTab::a[i][j] * dt;
-        }
+        // Vectorized stage update
+        tmPts += step[j] * (ButcherTab::a[i][j] * dt);
       }
-      // step[i] = v(tmPts, tn + ButcherTab::c[i] * dt);
+      // Compute stage derivative
       v(tmPts, tn + ButcherTab::c[i] * dt, step[i]);
-      for (int k = 0; k < num; k++) {
-        result(0, k) = result(0, k) + step[i](0, k) * ButcherTab::b[i] * dt;
-        result(1, k) = result(1, k) + step[i](1, k) * ButcherTab::b[i] * dt;
-      }
+      // Vectorized result update
+      result += step[i] * (ButcherTab::b[i] * dt);
     }
+
+    // Update points with result
     for (int i = 0; i < num; i++) {
       pts[i][0] = result(0, i);
       pts[i][1] = result(1, i);

@@ -1,6 +1,7 @@
 #include "Marsn2D/MARSn2D.h"
 
 #include "Recorder/Timer.h"
+#include "Recorder/ProgressBar.h"
 
 namespace Marsn2D {
 
@@ -37,6 +38,7 @@ void MARSn2D<Order, VelocityField>::trackInterface(
       }
     }
   }
+  ProgressBar bar(stages, "Tracking...");
   while (step < stages) {
     if (printDetail)
       std::cout << "Step: " << step << "     time now: " << tn << '\n';
@@ -45,6 +47,7 @@ void MARSn2D<Order, VelocityField>::trackInterface(
     std::cout.flush();
     tn += k;
     step++;
+    bar.update();
   }
 }
 
