@@ -126,7 +126,8 @@ void PastingMap<Order, Selector>::formCellClosedLoops(vector<OrientedJordanCurve
       outCont.push_back(
           jordan.extract(h->second, jordan.domain().hi()[0], tol, true));
       jordan = jordan.extract(jordan.domain().lo()[0], h->second, tol, true);
-      if (jordan.getKnots().back() - jordan.getKnots().front() < tol)
+      if (!jordan.empty() &&
+          jordan.getKnots().back() - jordan.getKnots().front() < tol)
         jordan = Crv();
       footprint.erase(++h, footprint.cend());
     } else {

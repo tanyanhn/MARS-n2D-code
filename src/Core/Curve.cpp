@@ -108,6 +108,7 @@ __attribute__((optnone))
 #endif  // OPTNONE
 Curve<Dim, Order> Curve<Dim, Order>::extract(Real lo, Real hi, Real tol,
                                              bool exact) const {
+  if (hi <= lo) return Curve<Dim, Order>();
   if (!exact && hi <= lo + tol) return Curve<Dim, Order>();
 
   int ihead = locatePiece(lo);

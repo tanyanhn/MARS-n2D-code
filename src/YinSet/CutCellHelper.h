@@ -212,9 +212,11 @@ auto CutCellHelper<Order>::pastCells(
     }
     std::sort(brks.begin(), brks.end());
     std::vector<Crv> rectCrvs;
-    rect.split(brks, rectCrvs, tol);
+    rect.split(brks, rectCrvs, tol, true);
     for (auto &crv : rectCrvs) {
-      pasting.addCellEdge(crv, crv.getKnots()[0], crv.getKnots().back(), false);
+      if (!crv.empty())
+        pasting.addCellEdge(crv, crv.getKnots()[0], crv.getKnots().back(),
+                            false);
     }
 
     pasting.formClosedLoops(res);

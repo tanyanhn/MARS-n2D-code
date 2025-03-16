@@ -7,17 +7,17 @@
       "uM": 1.0
   },
   "grid": {
-      "N0": 2,
+      "N0": 8,
       "lo": [0.0, 0.0],
       "hi": [1.0, 1.0],
       "aimOrder": 4,
       "hLCoefficient": 0.2,
-      "rTiny": 0.01,
-      "nGrid": 7
+      "rTiny": 0.1,
+      "nGrid": 5
   },
   "curvature_adaption": {
-      "curvUsed": false,
-      "rCMin": 0.1,
+      "curvUsed": true,
+      "rCMin": 0.03,
       "rhoMin": 5.0,
       "rhoMax": 10000.0
   },

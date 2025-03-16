@@ -69,6 +69,7 @@ class approxInterfaceGraph {
  private:
   InterfaceGraph undirectGraph;
   vector<Edge> edges_;
+  // vector<Edge> reverseEdges_;
   // edges[abs(index) - 1], abs(index) starting from 1,
   // and -index imply edges[-index - 1]->reverse()
   vector<vector<EdgeIndex>> cyclesEdgesId_;

@@ -77,6 +77,7 @@ void approxInterfaceGraph<Order>::updateCurve() {
   auto& trials_ = undirectGraph.trials_;
   auto& circuits_ = undirectGraph.circuits_;
   edges_.resize(marks_.size());
+  // reverseEdges_.resize(marks_.size());
   Real tol = this->tol_;
 
   auto fitFunction = [&marks_, tol](const vector<EdgeIndex>& spline,
@@ -110,6 +111,20 @@ void approxInterfaceGraph<Order>::updateCurve() {
 
     for (size_t i = 0; i < pieces.size(); ++i)
       output[spline[i]] = std::move(pieces[i]);
+
+    // std::reverse(knots.begin(), knots.end());
+    // vector<size_t> revBrksId;
+    // while (!brksId.empty()) {
+    //   revBrksId.push_back(knots.size() - 1 - brksId.back());
+    //   brksId.pop_back();
+    // }
+    // crv = fitCurve<Order>(knots, type);
+    // brks.clear();
+    // for (auto brkId : revBrksId) brks.push_back(crv.getKnots()[brkId]);
+    // pieces.clear();
+    // crv.split(brks, pieces, tol);
+    // for (size_t i = 0; i < pieces.size(); ++i)
+    //   reverseOutput[spline[pieces.size() - 1 - i]] = std::move(pieces[i]);
   };
   for (const auto& trial : trials_)
     fitFunction(trial, Curve<DIM, Order>::notAKnot, edges_);
