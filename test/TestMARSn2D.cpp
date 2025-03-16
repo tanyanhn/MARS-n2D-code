@@ -41,8 +41,14 @@ auto diskTEST(const std::string& jsonFile) {
   //     hLCoefficient * std::pow(h0[0] * h0[1], 0.5 * aimOrder / Order);
   // const Box<DIM> box(0, N0 - 1);
   // const Real dt0 = std::min(h0[0], h0[1]) / uM * Cr;
-  const auto timeIntegrator =
-      make_shared<ERK<2, RK::ClassicRK4, VectorFunction>>();
+  std::shared_ptr<TimeIntegrator<DIM, VectorFunction>> timeIntegrator;
+  if (Order == 4) {
+    timeIntegrator = make_shared<ERK<DIM, RK::ClassicRK4, VectorFunction>>();
+  } else if (Order == 6) {
+    timeIntegrator = make_shared<ERK<DIM, RK::Verner6, VectorFunction>>();
+  } else if (Order == 8) {
+    timeIntegrator = make_shared<ERK<DIM, RK::PrinceDormand8, VectorFunction>>();
+  } 
   const Real T = te;
   const Vortex vortex(T);
 
