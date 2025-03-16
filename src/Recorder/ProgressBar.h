@@ -43,7 +43,7 @@ class ProgressBar {
 
   void update() {
     ++currentIter_;
-    if ((int)(100.0 * currentIter_ / totalIter_) > currentProgress_) {
+    while ((int)(100.0 * currentIter_ / totalIter_) > currentProgress_) {
       ++currentProgress_;
       bar_.tick();
     }
