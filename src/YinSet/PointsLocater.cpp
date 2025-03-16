@@ -15,7 +15,7 @@ auto PointsLocater::compute(const vector<Segment<2>> &segs,
   // for those endpoints
   for (auto sit = segs.begin(); sit != segs.end(); ++sit) {
     int type = pt_cmp.compare(sit->p[0], sit->p[1]);
-    assert(type != 0);
+    if (type == 0) throw std::runtime_error("Segment has zero length");
     event.emplace_back(sit->p[0], type, -1, sit);
     event.emplace_back(sit->p[1], -type, -1, sit);
   }

@@ -72,8 +72,8 @@ void YinSet<2, Order>::buildHasse(Real tol) {
   for (int i = 0; i < numCurves; ++i) {
     std::vector<Vec<Real, 2>> queries;
     for (int k : candidates[i]) queries.push_back(somePoints[k]);
-    auto loc = locater(collapseToSeg(orientedJordanCurves[i]), queries,
-                       boundedness[i]);
+    auto loc = locater.operator()<Order>({orientedJordanCurves[i]}, queries,
+                                         boundedness[i]);
     for (std::size_t j = 0; j < candidates[i].size(); ++j) {
       assert(loc[j] != 0);
       if (boundedness[i] == (loc[j] == 1)) {
