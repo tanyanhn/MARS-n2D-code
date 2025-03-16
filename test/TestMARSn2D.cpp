@@ -198,6 +198,8 @@ TEST_CASE("Disk 4 vortex T = 4/8, RK4: Convergence Test.",
           "[Disk][Vortex][4][MARSn2D][Convergence]") {
   // const auto* testName = "Disk4Vortex4";
   const auto* testName = "Disk4Vortex8";
+  // const auto* testName = "Disk4Vortex12";
+  // const auto* testName = "Disk4Vortex16";
   ::Timer t(testName);
   auto dir = rootDir + "/results/TrackInterface/" + testName + "/";
   mkdir(dir.c_str(), 0755);
