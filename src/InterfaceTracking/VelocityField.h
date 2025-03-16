@@ -219,7 +219,7 @@ class Deformation : public VectorFunction<2> {
   using Vector = std::vector<T>;
 
  public:
-  const Point operator()(const Point &pt, Real t) const {
+  const Point operator()(const Point &pt, Real t) const override{
     Point y;
     y[0] = cos(M_PI * t / T) * sin(n * M_PI * (pt[0] + 0.5)) *
            sin(n * M_PI * (pt[1] + 0.5));
@@ -228,7 +228,30 @@ class Deformation : public VectorFunction<2> {
     return y;
   }
 
-  const Vector<Real> getJacobi(const Point &pt, Real t) const {
+  void operator()(const Eigen::ArrayXXd &pts, Real t,
+                  Eigen::ArrayXXd &output) const override {
+    Timer timer("vectorFunction::operator()");
+    using namespace Eigen;
+
+    const double scale = cos(M_PI * t / T);
+    const double n_pi = n * M_PI;
+
+    // 计算变换后的坐标
+    ArrayXd x = n_pi * (pts.row(0).array() + 0.5);
+    ArrayXd y = n_pi * (pts.row(1).array() + 0.5);
+
+    // 计算sin和cos值
+    ArrayXd sin_x = x.sin();
+    ArrayXd sin_y = y.sin();
+    ArrayXd cos_x = x.cos();
+    ArrayXd cos_y = y.cos();
+
+    // 组合结果
+    output.row(0) = scale * (sin_x * sin_y);
+    output.row(1) = scale * (cos_x * cos_y);
+  }
+
+  const Vector<Real> getJacobi(const Point &pt, Real t) const override{
     Vector<Real> ptjac(4);
     ptjac[0] = cos(M_PI * t / T) * n * M_PI * cos(n * M_PI * (pt[0] + 0.5)) *
                sin(n * M_PI * (pt[1] + 0.5));
