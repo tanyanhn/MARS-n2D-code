@@ -22,6 +22,7 @@ bool output = false;
 template <int Order>
 auto diskTEST(const std::string& jsonFile) {
   auto params = read_config(jsonFile);
+  distTol(params.tol);
   // time
   const Real te = params.time.te;
   const Real t0 = params.time.t0;

@@ -37,6 +37,9 @@ YinSet<2, Order>::YinSet(const SRS &segmentedSpadjor, Real tol) {
 // template YinSet<2, 4>::YinSet(const SRS& segmentedSpadjor, Real tol);
 
 template <int Order>
+#ifdef OPTNONE
+__attribute__((optnone))
+#endif  // OPTNONE
 void YinSet<2, Order>::buildHasse(Real tol) {
   // step 1 : construct the inclusion matrix
   const int numCurves = orientedJordanCurves.size();
@@ -56,7 +59,7 @@ void YinSet<2, Order>::buildHasse(Real tol) {
     const auto &knots = orientedJordanCurves[i].getKnots();
     somePoints[i] = polys[0]((knots[0] + knots[1]) / 2);
     boxes[i] = boundingBox(orientedJordanCurves[i]);
-    boundedness[i] = ::isBounded(orientedJordanCurves[i], tol);
+    boundedness[i] = ::isBounded(orientedJordanCurves[i], 0);
   }
   for (int i = 0; i < numCurves - 1; ++i) {
     for (int j = i + 1; j < numCurves; ++j) {
@@ -350,7 +353,7 @@ auto YinSet<2, Order>::cutCell(const Box<Dim> &box, const Interval<Dim> &range,
 
   // calculate the intersections' parameters
   auto intersections = CutCellHelper<Order>::intersectGridLine(
-      lo, hi, h, orientedJordanCurves, newtonTol);
+      lo, hi, h, orientedJordanCurves, newtonTol());
 
   vector<vector<vector<Curve<2, Order>>>> gridCurves(
       N0, vector<vector<Curve<2, Order>>>(N1));
@@ -361,7 +364,7 @@ auto YinSet<2, Order>::cutCell(const Box<Dim> &box, const Interval<Dim> &range,
   // }
   // partition the curves to vector<vector<Curve<Dim, Order>>>
   CutCellHelper<Order>::splitCurves(lo, h, intersections, orientedJordanCurves,
-                                    gridCurves, newtonTol);
+                                    gridCurves, newtonTol());
 
   // past in every cells.
   CutCellHelper<Order>::pastCells(lo, h, box, gridCurves, ret, tol);

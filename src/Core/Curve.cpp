@@ -325,6 +325,9 @@ Curve<2, Order> createRect(const Vec<Real, 2> &lo, const Vec<Real, 2> &hi) {
 }
 
 template <int Order>
+#ifdef OPTNONE
+__attribute__((optnone))
+#endif  // OPTNONE
 Real area(const Curve<2, Order> &gon) {
   Real a = 0.0;
   if (gon.empty()) return a;

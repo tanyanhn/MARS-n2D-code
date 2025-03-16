@@ -225,7 +225,7 @@ void MARSn2D<Order, VelocityField>::timeStep(const VelocityField<DIM> &v,
     }
 
     bool inserted = true;
-    while (inserted) {
+    while (inserted && insertCount < insertTimesMax) {
       updateHL(curv, marks, hL);
       vector<std::pair<unsigned int, unsigned int>> indices2Num;
       /** TODO(ytan) need efficientOfHL = 1 - 2 * rTiny_ fill hL upper bound,
@@ -237,11 +237,13 @@ void MARSn2D<Order, VelocityField>::timeStep(const VelocityField<DIM> &v,
       if (inserted) {
         insertMarks(v, tn, dt, indices2Num, marks, preEdge, curv);
         insertCount++;
+        if (insertCount >= insertTimesMax)
+          throw std::runtime_error("insertCount >= insertTimesMax");
       }
     }
 
     bool removed = true;
-    while (removed) {
+    while (removed && removeCount < removeTimesMax) {
       updateHL(curv, marks, hL);
       vector<unsigned int> indices;
       locateTinyEdges(marks, hL, indices, rTiny_);
@@ -254,6 +256,8 @@ void MARSn2D<Order, VelocityField>::timeStep(const VelocityField<DIM> &v,
         }
         removeMarks(indices, marks, curv);
         removeCount++;
+        if (removeCount >= removeTimesMax)
+          throw std::runtime_error("removeCount >= removeTimesMax");
       }
     }
 
@@ -276,7 +280,8 @@ void MARSn2D<Order, VelocityField>::timeStep(const VelocityField<DIM> &v,
     std::cout << std::format("Insert: {}, Remove: {}. updateCurve", insertCount,
                              removeCount)
               << '\n';
-    // pushLogEvent(std::format("Insert: {}, Remove: {}. updateCurve", insertCount,
+    // pushLogEvent(std::format("Insert: {}, Remove: {}. updateCurve",
+    // insertCount,
     //                          removeCount),
     //              "MARSn2D", DebugLevel::INFO);
     // popLogEvent();

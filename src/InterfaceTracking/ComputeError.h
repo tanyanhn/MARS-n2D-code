@@ -155,6 +155,8 @@ cutCellError(const vector<Marsn2D::approxInterfaceGraph<Order>> &lhss,
     auto N = box.size();
     Vector<Vector<Real>> volume(N[0], Vector<Real>(N[1]));
     auto [rhsRes, rhsBoundary, rhsTags] = yinset.cutCell(box, range, false);
+    // std::ofstream of(getExportDir() + "localYinset" + ".dat",
+    // std::ios_base::binary); dumpVecYinSet<Order>(rhsRes, of);
     loop_box_2(box, i0, i1) {
       if (rhsTags[i0][i1] == 1 || rhsTags[i0][i1] == 2) {
         volume[i0][i1] = fullCell;
@@ -204,6 +206,7 @@ cutCellError(const vector<Marsn2D::approxInterfaceGraph<Order>> &lhss,
       numYinsets, Vector<Vector<Real>>(2, Vector<Real>(2 * num - 1, 0)));
   for (size_t g = 0; g < num; g++) {
     auto grid = num - g - 1;
+    Real h = 1.0 / (1 << grid);
     const auto &lhsYinsets = lhss[grid].approxYinSet();
     for (size_t i = 0; i < numYinsets; ++i) {
       auto &L1 = ret[i][0][2 * grid];
@@ -217,8 +220,8 @@ cutCellError(const vector<Marsn2D::approxInterfaceGraph<Order>> &lhss,
       // }
       loop_box_2(boxs[grid], i0, i1) {
         L1 += std::fabs(localVolumes[i0][i1] - rhsVolumes[i][i0][i1]);
-        LInf =
-            std::max(LInf, abs(localVolumes[i0][i1] - rhsVolumes[i][i0][i1]));
+        LInf = std::max(LInf,
+                        abs(localVolumes[i0][i1] - rhsVolumes[i][i0][i1]) / h);
         // if (LInf > 1e-6) breakpoint();
       }
     }
