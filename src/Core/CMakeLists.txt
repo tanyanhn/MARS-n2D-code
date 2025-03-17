@@ -21,6 +21,9 @@ set(Core_Files
     Core/Wrapper_LAPACKE.h
     Core/SolveTri.h
     Core/Linearization.h
+    Core/HighPrecisionNumber.h
+    Core/HighPrecisionNumber.cpp 
+    Core/HighPrecisionAdd.h 
     PARENT_SCOPE
 )
 

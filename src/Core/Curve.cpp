@@ -5,7 +5,8 @@
 #include <limits>
 
 #include "Core/VecCompare.h"
-#include "SolveTri.h"
+#include "Core/SolveTri.h"
+#include "Core/HighPrecisionAdd.h"
 // #include "Wrapper_LAPACKE.h"
 
 template <int Dim, int Order>
@@ -336,14 +337,19 @@ Real area(const Curve<2, Order> &gon) {
     throw std::runtime_error("unclosed Curve calculate area.");
   const auto &knots = gon.getKnots();
   int i = 0;
+  std::vector<Real> vals;
+  vals.reserve(gon.getPolys().size());
   // apply the Green's formula
   for (const auto &p : gon.getPolys()) {
     auto x = getComp(p, 0);
     auto y = getComp(p, 1);
     auto dy = y.der();
-    a += (x * dy).prim()(knots[i + 1] - knots[i]);
+    auto localVal = (x * dy).prim()(knots[i + 1] - knots[i]);
+    // a += localVal;
+    vals.push_back(localVal);
     ++i;
   }
+  a = highPrecisionAdd(vals);
   return a;
 }
 

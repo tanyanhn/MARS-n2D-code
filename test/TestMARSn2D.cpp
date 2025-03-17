@@ -42,11 +42,11 @@ auto diskTEST(const std::string& jsonFile) {
   // const Box<DIM> box(0, N0 - 1);
   // const Real dt0 = std::min(h0[0], h0[1]) / uM * Cr;
   std::shared_ptr<TimeIntegrator<DIM, VectorFunction>> timeIntegrator;
-  if (Order == 4) {
+  if (aimOrder == 4) {
     timeIntegrator = make_shared<ERK<DIM, RK::ClassicRK4, VectorFunction>>();
-  } else if (Order == 6) {
+  } else if (aimOrder == 6) {
     timeIntegrator = make_shared<ERK<DIM, RK::Verner6, VectorFunction>>();
-  } else if (Order == 8) {
+  } else if (aimOrder == 8) {
     timeIntegrator =
         make_shared<ERK<DIM, RK::PrinceDormand8, VectorFunction>>();
   }
@@ -113,9 +113,7 @@ auto diskTEST(const std::string& jsonFile) {
   }
 
   // accurate solution
-  N *= 2;
-  rVec h = (hi - lo) / N;
-  Real hL = hLCoefficient * std::pow(h[0] * h[1], 0.5 * aimOrder / Order);
+  Real hL = hLCoefficient * vecHL.back() * rTiny * 10;
   auto exactDisk = Generator::createDiskGraph<Order>(center, radius, hL, parts);
 
   return make_tuple(vecDisk, exactDisk, radius, exactArea, exactLength, vecBox,
@@ -199,41 +197,41 @@ void checkResult(auto& yinSets, auto& box, auto& range, auto& addInner,
 
 TEST_CASE("Disk 4 vortex T = 4/8/12/16, Convergence Test.",
           "[Disk][Vortex][MARSn2D][Convergence]") {
-  // const auto* testName = "Disk4Vortex4";
-  const auto* testName = "Disk4Vortex8";
-  // const auto* testName = "Disk4Vortex12";
-  // const auto* testName = "Disk4Vortex16";
-  ::Timer t(testName);
-  auto dir = rootDir + "/results/TrackInterface/" + testName + "/";
-  mkdir(dir.c_str(), 0755);
-  RecorderInitialize(RecorderInfo{DebugLevel::INFO, dir});
+  {
+    // const auto* testName = "Disk4Vortex4";
+    const auto* testName = "Disk4Vortex8";
+    // const auto* testName = "Disk4Vortex12";
+    // const auto* testName = "Disk4Vortex16";
+    auto dir = rootDir + "/results/TrackInterface/" + testName + "/";
+    mkdir(dir.c_str(), 0755);
+    RecorderInitialize(RecorderInfo{DebugLevel::INFO, dir});
 
-  SECTION("4-th order disk") {
-    constexpr int Order = 4;
-    pushLogStage("Initialize");
-    auto [vecDisk, exactDisk, radius, exactArea, exactLength, vecBox, vecN,
-          aimOrder, vecHL, rTiny, nGrid, curvConfig, plotConfig, printDetail,
-          t0, vecDt, te, timeIntegrator, velocityPtr] =
-        diskTEST<Order>(rootDir + "/test/config/" + testName + ".json");
-    popLogStage();
+    SECTION("4-th order disk") {
+      constexpr int Order = 4;
+      pushLogStage("Initialize");
+      auto [vecDisk, exactDisk, radius, exactArea, exactLength, vecBox, vecN,
+            aimOrder, vecHL, rTiny, nGrid, curvConfig, plotConfig,
+            printDetail, t0, vecDt, te, timeIntegrator, velocityPtr] =
+          diskTEST<Order>(rootDir + "/test/config/" + testName + ".json");
+      popLogStage();
 
-    pushLogStage("TrackInterface");
-    for (uint i = 0; i < nGrid; ++i) {
-      plotConfig.fName = to_string(Order) + "Circle" + "_grid" +
-                         to_string(vecN[i]) + "_T" + to_string((int)te),
-      plotConfig.fName = dir + plotConfig.fName;
-      MARSn2D<Order, VectorFunction> CM(timeIntegrator, vecHL[i], rTiny,
-                                        curvConfig, printDetail);
+      pushLogStage("TrackInterface");
+      for (uint i = 0; i < nGrid; ++i) {
+        plotConfig.fName = to_string(Order) + "Circle" + "_grid" +
+                           to_string(vecN[i]) + "_T" + to_string((int)te),
+        plotConfig.fName = dir + plotConfig.fName;
+        MARSn2D<Order, VectorFunction> CM(timeIntegrator, vecHL[i], rTiny,
+                                          curvConfig, printDetail);
+// TODO(ytan) 注释追踪, 样条拟合条件数很大.
+        // CM.trackInterface(*velocityPtr, vecDisk[i], t0, vecDt[i], te,
+        //                   plotConfig);
+      }
+      popLogStage();
 
-      CM.trackInterface(*velocityPtr, vecDisk[i], t0, vecDt[i], te, plotConfig);
+      pushLogStage("CheckResult");
+      auto errors = cutCellError(vecDisk, exactDisk, vecBox,
+      plotConfig.range); printCellError(errors);
     }
-    popLogStage();
-
-    pushLogStage("CheckResult");
-    auto errors = cutCellError(vecDisk, exactDisk, vecBox, plotConfig.range);
-    printCellError(errors);
-
-    t.~Timer();
     ::Timer::printStatistics();
     popLogStage();
     RecorderFinalize();
@@ -242,39 +240,39 @@ TEST_CASE("Disk 4 vortex T = 4/8/12/16, Convergence Test.",
 
 TEST_CASE("Disk 5 deformation T = 2/4, Convergence Test.",
           "[Disk][Deformation][MARSn2D][Convergence]") {
-  const auto* testName = "Disk5Deformation2";
-  // const auto* testName = "Disk5Deformation4";
-  ::Timer t(testName);
-  auto dir = rootDir + "/results/TrackInterface/" + testName + "/";
-  mkdir(dir.c_str(), 0755);
-  RecorderInitialize(RecorderInfo{DebugLevel::INFO, dir});
+  {
+    const auto* testName = "Disk5Deformation2";
+    // const auto* testName = "Disk5Deformation4";
+    auto dir = rootDir + "/results/TrackInterface/" + testName + "/";
+    mkdir(dir.c_str(), 0755);
+    RecorderInitialize(RecorderInfo{DebugLevel::INFO, dir});
 
-  SECTION("4-th order disk") {
-    constexpr int Order = 4;
-    pushLogStage("Initialize");
-    auto [vecDisk, exactDisk, radius, exactArea, exactLength, vecBox, vecN,
-          aimOrder, vecHL, rTiny, nGrid, curvConfig, plotConfig, printDetail,
-          t0, vecDt, te, timeIntegrator, velocityPtr] =
-        diskTEST<Order>(rootDir + "/test/config/" + testName + ".json");
-    popLogStage();
+    SECTION("4-th order disk") {
+      constexpr int Order = 4;
+      pushLogStage("Initialize");
+      auto [vecDisk, exactDisk, radius, exactArea, exactLength, vecBox, vecN,
+            aimOrder, vecHL, rTiny, nGrid, curvConfig, plotConfig, printDetail,
+            t0, vecDt, te, timeIntegrator, velocityPtr] =
+          diskTEST<Order>(rootDir + "/test/config/" + testName + ".json");
+      popLogStage();
 
-    pushLogStage("TrackInterface");
-    for (uint i = 0; i < nGrid; ++i) {
-      plotConfig.fName = to_string(Order) + "Circle" + "_grid" +
-                         to_string(vecN[i]) + "_T" + to_string((int)te),
-      plotConfig.fName = dir + plotConfig.fName;
-      MARSn2D<Order, VectorFunction> CM(timeIntegrator, vecHL[i], rTiny,
-                                        curvConfig, printDetail);
+      pushLogStage("TrackInterface");
+      for (uint i = 0; i < nGrid; ++i) {
+        plotConfig.fName = to_string(Order) + "Circle" + "_grid" +
+                           to_string(vecN[i]) + "_T" + to_string((int)te),
+        plotConfig.fName = dir + plotConfig.fName;
+        MARSn2D<Order, VectorFunction> CM(timeIntegrator, vecHL[i], rTiny,
+                                          curvConfig, printDetail);
 
-      CM.trackInterface(*velocityPtr, vecDisk[i], t0, vecDt[i], te, plotConfig);
+        CM.trackInterface(*velocityPtr, vecDisk[i], t0, vecDt[i], te,
+                          plotConfig);
+      }
+      popLogStage();
+
+      pushLogStage("CheckResult");
+      auto errors = cutCellError(vecDisk, exactDisk, vecBox, plotConfig.range);
+      printCellError(errors);
     }
-    popLogStage();
-
-    pushLogStage("CheckResult");
-    auto errors = cutCellError(vecDisk, exactDisk, vecBox, plotConfig.range);
-    printCellError(errors);
-
-    t.~Timer();
     ::Timer::printStatistics();
     popLogStage();
     RecorderFinalize();

@@ -73,6 +73,7 @@ inline Real newtonTol() noexcept {
   return newtonTol;
 }
 
-const int newtonMaxIter = 10;
+inline const int newtonMaxIter = 10;
+inline int defaultHighPrecision = 128;
 
 #endif  // CONFIG_H

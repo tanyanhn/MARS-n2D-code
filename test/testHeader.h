@@ -217,6 +217,7 @@ auto Generator::createDiskGraph(Point center, rVec radius, Real hL,
   std::reverse(cyclesEdgesId[parts.size() - 1].begin(),
                cyclesEdgesId[parts.size() - 1].end());
   YinSetId[parts.size() - 1].push_back(parts.size() - 1);
+  // smoothConditions.clear();
 
   return approxInterfaceGraph<Order>(std::move(edgeMarks), smoothConditions,
                                      std::move(cyclesEdgesId),

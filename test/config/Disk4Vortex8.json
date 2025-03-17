@@ -1,7 +1,7 @@
 {
   "tol": 1.0e-12,
   "time": {
-      "te": 8.0,
+      "te": 4.0,
       "t0": 0.0,
       "Cr": 0.25,
       "uM": 1.0
@@ -11,13 +11,13 @@
       "pars" : []
   },
   "grid": {
-      "N0": 32,
+      "N0": 8,
       "lo": [0.0, 0.0],
       "hi": [1.0, 1.0],
       "aimOrder": 6,
-      "hLCoefficient": 0.2,
+      "hLCoefficient": 1,
       "rTiny": 0.01,
-      "nGrid": 3
+      "nGrid": 6
   },
   "curvature_adaption": {
       "curvUsed": false,

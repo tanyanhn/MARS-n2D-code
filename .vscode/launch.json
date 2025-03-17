@@ -11,10 +11,10 @@
           "request": "launch",
           "program": "${workspaceFolder}/build/test/${fileBasenameNoExtension}",
           "args": [
-            // "[Fitter]",
+            " [Deformation] ",
             // "--rng-seed 634119452"
           ],
-          "cwd": "${workspaceFolder}/test",
+          "cwd": "${workspaceFolder}",
           "environment": [],
           "externalConsole": false,
           "MIMode": "gdb",

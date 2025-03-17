@@ -275,6 +275,8 @@ void MARSn2D<Order, VelocityField>::timeStep(const VelocityField<DIM> &v,
   auto mark_edge = ig.accessEdges();
   // #pragma omp parallel for default(shared) schedule(static)
   for (auto [edgeIter, markIter] : mark_edge) {
+    insertCount = 0;
+    removeCount = 0;
     stepCrv(*edgeIter, *markIter);
   }
   // #pragma omp critical

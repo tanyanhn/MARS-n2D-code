@@ -33,6 +33,7 @@ find_package(Eigen3 CONFIG REQUIRED)
 find_package(CppUnit CONFIG REQUIRED)
 find_package(nlohmann_json CONFIG REQUIRED)
 pkg_check_modules(LAPACKE REQUIRED lapacke)
+pkg_check_modules(mpfr REQUIRED IMPORTED_TARGET mpfr)
 # message("lib: " ${Eigen_LIBRARY})
 
 # may be slower with ON.
