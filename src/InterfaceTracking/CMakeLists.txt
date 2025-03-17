@@ -3,6 +3,7 @@ set(InterfaceTracking_Files
     InterfaceTracking/RKButcher.h
     InterfaceTracking/RKButcher.cpp
     InterfaceTracking/VectorFunction.h
+    InterfaceTracking/VectorFactory.h
     InterfaceTracking/ERK.h
     InterfaceTracking/DIRK.h
     InterfaceTracking/MARS.h

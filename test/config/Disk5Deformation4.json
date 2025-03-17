@@ -1,28 +1,28 @@
 {
   "tol": 1.0e-12,
   "time": {
-      "te": 8.0,
+      "te": 4.0,
       "t0": 0.0,
-      "Cr": 0.25,
+      "Cr": 0.125,
       "uM": 1.0
   },
   "field": {
-      "velocityName" : "Vortex",
-      "pars" : []
+      "velocityName" : "Deformation",
+      "pars" : [4]
   },
   "grid": {
       "N0": 32,
       "lo": [0.0, 0.0],
       "hi": [1.0, 1.0],
-      "aimOrder": 6,
-      "hLCoefficient": 0.2,
-      "rTiny": 0.01,
+      "aimOrder": 8,
+      "hLCoefficient": 7.5,
+      "rTiny": 0.05,
       "nGrid": 3
   },
   "curvature_adaption": {
-      "curvUsed": false,
-      "rCMin": 0.02,
-      "rhoMin": 5.0,
+      "curvUsed": true,
+      "rCMin": 0.1,
+      "rhoMin": 1.0,
       "rhoMax": 10000.0
   },
   "plot": {
@@ -32,8 +32,8 @@
       "printDetail": false
   },
   "domain_disk": {
-      "center": [0.5, 0.75],
+      "center": [0.5, 0.5],
       "radius": [0.15, 0.15],
-      "parts": [0.0, 0.25, 0.5, 0.75]
+      "parts": [0.1, 0.3, 0.5, 0.7, 0.9]
   }
 }

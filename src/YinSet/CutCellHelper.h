@@ -136,12 +136,12 @@ auto CutCellHelper<Order>::splitCurves(
 
     for (auto &&crv : splitRes) {
       // if (crv.empty()) continue;
-      auto start = crv.startpoint();
-      auto end = crv.endpoint();
+      // auto start = crv.startpoint();
+      // auto end = crv.endpoint();
       rVec mid = crv.midpoint();
       auto id = Vec<int, 2>((mid - lo) / h);
-      auto i0 = id[0];
-      auto i1 = id[1];
+      // auto i0 = id[0];
+      // auto i1 = id[1];
       gridCurves[id[0]][id[1]].emplace_back(crv);
       // for (auto v : splitKnots) {
       //   auto p = crv(v);

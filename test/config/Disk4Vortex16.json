@@ -6,6 +6,10 @@
       "Cr": 0.125,
       "uM": 1.0
   },
+  "field": {
+      "velocityName" : "Vortex",
+      "pars" : []
+  },
   "grid": {
       "N0": 32,
       "lo": [0.0, 0.0],

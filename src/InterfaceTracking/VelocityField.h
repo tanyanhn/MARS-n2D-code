@@ -3,7 +3,8 @@
 
 #include <cmath>
 
-#include "TimeIntegrator.h"
+#include "InterfaceTracking/TimeIntegrator.h"
+#include "InterfaceTracking/VectorFactory.h"
 
 class CircleShrink : public VectorFunction<2> {
  private:
@@ -206,10 +207,12 @@ class Vortex : public VectorFunction<2> {
 
  public:
   Vortex(Real _T) : T(_T){};
+  static std::string staticClassName() { return "Vortex"; }
 
  private:
   Real T;
 };
+REGISTER_CLASS(Vortex, Real) // 注册参数类型
 
 class Deformation : public VectorFunction<2> {
  private:
@@ -266,10 +269,12 @@ class Deformation : public VectorFunction<2> {
 
  public:
   Deformation(Real _T, int _n = 4) : T(_T), n(_n){};
+  static std::string staticClassName() { return "Deformation"; }
 
  private:
   Real T;
   int n;
 };
+REGISTER_CLASS(Deformation, Real, int) // 注册参数类型
 
 #endif

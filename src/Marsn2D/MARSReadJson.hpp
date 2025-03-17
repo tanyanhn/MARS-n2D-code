@@ -1,20 +1,32 @@
 #pragma once
-#include "testHeader.h"
+// #include "testHeader.h"
 #include <nlohmann/json.hpp>
 
+#include "Core/Config.h"
+#include "Core/Vec.h"
+#include "InterfaceTracking/VelocityField.h"
 
+using Point = Vec<Real, 2>;
+using rVec = Vec<Real, 2>;
 
 // 参数结构体定义
 struct SimulationParams {
   Real tol;
   // Time parameters
   struct {
-      Real te;
-      Real t0;
-      Real Cr;
-      Real uM;
+    Real te;
+    Real t0;
+    Real Cr;
+    Real uM;
   } time;
-  
+
+  // field parameters
+  struct {
+    std::shared_ptr<VectorFunction<2>> velocity;
+    std::string name;
+    ParamWrapper pars;
+  } field;
+
   // grid parameters
   struct {
     int N0;
@@ -28,25 +40,25 @@ struct SimulationParams {
 
   // Curvature adaption parameters
   struct {
-      bool curvUsed;
-      Real rCMin;
-      Real rhoMin;
-      Real rhoMax;
+    bool curvUsed;
+    Real rCMin;
+    Real rhoMin;
+    Real rhoMax;
   } curvature;
 
   // plot parameters
   struct {
-      int plotOutput;
-      bool plotInner;
-      Real plotStride;
-      bool printDetail;
+    int plotOutput;
+    bool plotInner;
+    Real plotStride;
+    bool printDetail;
   } plotConfig;
 
   // Domain disk parameters
   struct {
-      Point center;
-      rVec radius;
-      std::vector<Real> parts;
+    Point center;
+    rVec radius;
+    std::vector<Real> parts;
   } domain;
 };
 
@@ -64,6 +76,18 @@ inline void from_json(const nlohmann::json& j, SimulationParams& params) {
   params.time.t0 = time.at("t0");
   params.time.Cr = time.at("Cr");
   params.time.uM = time.at("uM");
+
+  const auto& field = j.at("field");
+  params.field.name = field.at("velocityName");
+  auto constructPars = [](Real te, const nlohmann::json& j) {
+    if (j.empty()) return ParamWrapper(te); // Vortex
+    if (j.is_array() && j[0].is_number_integer())
+      return ParamWrapper(te, j[0].get<int>()); // Deformation
+    return ParamWrapper(te); // unknow default;
+  };
+  params.field.pars = constructPars(params.time.te, field.at("pars"));
+  params.field.velocity.reset(Vector2DFactory::getInstance().create(
+      params.field.name, params.field.pars));
 
   // 解析网格参数
   const auto& grid = j.at("grid");
@@ -97,6 +121,10 @@ inline void from_json(const nlohmann::json& j, SimulationParams& params) {
 
 inline SimulationParams read_config(const std::string& filename) {
   std::ifstream ifs(filename);
+  if (!ifs.is_open()) {
+    std::cerr << "Error: Failed to open config file: " << filename << std::endl;
+    exit(1);
+  }
   nlohmann::json config = nlohmann::json::parse(ifs);
   return config.get<SimulationParams>();
 }

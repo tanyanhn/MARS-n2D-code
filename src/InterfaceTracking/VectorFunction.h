@@ -41,6 +41,8 @@ class VectorFunction {
   virtual void operator()(const Eigen::ArrayXXd& pts, Real t,
                           Eigen::ArrayXXd& output) const {}
 
+  static std::string staticClassName() { return "VectorFunction"; }
+
   /*
   virtual const Tensor<Real, 2> getJacobi(const Vector<Point> &pts, Real t = 0)
   const

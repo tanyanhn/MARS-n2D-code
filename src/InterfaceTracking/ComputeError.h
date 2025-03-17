@@ -200,13 +200,17 @@ cutCellError(const vector<Marsn2D::approxInterfaceGraph<Order>> &lhss,
   for (size_t i = 0; i < rhsYinsets.size(); i++) {
     rhsVolumes.emplace_back(calculateVolume(box, rhsYinsets[i]));
   }
+  Vec<Real, 2> h0;
+  h0[0] = range.hi()[0] - range.lo()[0];
+  h0[1] = range.hi()[1] - range.lo()[1];
+  h0 = h0 / (boxs[0].size());
 
   // compute lhss
   Vector<Vector<Vector<Real>>> ret(
       numYinsets, Vector<Vector<Real>>(2, Vector<Real>(2 * num - 1, 0)));
   for (size_t g = 0; g < num; g++) {
     auto grid = num - g - 1;
-    Real h = 1.0 / (1 << grid);
+    Real h = h0[0] / (1 << grid);
     const auto &lhsYinsets = lhss[grid].approxYinSet();
     for (size_t i = 0; i < numYinsets; ++i) {
       auto &L1 = ret[i][0][2 * grid];
