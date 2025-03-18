@@ -2,6 +2,7 @@
 
 #include <deque>
 
+#include "Core/FitCurve.h"
 #include "Core/VecCompare.h"
 
 namespace Marsn2D {
@@ -72,6 +73,9 @@ approxInterfaceGraph<Order>::approxInterfaceGraph(
 }
 
 template <int Order>
+#ifdef OPTNONE
+  __attribute__((optnone))
+#endif  // OPTNONE
 void approxInterfaceGraph<Order>::updateCurve() {
   auto& marks_ = undirectGraph.edges_;
   auto& trials_ = undirectGraph.trials_;
@@ -102,8 +106,12 @@ void approxInterfaceGraph<Order>::updateCurve() {
       knots.insert(knots.end(), marks_[crvId].begin(), marks_[crvId].end());
       brksId.push_back(knots.size() - 1);
     }
-
-    auto crv = fitCurve<Order>(knots, type);
+    Curve<DIM, Order> crv;
+    if constexpr (Order == 4)
+      crv = fitCurveEigen(knots, type);
+    else
+      crv = fitCurve<Order>(knots, type);
+    // checkFitCurve(crv, type);
     for (auto brkId : brksId) brks.push_back(crv.getKnots()[brkId]);
 
     vector<Edge> pieces;
@@ -198,4 +206,4 @@ auto approxInterfaceGraph<Order>::accessEdges()
 template class approxInterfaceGraph<2>;
 template class approxInterfaceGraph<4>;
 
-}  // namespace MARSn2D
+}  // namespace Marsn2D

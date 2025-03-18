@@ -47,10 +47,11 @@ class Curve {
   // helpers
   int locatePiece(Real t) const;
 
-  #ifdef OPTNONE
+#ifdef OPTNONE
   __attribute__((optnone))
-  #endif  // OPTNONE
-  rVec operator()(Real t) const {
+#endif  // OPTNONE
+  rVec
+  operator()(Real t) const {
     int p = locatePiece(t);
     return (polys[p])(t - knots[p]);
   }
@@ -117,11 +118,12 @@ class Curve {
 
   // advanved operations
  public:
- // extact 
-  Curve<Dim, Order> extract(Real lo, Real hi, Real tol, bool exact = false) const;
+  // extact
+  Curve<Dim, Order> extract(Real lo, Real hi, Real tol,
+                            bool exact = false) const;
 
-  void split(const vector<Real>& brks, vector<Curve<Dim, Order>>& out,
-             Real tol, bool exact = false) const;
+  void split(const vector<Real>& brks, vector<Curve<Dim, Order>>& out, Real tol,
+             bool exact = false) const;
   ///
   /**
      Return a copy of this curve,
@@ -209,6 +211,12 @@ Curve<2, Order> fitCurve(
     typename Curve<2, Order>::BCType type = Curve<2, Order>::notAKnot,
     const Vec<Real, 2>& start = Vec<Real, 2>(),
     const Vec<Real, 2>& end = Vec<Real, 2>());
+
+template <int Order>
+void checkFitCurve(const Curve<2, Order>& crv,
+                   typename Curve<2, Order>::BCType type,
+                   const Vec<Real, 2>& start = Vec<Real, 2>(),
+                   const Vec<Real, 2>& end = Vec<Real, 2>());
 
 template <int Dim, int Order>
 auto Curve<Dim, Order>::getKnotPoints() const {

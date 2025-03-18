@@ -364,7 +364,7 @@ auto YinSet<2, Order>::cutCell(const Box<Dim> &box, const Interval<Dim> &range,
   // }
   // partition the curves to vector<vector<Curve<Dim, Order>>>
   CutCellHelper<Order>::splitCurves(lo, h, intersections, orientedJordanCurves,
-                                    gridCurves, newtonTol());
+                                    gridCurves, newtonTol() *  100);
 
   // past in every cells.
   CutCellHelper<Order>::pastCells(lo, h, box, gridCurves, ret, tol);

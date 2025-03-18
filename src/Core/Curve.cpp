@@ -4,9 +4,9 @@
 #include <iostream>
 #include <limits>
 
-#include "Core/VecCompare.h"
-#include "Core/SolveTri.h"
 #include "Core/HighPrecisionAdd.h"
+#include "Core/SolveTri.h"
+#include "Core/VecCompare.h"
 // #include "Wrapper_LAPACKE.h"
 
 template <int Dim, int Order>
@@ -107,8 +107,8 @@ template <int Dim, int Order>
 #ifdef OPTNONE
 __attribute__((optnone))
 #endif  // OPTNONE
-Curve<Dim, Order> Curve<Dim, Order>::extract(Real lo, Real hi, Real tol,
-                                             bool exact) const {
+Curve<Dim, Order>
+Curve<Dim, Order>::extract(Real lo, Real hi, Real tol, bool exact) const {
   if (hi <= lo) return Curve<Dim, Order>();
   if (!exact && hi <= lo + tol) return Curve<Dim, Order>();
 
@@ -771,6 +771,57 @@ Real Curve<Dim, Order>::curvature(const Polynomial<Order, Real> &xPoly,
   return numerator / denominator;
 }
 
+template <int Order>
+#ifdef OPTNONE
+  __attribute__((optnone))
+#endif  // OPTNONE
+void checkFitCurve(const Curve<2, Order> &crv,
+                   typename Curve<2, Order>::BCType type,
+                   const Vec<Real, 2> &start, const Vec<Real, 2> &end) {
+  const auto &knots = crv.getKnots();
+  const auto &polys = crv.getPolys();
+  auto num = polys.size();
+  std::vector<Real> ret(4, 0);
+  for (int i = 1; i < num; ++i) {
+    ret[0] = std::max(
+        ret[0], norm(polys[i - 1](knots[i] - knots[i - 1]) - polys[i][0], 2));
+    if constexpr (Order > 2) {
+      auto ployDs = der(crv).getPolys();
+      auto polyDDs = der(der(crv)).getPolys();
+      ret[1] = std::max(
+          ret[1],
+          norm(ployDs[i - 1](knots[i] - knots[i - 1]) - ployDs[i][0], 2));
+      ret[2] = std::max(
+          ret[2],
+          norm(polyDDs[i - 1](knots[i] - knots[i - 1]) - polyDDs[i][0], 2));
+    }
+  }
+  if constexpr (Order > 2) {
+    auto ployDs = der(crv).getPolys();
+    auto polyDDs = der(der(crv)).getPolys();
+    if (type == Curve<2, 4>::periodic) {
+      ret[3] = std::max(
+          ret[3],
+          norm(polys[num - 1](knots[num] - knots[num - 1]) - polys[0][0], 2));
+      ret[3] = std::max(
+          ret[3],
+          norm(ployDs[num - 1](knots[num] - knots[num - 1]) - ployDs[0][0], 2));
+      ret[3] = std::max(
+          ret[3],
+          norm(polyDDs[num - 1](knots[num] - knots[num - 1]) - polyDDs[0][0],
+               2));
+    } else if (type == Curve<2, 4>::notAKnot) {
+      ret[3] = std::max(ret[3], norm(polys[num - 1][3] - polys[num - 2][3], 2));
+      ret[3] = std::max(ret[3], norm(polys[1][3] - polys[0][3], 2));
+    }
+  }
+
+  std::cout << std::format(
+      "max error of position: {}, velocity: {}, acceleration: {}, endpoint: "
+      "{}\n",
+      ret[0], ret[1], ret[2], ret[3]);
+}
+
 //=================================================
 // explicit instantiation of the followings
 
@@ -799,3 +850,12 @@ template Curve<2, 2> createLineSegment(const Vec<Real, 2> &p0,
                                        const Vec<Real, 2> &p1);
 template Curve<2, 4> createLineSegment(const Vec<Real, 2> &p0,
                                        const Vec<Real, 2> &p1);
+
+template void checkFitCurve<2>(const Curve<2, 2> &crv,
+                               typename Curve<2, 2>::BCType type,
+                               const Vec<Real, 2> &start,
+                               const Vec<Real, 2> &end);
+template void checkFitCurve<4>(const Curve<2, 4> &crv,
+                               typename Curve<2, 4>::BCType type,
+                               const Vec<Real, 2> &start,
+                               const Vec<Real, 2> &end);

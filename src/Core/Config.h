@@ -69,7 +69,7 @@ inline Real distTol(Real tol = 1e-12) noexcept {
 }
 
 inline Real newtonTol() noexcept {
-  static Real newtonTol = distTol() / 10;
+  static Real newtonTol = distTol() / 10000;
   return newtonTol;
 }
 
