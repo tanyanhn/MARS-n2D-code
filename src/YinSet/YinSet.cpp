@@ -59,7 +59,7 @@ void YinSet<2, Order>::buildHasse(Real tol) {
     const auto &knots = orientedJordanCurves[i].getKnots();
     somePoints[i] = polys[0]((knots[0] + knots[1]) / 2);
     boxes[i] = boundingBox(orientedJordanCurves[i]);
-    boundedness[i] = ::isBounded(orientedJordanCurves[i], 0);
+    boundedness[i] = ::isBounded(orientedJordanCurves[i], tol);
   }
   for (int i = 0; i < numCurves - 1; ++i) {
     for (int j = i + 1; j < numCurves; ++j) {
@@ -364,14 +364,14 @@ auto YinSet<2, Order>::cutCell(const Box<Dim> &box, const Interval<Dim> &range,
   // }
   // partition the curves to vector<vector<Curve<Dim, Order>>>
   CutCellHelper<Order>::splitCurves(lo, h, intersections, orientedJordanCurves,
-                                    gridCurves, newtonTol() *  100);
+                                    gridCurves, newtonTol());
 
   // past in every cells.
   CutCellHelper<Order>::pastCells(lo, h, box, gridCurves, ret, tol);
 
   // fill inner cell rectangles.
   auto tags = CutCellHelper<Order>::fillInner(lo, h, box, *this, gridCurves,
-                                              ret, tol, addInner);
+                                              ret, newtonTol(), addInner);
 
   return {std::move(ret), std::move(gridCurves), std::move(tags)};
 }

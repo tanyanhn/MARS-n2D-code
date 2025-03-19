@@ -11,7 +11,11 @@ using rVec = Vec<Real, 2>;
 
 // 参数结构体定义
 struct SimulationParams {
-  Real tol;
+  // Tolerance parameters
+  struct {
+    Real distTol;
+    Real newtonTol;
+  } tolerance;
   // Time parameters
   struct {
     Real te;
@@ -69,7 +73,9 @@ inline void from_json(const nlohmann::json& j, Point& p) {
 }
 
 inline void from_json(const nlohmann::json& j, SimulationParams& params) {
-  params.tol = j.at("tol").get<Real>();
+  const auto& tolerance = j.at("tolerance");
+  params.tolerance.distTol = tolerance.at("distTol").get<Real>();
+  params.tolerance.newtonTol = tolerance.at("newtonTol").get<Real>();
   // 解析时间参数
   const auto& time = j.at("time");
   params.time.te = time.at("te");

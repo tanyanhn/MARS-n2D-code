@@ -191,6 +191,29 @@ cutCellError(const vector<Marsn2D::approxInterfaceGraph<Order>> &lhss,
     }
     return ret;
   };
+  auto checkCellVolume = [range](Vector<Vector<Vector<Real>>> volumes)
+#ifdef OPTNONE
+      __attribute__((optnone))
+#endif  // OPTNONE
+  {
+    const size_t Nx = volumes[0].size();
+    const size_t Ny = volumes[0][0].size();
+    auto h0 = range.hi() - range.lo();
+    h0[0] = h0[0] / Nx;
+    h0[1] = h0[1] / Ny;
+    Real fullCell = h0[0] * h0[1];
+    for (size_t i = 0; i < Nx; i++) {
+      for (size_t j = 0; j < Ny; j++) {
+        Real sum = 0;
+        for (auto &volume : volumes) {
+          sum += volume[i][j];
+        }
+        if (norm(sum - fullCell) > 1e-12) {
+          std::cout << std::format("i = {}, j = {}, sum = {}", i, j, sum);
+        }
+      }
+    }
+  };
 
   // compute rhs
   auto &box = boxs.back();
@@ -200,10 +223,9 @@ cutCellError(const vector<Marsn2D::approxInterfaceGraph<Order>> &lhss,
   for (size_t i = 0; i < rhsYinsets.size(); i++) {
     rhsVolumes.emplace_back(calculateVolume(box, rhsYinsets[i]));
   }
-  Vec<Real, 2> h0;
-  h0[0] = range.hi()[0] - range.lo()[0];
-  h0[1] = range.hi()[1] - range.lo()[1];
+  Vec<Real, 2> h0 = range.hi() - range.lo();
   h0 = h0 / (boxs[0].size());
+  checkCellVolume(rhsVolumes);
 
   // compute lhss
   Vector<Vector<Vector<Real>>> ret(
@@ -226,7 +248,9 @@ cutCellError(const vector<Marsn2D::approxInterfaceGraph<Order>> &lhss,
         L1 += std::fabs(localVolumes[i0][i1] - rhsVolumes[i][i0][i1]);
         LInf = std::max(LInf,
                         abs(localVolumes[i0][i1] - rhsVolumes[i][i0][i1]) / h);
-        // if (LInf > 1e-6) breakpoint();
+        // if (LInf > 2e-12) {
+        //   std::cout << std::format("i = {}, j = {}, LInf = {}", i0, i1, LInf);
+        // }
       }
     }
     rhsVolumes = coarseVolumes(rhsVolumes);

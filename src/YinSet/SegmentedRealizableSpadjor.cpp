@@ -69,7 +69,7 @@ bool SegmentedRealizableSpadjor<Order>::isBounded(Real tol) const {
 
 template <int Order>
 bool isBounded(const Curve<2, Order> &polygon, Real tol) {
-  return area(polygon) > 0;
+  return area(polygon, tol) > 0;
   // auto iterator = [&](const auto &callback) {
   //   auto monotonic = polygon.makeMonotonic(tol);
   //   const auto &polys = monotonic.getPolys();

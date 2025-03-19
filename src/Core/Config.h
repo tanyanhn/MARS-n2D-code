@@ -63,13 +63,15 @@ inline void keepSleep() {
   }
 }
 
-inline Real distTol(Real tol = 1e-12) noexcept {
-  static Real distTol = tol;
+inline Real distTol(Real tol = -1) noexcept {
+  static Real distTol = 1e-12;
+  if (tol > 0) distTol = tol;
   return distTol;
 }
 
-inline Real newtonTol() noexcept {
-  static Real newtonTol = distTol() / 10000;
+inline Real newtonTol(Real tol = -1) noexcept {
+  static Real newtonTol = 1e-15;
+  if (tol > 0) newtonTol = tol;
   return newtonTol;
 }
 

@@ -20,9 +20,13 @@ bool output = false;
 // }
 
 template <int Order>
+#ifdef OPTNONE
+__attribute__((optnone))
+#endif  // OPTNONE
 auto diskTEST(const std::string& jsonFile) {
   auto params = read_config(jsonFile);
-  distTol(params.tol);
+  distTol(params.tolerance.distTol);
+  newtonTol(params.tolerance.newtonTol);
   // time
   const Real te = params.time.te;
   const Real t0 = params.time.t0;
@@ -210,8 +214,8 @@ TEST_CASE("Disk 4 vortex T = 4/8/12/16, Convergence Test.",
       constexpr int Order = 4;
       pushLogStage("Initialize");
       auto [vecDisk, exactDisk, radius, exactArea, exactLength, vecBox, vecN,
-            aimOrder, vecHL, rTiny, nGrid, curvConfig, plotConfig,
-            printDetail, t0, vecDt, te, timeIntegrator, velocityPtr] =
+            aimOrder, vecHL, rTiny, nGrid, curvConfig, plotConfig, printDetail,
+            t0, vecDt, te, timeIntegrator, velocityPtr] =
           diskTEST<Order>(rootDir + "/test/config/" + testName + ".json");
       popLogStage();
 
@@ -222,15 +226,15 @@ TEST_CASE("Disk 4 vortex T = 4/8/12/16, Convergence Test.",
         plotConfig.fName = dir + plotConfig.fName;
         MARSn2D<Order, VectorFunction> CM(timeIntegrator, vecHL[i], rTiny,
                                           curvConfig, printDetail);
-// TODO(ytan) 注释追踪, 样条拟合条件数很大.
+        // TODO(ytan) 注释追踪, 样条拟合条件数很大.
         CM.trackInterface(*velocityPtr, vecDisk[i], t0, vecDt[i], te,
                           plotConfig);
       }
       popLogStage();
 
       pushLogStage("CheckResult");
-      auto errors = cutCellError(vecDisk, exactDisk, vecBox,
-      plotConfig.range); printCellError(errors);
+      auto errors = cutCellError(vecDisk, exactDisk, vecBox, plotConfig.range);
+      printCellError(errors);
     }
     ::Timer::printStatistics();
     popLogStage();
@@ -251,8 +255,8 @@ TEST_CASE("Disk 4 vortex T = 4/8/12/16, Convergence Test.",
 //       constexpr int Order = 4;
 //       pushLogStage("Initialize");
 //       auto [vecDisk, exactDisk, radius, exactArea, exactLength, vecBox, vecN,
-//             aimOrder, vecHL, rTiny, nGrid, curvConfig, plotConfig, printDetail,
-//             t0, vecDt, te, timeIntegrator, velocityPtr] =
+//             aimOrder, vecHL, rTiny, nGrid, curvConfig, plotConfig,
+//             printDetail, t0, vecDt, te, timeIntegrator, velocityPtr] =
 //           diskTEST<Order>(rootDir + "/test/config/" + testName + ".json");
 //       popLogStage();
 
@@ -270,8 +274,8 @@ TEST_CASE("Disk 4 vortex T = 4/8/12/16, Convergence Test.",
 //       popLogStage();
 
 //       pushLogStage("CheckResult");
-//       auto errors = cutCellError(vecDisk, exactDisk, vecBox, plotConfig.range);
-//       printCellError(errors);
+//       auto errors = cutCellError(vecDisk, exactDisk, vecBox,
+//       plotConfig.range); printCellError(errors);
 //     }
 //     ::Timer::printStatistics();
 //     popLogStage();

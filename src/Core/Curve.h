@@ -75,9 +75,17 @@ class Curve {
     return (*this)(0.5 * (knots.front() + knots.back()));
   }
 
-  bool isClosed(Real tol) const {
-    VecCompare<Real, Dim> vCmp(tol);
-    return vCmp.compare(startpoint(), endpoint()) == 0;
+#ifdef OPTNONE
+  __attribute__((optnone))
+#endif  // OPTNONE
+  bool
+  isClosed(Real tol) const {
+    auto poly = polys.back() - polys.front()[0];
+    Real t = knots.back() - *(knots.end() - 2);
+    auto res = poly(t);
+    return VecCompare<Real, Dim>(tol).compare(res, rVec(0.0)) == 0;
+    // VecCompare<Real, Dim> vCmp(tol);
+    // return vCmp.compare(startpoint(), endpoint()) == 0;
   }
 
   const std::vector<Real>& getKnots() const { return knots; }
@@ -194,7 +202,7 @@ template <int Dim, int Order>
 Interval<Dim> boundingBox(const std::vector<Curve<Dim, Order>>& vc);
 
 template <int Order>
-Real area(const Curve<2, Order>& gon);
+Real area(const Curve<2, Order>& gon, Real tol = distTol());
 
 template <int Order>
 Real arclength(const Curve<2, Order>& c);

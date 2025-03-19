@@ -7,16 +7,15 @@
 #include "Core/Curve.h"
 
 Eigen::VectorXd solveSystem(int n, const Eigen::SparseMatrix<double>& A,
-                            const Eigen::VectorXd& rhs,
-                            int maxDirectSize = 2000, double tol = 1e-17,
-                            int maxIter = 1000);
+                            const Eigen::VectorXd& rhs, Real tol = 1e-17,
+                            int maxDirectSize = 2000, int maxIter = 1000);
 
 #ifdef OPTNONE
 __attribute__((optnone))
 #endif  // OPTNONE
 Curve<2, 4>
 fitCurveEigen(const std::vector<Vec<Real, 2>>& points,
-              typename Curve<2, 4>::BCType type) {
+              typename Curve<2, 4>::BCType type, Real tol = distTol()) {
   using Eigen::VectorXd;
   using std::array;
   using std::vector;
@@ -82,7 +81,7 @@ fitCurveEigen(const std::vector<Vec<Real, 2>>& points,
 
       A.setFromTriplets(triplets.begin(), triplets.end());
 
-      VectorXd M = solveSystem(n, A, rhs);
+      VectorXd M = solveSystem(n, A, rhs, tol);
 
       // Calculate coefficients
       for (int i = 0; i < n - 1; ++i) {
@@ -131,7 +130,7 @@ fitCurveEigen(const std::vector<Vec<Real, 2>>& points,
       A.setFromTriplets(triplets.begin(), triplets.end());
 
       // VectorXd M = solveTridiagonal(alpha, beta, gamma, rhs);
-      auto M = solveSystem(m, A, rhs);
+      auto M = solveSystem(m, A, rhs, tol);
 
       // Calculate coefficients
       for (int i = 0; i < m; ++i) {
@@ -150,8 +149,8 @@ fitCurveEigen(const std::vector<Vec<Real, 2>>& points,
 }
 
 Eigen::VectorXd solveSystem(int n, const Eigen::SparseMatrix<double>& A,
-                            const Eigen::VectorXd& rhs, int maxDirectSize,
-                            double tol, int maxIter) {
+                            const Eigen::VectorXd& rhs, Real tol,
+                            int maxDirectSize, int maxIter) {
   using namespace Eigen;
 
   // 智能阈值判定：基于矩阵非零元素数量

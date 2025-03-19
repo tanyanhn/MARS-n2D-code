@@ -158,6 +158,7 @@ Curve<Dim, Order>::split(const vector<Real> &brks,
                          vector<Curve<Dim, Order>> &out, Real tol,
                          bool exact) const {
   bool closed = isClosed(tol);
+  if (exact) closed = isClosed(distTol());
   if (brks.empty()) {
     out.push_back(*this);
     return;
@@ -330,11 +331,13 @@ template <int Order>
 #ifdef OPTNONE
 __attribute__((optnone))
 #endif  // OPTNONE
-Real area(const Curve<2, Order> &gon) {
+Real area(const Curve<2, Order> &gon, Real tol) {
   Real a = 0.0;
   if (gon.empty()) return a;
-  if (!gon.isClosed(distTol()))
+  if (!gon.isClosed(tol)){
+    gon.isClosed(tol);
     throw std::runtime_error("unclosed Curve calculate area.");
+  }
   const auto &knots = gon.getKnots();
   int i = 0;
   std::vector<Real> vals;
@@ -837,8 +840,8 @@ template Curve<2, 1> der(const Curve<2, 2> &);
 template Interval<2> boundingBox(const Curve<2, 2> &);
 template Interval<2> boundingBox(const Curve<2, 4> &);
 
-template Real area(const Curve<2, 2> &gon);
-template Real area(const Curve<2, 4> &gon);
+template Real area(const Curve<2, 2> &gon, Real tol);
+template Real area(const Curve<2, 4> &gon, Real tol);
 
 template Real arclength(const Curve<2, 2> &);
 template Real arclength(const Curve<2, 4> &);

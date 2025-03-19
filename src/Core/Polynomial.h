@@ -44,11 +44,9 @@ class Polynomial {
   __attribute__((optnone))
   #endif  // OPTNONE
   CoefType operator()(const T2 &x) const {
-    CoefType val = coefs[0];
-    T2 basis = static_cast<T2>(1.);
-    for (int d = 1; d < Order; d++) {
-      basis = basis * x;
-      val = val + coefs[d] * basis;
+    CoefType val = 0;
+    for (int d = Order - 1; d >=0; --d) {
+      val = val * x + coefs[d];
     }
     return val;
   }

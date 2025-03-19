@@ -113,9 +113,12 @@ auto PointsLocater::compute(const vector<Segment<2>> &segs,
 }
 
 template <int Order>
-vector<int> PointsLocater::operator()(
-    const vector<OrientedJordanCurve<DIM, Order>> &ys,
-    const vector<rVec> &queries, bool bounded) {
+#ifdef OPTNONE
+__attribute__((optnone))
+#endif  // OPTNONE
+vector<int>
+PointsLocater::operator()(const vector<OrientedJordanCurve<DIM, Order>> &ys,
+                          const vector<rVec> &queries, bool bounded) {
   std::vector<int> ret;
   if (ys.empty() || queries.empty()) {
     return {};
@@ -146,7 +149,7 @@ vector<int> PointsLocater::operator()(
       for (int j = 0; j < queries.size(); ++j) {
         const auto &q = queries[j];
         Real x = q[ix];
-        if (x <= p0[ix] - tol || x >= p1[ix] + tol) continue;
+        if (x < p0[ix] - tol || x > p1[ix] + tol) continue;
         if (norm(p0[iy] - q[iy]) > std::get<0>(closest_points[j]) &&
             norm(p1[iy] - q[iy]) > std::get<0>(closest_points[j]))
           continue;
