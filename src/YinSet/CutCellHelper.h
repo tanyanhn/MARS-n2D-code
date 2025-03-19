@@ -125,7 +125,8 @@ auto CutCellHelper<Order>::splitCurves(
   for (int i = 0; i < intersections.size(); ++i) {
     auto &intersectionsForCurve = intersections[i];
     auto &crv = orientedJordanCurves[i];
-    if (!crv.isClosed(distTol())) throw std::runtime_error("Curve must be closed.");
+    if (!crv.isClosed(distTol()))
+      throw std::runtime_error("Curve must be closed.");
     // auto &polys = crv.getPolys();
     // auto &knots = crv.getKnots();
 
@@ -224,7 +225,10 @@ auto CutCellHelper<Order>::pastCells(
     vector<OrientedJordanCurve<2, Order>> vecCrv;
     for (auto &&crv : res) {
       auto vol = area(crv);
-      if (std::abs(vol) > newtonTol()) vecCrv.emplace_back(std::move(crv));
+      // TODO(ytan) newtonTol too small add extra miner holes, and add cell
+      // inner. distTol too big to ignore small area.
+      if (vol > newtonTol() || vol < -distTol())
+        vecCrv.emplace_back(std::move(crv));
     }
     // gridSRS[i0][i1]  = (new YinSet<2, Order>(SRS(vecCrv), tol));
     if (vecCrv.empty()) continue;

@@ -106,7 +106,7 @@ auto diskTEST(const std::string& jsonFile) {
     Real hL = hLCoefficient * std::pow(h[0] * h[1], 0.5 * aimOrder / Order);
     Real dt = std::min(h[0], h[1]) / uM * Cr;
     const auto disk =
-        Generator::createDiskGraph<Order>(center, radius, hL, parts);
+        Generator::createDiskGraph<Order>(center, radius, hL / 2, parts);
     vecDisk.emplace_back(std::move(disk));
     vecN.emplace_back(N);
     vecBox.emplace_back(0, N - 1);
@@ -117,8 +117,8 @@ auto diskTEST(const std::string& jsonFile) {
   }
 
   // accurate solution
-  Real hL = hLCoefficient * vecHL.back() * rTiny * 10;
-  auto exactDisk = Generator::createDiskGraph<Order>(center, radius, hL, parts);
+  Real hL = vecHL.back() / 10;
+  auto exactDisk = Generator::createDiskGraph<Order>(center, radius, hL / 2, parts);
 
   return make_tuple(vecDisk, exactDisk, radius, exactArea, exactLength, vecBox,
                     vecN, aimOrder, vecHL, rTiny, nGrid, curvConfig, plotConfig,
@@ -203,8 +203,8 @@ TEST_CASE("Disk 4 vortex T = 4/8/12/16, Convergence Test.",
           "[Disk][Vortex][MARSn2D][Convergence]") {
   {
     // const auto* testName = "Disk4Vortex4";
-    const auto* testName = "Disk4Vortex8";
-    // const auto* testName = "Disk4Vortex12";
+    // const auto* testName = "Disk4Vortex8";
+    const auto* testName = "Disk4Vortex12";
     // const auto* testName = "Disk4Vortex16";
     auto dir = rootDir + "/results/TrackInterface/" + testName + "/";
     mkdir(dir.c_str(), 0755);

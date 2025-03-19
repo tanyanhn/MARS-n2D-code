@@ -334,11 +334,24 @@ __attribute__((optnone))
 Real area(const Curve<2, Order> &gon, Real tol) {
   Real a = 0.0;
   if (gon.empty()) return a;
-  if (!gon.isClosed(tol)){
+  if (!gon.isClosed(tol)) {
     gon.isClosed(tol);
     throw std::runtime_error("unclosed Curve calculate area.");
   }
   const auto &knots = gon.getKnots();
+  auto pts = gon.getKnotPoints();
+  Real xl = pts.front()[0];
+  Real xh = pts.front()[0];
+  Real yl = pts.front()[1];
+  Real yh = pts.front()[1];
+  for (auto &p : pts) {
+    xl = std::min(xl, p[0]);
+    xh = std::max(xh, p[0]);
+    yl = std::min(yl, p[1]);
+    yh = std::max(yh, p[1]);
+  }
+  bool xdy = true;
+  if (xh - xl > yh - yl) xdy = false;
   int i = 0;
   std::vector<Real> vals;
   vals.reserve(gon.getPolys().size());
@@ -346,8 +359,14 @@ Real area(const Curve<2, Order> &gon, Real tol) {
   for (const auto &p : gon.getPolys()) {
     auto x = getComp(p, 0);
     auto y = getComp(p, 1);
-    auto dy = y.der();
-    auto localVal = (x * dy).prim()(knots[i + 1] - knots[i]);
+    Real localVal;
+    if (xdy) {
+      auto dy = y.der(); 
+      localVal = (x * dy).prim()(knots[i + 1] - knots[i]);
+    } else {
+      auto dx = x.der();
+      localVal = (-y * dx).prim()(knots[i + 1] - knots[i]);
+    }
     // a += localVal;
     vals.push_back(localVal);
     ++i;
