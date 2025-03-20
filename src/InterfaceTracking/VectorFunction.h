@@ -15,6 +15,9 @@ class VectorFunction {
  private:
   using Point = Vec<Real, Dim>;
 
+ protected:
+  using Array = Eigen::Array<long double, -1, -1>;
+
   template <class T>
   using Vector = std::vector<T>;
 
@@ -38,8 +41,7 @@ class VectorFunction {
     return vel;
   }
 
-  virtual void operator()(const Eigen::ArrayXXd& pts, Real t,
-                          Eigen::ArrayXXd& output) const {}
+  virtual void operator()(const Array& pts, Real t, Array& output) const {}
 
   static std::string staticClassName() { return "VectorFunction"; }
 

@@ -5,6 +5,7 @@
 
 #include "InterfaceTracking/TimeIntegrator.h"
 #include "InterfaceTracking/VectorFactory.h"
+#include "InterfaceTracking/VectorFunction.h"
 
 class CircleShrink : public VectorFunction<2> {
  private:
@@ -158,6 +159,7 @@ class RevRotation : public VectorFunction<2> {
 class Vortex : public VectorFunction<2> {
  private:
   using Point = Vec<Real, 2>;
+  using VectorFunction<2>::Array;
 
   template <class T>
   using Vector = std::vector<T>;
@@ -172,19 +174,18 @@ class Vortex : public VectorFunction<2> {
     return y;
   }
 
-  void operator()(const Eigen::ArrayXXd &pts, Real t,
-                  Eigen::ArrayXXd &output) const override {
+  void operator()(const Array &pts, Real t,
+                  Array &output) const override {
     Timer timer("vectorFunction::operator()");
-    using namespace Eigen;
     // const long N = pts.cols();
 
     const double scale = cos(M_PI * t / T);
     // 预先计算公共因子x = M_PI * pts.array()
-    const ArrayXXd x = M_PI * pts.array();
-    const ArrayXXd cos_term = x.cos();
-    const ArrayXXd sin_term = x.sin();
-    const ArrayXXd squared_sin = sin_term.square();
-    const ArrayXXd double_sin = 2 * sin_term * cos_term;
+    const Array x = M_PI * pts.array();
+    const Array cos_term = x.cos();
+    const Array sin_term = x.sin();
+    const Array squared_sin = sin_term.square();
+    const Array double_sin = 2 * sin_term * cos_term;
     // const ArrayXXd double_sin = (2 * x).sin();
 
     // ArrayXXd result(2, N);
@@ -217,6 +218,7 @@ REGISTER_CLASS(Vortex, Real) // 注册参数类型
 class Deformation : public VectorFunction<2> {
  private:
   using Point = Vec<Real, 2>;
+  using VectorFunction<2>::Array;
 
   template <class T>
   using Vector = std::vector<T>;
@@ -231,23 +233,23 @@ class Deformation : public VectorFunction<2> {
     return y;
   }
 
-  void operator()(const Eigen::ArrayXXd &pts, Real t,
-                  Eigen::ArrayXXd &output) const override {
+  void operator()(const Array &pts, Real t,
+                  Array &output) const override {
     Timer timer("vectorFunction::operator()");
     using namespace Eigen;
 
-    const double scale = cos(M_PI * t / T);
-    const double n_pi = n * M_PI;
+    const long double scale = cos(M_PI * t / T);
+    const long double n_pi = n * M_PI;
 
     // 计算变换后的坐标
-    ArrayXd x = n_pi * (pts.row(0).array() + 0.5);
-    ArrayXd y = n_pi * (pts.row(1).array() + 0.5);
+    Array x = n_pi * (pts.row(0).array() + 0.5);
+    Array y = n_pi * (pts.row(1).array() + 0.5);
 
     // 计算sin和cos值
-    ArrayXd sin_x = x.sin();
-    ArrayXd sin_y = y.sin();
-    ArrayXd cos_x = x.cos();
-    ArrayXd cos_y = y.cos();
+    Array sin_x = x.sin();
+    Array sin_y = y.sin();
+    Array cos_x = x.cos();
+    Array cos_y = y.cos();
 
     // 组合结果
     output.row(0) = scale * (sin_x * sin_y);

@@ -26,19 +26,19 @@ template <>
 struct ButcherTableau<RK::ERK, RK::ForwardEuler> {
   static constexpr int order = 1;
   static constexpr int nStages = 1;
-  static constexpr Real a[][1] = {{0}};
-  static constexpr Real b[] = {1};
-  static constexpr Real c[] = {0};
+  static constexpr long double a[][1] = {{0}};
+  static constexpr long double b[] = {1};
+  static constexpr long double c[] = {0};
 };
 
 template <>
 struct ButcherTableau<RK::ERK, RK::ClassicRK4> {
   static constexpr int order = 4;
   static constexpr int nStages = 4;
-  static constexpr Real a[][4] = {
+  static constexpr long double a[][4] = {
       {0, 0, 0, 0}, {0.5, 0, 0, 0}, {0, 0.5, 0, 0}, {0, 0, 1, 0}};
-  static constexpr Real b[] = {1.0 / 6, 1.0 / 3, 1.0 / 3, 1.0 / 6};
-  static constexpr Real c[] = {0.0, 0.5, 0.5, 1.0};
+  static constexpr long double b[] = {1.0 / 6, 1.0 / 3, 1.0 / 3, 1.0 / 6};
+  static constexpr long double c[] = {0.0, 0.5, 0.5, 1.0};
 };
 
 template <>
@@ -46,7 +46,7 @@ struct ButcherTableau<RK::ERK, RK::Verner6> {
   static constexpr int order = 6;
   static constexpr int nStages = 8;
 
-  static constexpr Real a[][8] = {
+  static constexpr long double a[][8] = {
       {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0},                     // Stage 1
       {1.0 / 6.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0},               // Stage 2
       {4.0 / 75.0, 16.0 / 75.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0},      // Stage 3
@@ -61,11 +61,11 @@ struct ButcherTableau<RK::ERK, RK::Verner6> {
        24068.0 / 84065.0, 0.0, 3850.0 / 26703.0, 0.0}  // Stage 8
   };
 
-  static constexpr Real b[] = {
+  static constexpr long double b[] = {
       3.0 / 40.0,     0.0, 875.0 / 2244.0,  23.0 / 72.0,
       264.0 / 1955.0, 0.0, 125.0 / 11592.0, 43.0 / 616.0};
 
-  static constexpr Real c[] = {0.0,       1.0 / 6.0, 4.0 / 15.0, 2.0 / 3.0,
+  static constexpr long double c[] = {0.0,       1.0 / 6.0, 4.0 / 15.0, 2.0 / 3.0,
                                5.0 / 6.0, 1.0,       1.0 / 15.0, 1.0};
 };
 
@@ -74,7 +74,7 @@ struct ButcherTableau<RK::ERK, RK::PrinceDormand8> {
   static constexpr int order = 8;
   static constexpr int nStages = 13;
 
-  static constexpr Real a[][13] = {
+  static constexpr long double a[][13] = {
       {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
       {1.0 / 18, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
       {1.0 / 48, 1.0 / 16, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
@@ -108,7 +108,7 @@ struct ButcherTableau<RK::ERK, RK::PrinceDormand8> {
        3936647629.0 / 1978049680, -160528059.0 / 685178525,
        248638103.0 / 1413531060, 0, 0}};
 
-  static constexpr Real b[] = {14005451.0 / 335480064,
+  static constexpr long double b[] = {14005451.0 / 335480064,
                                0,
                                0,
                                0,
@@ -122,7 +122,7 @@ struct ButcherTableau<RK::ERK, RK::PrinceDormand8> {
                                -528747749.0 / 2220607170,
                                1.0 / 4};
 
-  static constexpr Real c[] = {0,
+  static constexpr long double c[] = {0,
                                1.0 / 18,
                                1.0 / 12,
                                1.0 / 8,
@@ -137,23 +137,23 @@ struct ButcherTableau<RK::ERK, RK::PrinceDormand8> {
                                1};
 };
 
-static constexpr Real sqrt2 = 1.41421356237309514547462185873883e+00;
+static constexpr long double sqrt2 = 1.41421356237309514547462185873883e+00;
 
 template <>
 struct ButcherTableau<RK::DIRK, RK::SDIRK2> {
   static constexpr int order = 2;
   static constexpr int nStages = 2;
-  static constexpr Real a[][2] = {{1 - sqrt2 / 2, 0},
+  static constexpr long double a[][2] = {{1 - sqrt2 / 2, 0},
                                   {sqrt2 / 2.0, 1 - sqrt2 / 2}};
-  static constexpr Real b[] = {sqrt2 / 2, 1 - sqrt2 / 2};
-  static constexpr Real c[] = {1 - sqrt2 / 2, 1};
+  static constexpr long double b[] = {sqrt2 / 2, 1 - sqrt2 / 2};
+  static constexpr long double c[] = {1 - sqrt2 / 2, 1};
 };
 
 template <>
 struct ButcherTableau<RK::DIRK, RK::ESDIRK4> {
   static constexpr int order = 4;
   static constexpr int nStages = 6;
-  static constexpr Real a[][6] = {
+  static constexpr long double a[][6] = {
       {0, 0, 0, 0, 0, 0},
       {1.0 / 4, 1.0 / 4, 0, 0, 0, 0},
       {(1 - sqrt2) / 8, (1 - sqrt2) / 8, 1.0 / 4, 0, 0, 0},
@@ -166,13 +166,13 @@ struct ButcherTableau<RK::DIRK, RK::ESDIRK4> {
        47 * (-267 + 1783 * sqrt2) / 273343,
        -16 * (-22922 + 3525 * sqrt2) / 571953,
        -15625 * (97 + 376 * sqrt2) / 90749876, 1.0 / 4}};
-  static constexpr Real b[] = {(1181 - 987 * sqrt2) / 13782,
+  static constexpr long double b[] = {(1181 - 987 * sqrt2) / 13782,
                                (1181 - 987 * sqrt2) / 13782,
                                47 * (-267 + 1783 * sqrt2) / 273343,
                                -16 * (-22922 + 3525 * sqrt2) / 571953,
                                -15625 * (97 + 376 * sqrt2) / 90749876,
                                1.0 / 4};
-  static constexpr Real c[] = {0,       1.0 / 2,   (2 - sqrt2) / 4,
+  static constexpr long double c[] = {0,       1.0 / 2,   (2 - sqrt2) / 4,
                                5.0 / 8, 26.0 / 25, 1};
 };
 

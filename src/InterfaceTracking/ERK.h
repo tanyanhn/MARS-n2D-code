@@ -64,20 +64,21 @@ class ERK<Dim, Type, VectorFunction>
   }
   void timeStep(const VectorFunction<Dim> &v, Vector<Point> &pts, Real tn,
                 Real dt) {
-    using namespace Eigen;
+    using Array = Eigen::Array<long double, -1, -1>;
     int num = pts.size();
-    Vector<ArrayXXd> step(ButcherTab::nStages, ArrayXXd(2, num));
-    ArrayXXd result = ArrayXXd::Zero(2, num);
+    Vector<Array> step(ButcherTab::nStages, Array(2, num));
+    Array result = Array::Zero(2, num);
 
     // Initialize result with current points
     for (int i = 0; i < num; i++) {
       result(0, i) = pts[i][0];
       result(1, i) = pts[i][1];
     }
-    ArrayXXd start = result;
+    Array start = result;
 
     for (int i = 0; i < ButcherTab::nStages; i++) {
-      ArrayXXd tmPts = start;
+      Array tmPts = start;
+
       for (int j = 0; j < i; j++) {
         // Vectorized stage update
         tmPts += step[j] * (ButcherTab::a[i][j] * dt);
