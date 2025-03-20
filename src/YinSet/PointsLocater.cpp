@@ -154,16 +154,36 @@ PointsLocater::operator()(const vector<OrientedJordanCurve<DIM, Order>> &ys,
             norm(p1[iy] - q[iy]) > std::get<0>(closest_points[j]))
           continue;
 
-        auto brk =
-            root(xPoly - x, (knots[i + 1] - knots[i]) / 2, tol, newtonMaxIter());
+        Real brk = -1;
+        if (x < p0[ix]) {
+          brk = 0;
+        } else if (x > p1[ix]) {
+          brk = knots[i + 1] - knots[i];
+        } else {
+          brk = root(xPoly - x, (knots[i + 1] - knots[i]) / 2, tol,
+                     newtonMaxIter());
+        }
         if (brk < tol || brk > knots[i + 1] - knots[i] - tol) {
           if (brk < tol && brk > -tol)
             brk = 0;
           else if (brk > knots[i + 1] - knots[i] - tol &&
                    brk < knots[i + 1] - knots[i] + tol)
             brk = knots[i + 1] - knots[i];
-          else
-            throw std::runtime_error("root not found");
+          else {
+            if (brk < -tol)
+              brk = root(xPoly - x, tol, tol, newtonMaxIter());
+            else if (brk > knots[i + 1] - knots[i] + tol)
+              brk = root(xPoly - x, knots[i + 1] - knots[i] - tol, tol,
+                         newtonMaxIter());
+
+            if (brk <= tol && brk >= -tol)
+              brk = 0;
+            else if (brk >= knots[i + 1] - knots[i] - tol &&
+                     brk <= knots[i + 1] - knots[i] + tol)
+              brk = knots[i + 1] - knots[i];
+            else
+              throw std::runtime_error("root not found");
+          }
         }
         auto y = poly(brk)[iy];
         auto d = norm(y - q[iy]);

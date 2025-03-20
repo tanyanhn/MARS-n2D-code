@@ -139,21 +139,34 @@ inline void backtrack(
 
 template <class T_Func, class T_Der>
 #ifdef OPTNONE
-          __attribute__((optnone))
+__attribute__((optnone))
 #endif  // OPTNONE
-inline Real fzero(const T_Func &f, const T_Der &df, Real x0, int maxIter,
-                  Real tol) {
+inline Real
+fzero(const T_Func &f, const T_Der &df, Real x0, int maxIter, Real tol) {
   Real fx = f(x0);
+  Real localFx = fx;
+  Real localX0 = x0;
   Real dx = 0;
+  int whileCount = 0;
   while (maxIter-- > 0 && (std::abs(fx) > tol)) {
     Real dfx = df(x0);
     dx = fx / dfx;
-    x0 -= dx;
-    fx = f(x0);
+    while (std::abs(localFx) >= std::abs(fx)) {
+      localX0 = x0 - dx;
+      localFx = f(localX0);
+      if (whileCount++ > 100)
+        throw std::runtime_error(std::format(
+            "Newton iteration may not converge, f(x) = {}, dx = {} \n", fx,
+            dx));
+      dx /= 2;
+    }
+    whileCount = 0;
+    x0 = localX0;
+    fx = localFx;
   }
   if (maxIter < 0 && (std::abs(fx) > tol))
-    throw std::runtime_error(
-        std::format("Newton iteration may not converge, f(x) = {}, dx = {} \n", fx, dx));
+    throw std::runtime_error(std::format(
+        "Newton iteration may not converge, f(x) = {}, dx = {} \n", fx, dx));
   return x0;
 }
 
