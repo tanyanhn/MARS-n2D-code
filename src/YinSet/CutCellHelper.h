@@ -175,6 +175,7 @@ auto CutCellHelper<Order>::pastCells(
     Real pre1 = pre0 + h[0];
     Real pre2 = pre1 + h[1];
     Real pre3 = pre2 + h[0];
+    // tol * 2 since we move point while attach cell,
     PastingMap<Order> pasting(tol * 2);
     pasting.setPeriod(pre3 + h[1]);
     vector<OrientedJordanCurve<2, Order>> res;
@@ -230,14 +231,13 @@ auto CutCellHelper<Order>::pastCells(
       if (vol > newtonTol() || vol < -distTol())
         vecCrv.emplace_back(std::move(crv));
     }
-    // gridSRS[i0][i1]  = (new YinSet<2, Order>(SRS(vecCrv), tol));
     if (vecCrv.empty()) continue;
-
-    auto yinsetPtr = std::make_shared<YinSet<2, Order>>(SRS(vecCrv), tol);
+    // tol * 2 same as pasting(tol * 2).
+    auto yinsetPtr = std::make_shared<YinSet<2, Order>>(SRS(vecCrv), tol * 2);
     if (!yinsetPtr->isBounded()) {
       vecCrv.push_back(rect);
       yinsetPtr =
-          std::make_shared<YinSet<2, Order>>(SRS(std::move(vecCrv)), tol);
+          std::make_shared<YinSet<2, Order>>(SRS(std::move(vecCrv)), tol * 2);
     }
     gridSRS[i0][i1] = yinsetPtr;
   }
