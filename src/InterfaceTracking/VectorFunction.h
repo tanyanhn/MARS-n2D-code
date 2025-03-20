@@ -16,8 +16,9 @@ class VectorFunction {
  private:
   using Point = Vec<Real, Dim>;
 
- protected:
-  using Array = Eigen::Array<HighPrecisionNumber, -1, -1>;
+ public:
+  // using Array = Eigen::Array<HighPrecisionNumber, -1, -1>;
+  using Array = Eigen::Array<double, -1, -1>;
 
   template <class T>
   using Vector = std::vector<T>;

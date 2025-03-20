@@ -150,10 +150,10 @@ int OutEdgeSelectorByKnots<Order>::compare(const size_t &lhsId,
                                            const size_t &rhsId) const {
   const auto &lhs = allCrvs[lhsId];
   const auto &rhs = allCrvs[rhsId];
-  auto d1 = normalize(lhs.midpoint() - lhs.startpoint());
-  auto d2 = normalize(rhs.midpoint() - rhs.startpoint());
-  // auto d1 = lhs.getComparableDirection(tol, 0);
-  // auto d2 = rhs.getComparableDirection(tol, 0);
+  // auto d1 = normalize(lhs.midpoint() - lhs.startpoint());
+  // auto d2 = normalize(rhs.midpoint() - rhs.startpoint());
+  auto d1 = normalize(lhs.getComparablePoint(tol, 0) = lhs.startpoint());
+  auto d2 = normalize(rhs.getComparablePoint(tol, 0) = lhs.startpoint());
   if (norm(d1 - d2) < tol) return 0;
   Real s1 = cross(d1, indir);
   Real s2 = cross(d2, indir);

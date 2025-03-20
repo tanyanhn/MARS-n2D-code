@@ -1,8 +1,8 @@
 {
   "tolerance": {
-    "distTol": 5.0e-14,
-    "newtonTol": 1.0e-20,
-    "newtonMaxIter": 20
+    "distTol": 1.0e-13,
+    "newtonTol": 1.0e-15,
+    "newtonMaxIter": 40
   },
   "time": {
       "te": 8.0,
@@ -18,8 +18,8 @@
       "N0": 32,
       "lo": [0.0, 0.0],
       "hi": [1.0, 1.0],
-      "aimOrder": 4,
-      "hLCoefficient": 0.2,
+      "aimOrder": 8,
+      "hLCoefficient": 12,
       "rTiny": 0.01,
       "nGrid": 3
   },

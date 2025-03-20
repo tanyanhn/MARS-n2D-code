@@ -70,6 +70,14 @@ class SegmentedRealizableSpadjor {
     return orientedJordanCurves;
   }
 
+  Real area() const {
+    Real volume = 0;
+    for (auto& crv : orientedJordanCurves) {
+      volume += ::area(crv);
+    }
+    return volume;
+  }
+
  protected:
   SegmentedRealizableSpadjor() = default;
 

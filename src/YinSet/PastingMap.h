@@ -17,8 +17,9 @@ class OutEdgeSelectorByKnots {
   OutEdgeSelectorByKnots(Real _tol, const Crv& existing,
                          const std::vector<Crv>& allCrvs_)
       : tol(_tol),
-        indir(existing.midpoint() - existing.endpoint()),
-        // indir(existing.getComparableDirection(_tol, 1)),
+        // indir(existing.midpoint() - existing.endpoint()),
+        indir(normalize(existing.getComparablePoint(_tol, 1) -
+                        existing.endpoint())),
         allCrvs(allCrvs_) {}
 
   int compare(const size_t&, const size_t&) const;

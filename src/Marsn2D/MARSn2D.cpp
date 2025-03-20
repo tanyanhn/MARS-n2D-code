@@ -62,7 +62,7 @@ void MARSn2D<Order, VelocityField>::locateLongEdges(
     // insert when both side curv not satisfy condition.
     Real constrain = efficientOfHL * std::max(hL[i], hL[i + 1]);
     if (length > constrain) {
-      unsigned int num = ceil(length / constrain);
+      unsigned int num = ceil(length / constrain) * 2;
       indices2Num.emplace_back(i, num);
     }
   }

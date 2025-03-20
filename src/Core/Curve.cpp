@@ -714,26 +714,24 @@ template <int Dim, int Order>
 #ifdef OPTNONE
 __attribute__((optnone))
 #endif  // OPTNONE
-auto Curve<Dim, Order>::getComparableDirection(Real tol, int type) const
+auto Curve<Dim, Order>::getComparablePoint(Real tol, int type) const
     -> rVec {
   if (type == 0) {
     int i = 0;
     // ignore tiny curve pieces
-    while (i < polys.size() - 1 && tol / 4 > knots[i + 1] - knots[0]) ++i;
-    auto der = polys[i].der();
+    while (i < polys.size() - 1 && tol > knots[i + 1] - knots[0]) ++i;
     Real lastRange = knots[i + 1] - knots[i];
-    Real disturbance = std::min(tol, lastRange) / 4;
+    Real disturbance = std::min(tol, lastRange) / 2;
     Real t0 = disturbance;
-    return normalize(der(t0));
+    return normalize(polys[i](t0));
   }
   if (type == 1) {
     int i = polys.size() - 1;
-    while (i > 0 && tol / 4 > knots[knots.size() - 1] - knots[i]) --i;
-    auto der = polys[i].der();
+    while (i > 0 && tol > knots[knots.size() - 1] - knots[i]) --i;
     Real lastRange = knots[i + 1] - knots[i];
-    Real disturbance = std::min(tol, lastRange) / 4;
+    Real disturbance = std::min(tol, lastRange) / 2;
     Real t0 = lastRange - disturbance;
-    return normalize(-der(t0));
+    return normalize(polys[i](t0));
   }
   throw std::runtime_error("type error");
   return rVec();
@@ -744,8 +742,8 @@ template <int Dim, int Order>
 __attribute__((optnone))
 #endif  // OPTNONE
 bool Curve<Dim, Order>::equal(const Curve &rhs, Real tol) const {
-  // auto d1 = this->getComparableDirection(tol, 0);
-  // auto d2 = rhs.getComparableDirection(tol, 0);
+  // auto d1 = this->getComparablePoint(tol, 0);
+  // auto d2 = rhs.getComparablePoint(tol, 0);
   // return (norm(d1 - d2) < tol);
   VecCompare<Real, Dim> vCmp(tol);
   if (vCmp.compare(midpoint(), rhs.midpoint()) != 0) return false;

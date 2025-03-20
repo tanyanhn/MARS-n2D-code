@@ -49,11 +49,7 @@ bool checkIsBounded(const T &iterator, Real tol) {
 
 template <int Order>
 bool SegmentedRealizableSpadjor<Order>::isBounded(Real tol) const {
-  Real volume = 0;
-  for (auto& crv : orientedJordanCurves) {
-    volume += area(crv);
-  }
-  return volume > 0;
+  return area() > 0;
   // auto iterator = [&](const auto &callback) {
   //   for (const auto &crv : orientedJordanCurves) {
   //     auto gamma = crv.makeMonotonic(tol);

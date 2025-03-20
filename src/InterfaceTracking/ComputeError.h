@@ -248,9 +248,9 @@ cutCellError(const vector<Marsn2D::approxInterfaceGraph<Order>> &lhss,
         L1 += std::fabs(localVolumes[i0][i1] - rhsVolumes[i][i0][i1]);
         LInf = std::max(LInf,
                         abs(localVolumes[i0][i1] - rhsVolumes[i][i0][i1]) / h);
-        // if (LInf > 2e-8) {
-        //   std::cout << std::format("i = {}, j = {}, LInf = {}", i0, i1, LInf);
-        // }
+        if (LInf > 2e-3) {
+          std::cout << std::format("i = {}, j = {}, LInf = {}", i0, i1, LInf);
+        }
       }
     }
     rhsVolumes = coarseVolumes(rhsVolumes);

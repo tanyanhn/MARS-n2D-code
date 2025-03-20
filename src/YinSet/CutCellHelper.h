@@ -228,17 +228,18 @@ auto CutCellHelper<Order>::pastCells(
       auto vol = area(crv);
       // TODO(ytan) newtonTol too small add extra miner holes, and add cell
       // inner. distTol too big to ignore small area.
-      if (vol > newtonTol() || vol < -distTol())
+      if (vol > newtonTol() || vol < -newtonTol())
         vecCrv.emplace_back(std::move(crv));
     }
     if (vecCrv.empty()) continue;
     // tol * 2 same as pasting(tol * 2).
-    auto yinsetPtr = std::make_shared<YinSet<2, Order>>(SRS(vecCrv), tol * 2);
-    if (!yinsetPtr->isBounded()) {
-      vecCrv.push_back(rect);
-      yinsetPtr =
-          std::make_shared<YinSet<2, Order>>(SRS(std::move(vecCrv)), tol * 2);
-    }
+    auto yinsetPtr = std::make_shared<YinSet<2, Order>>(SRS(vecCrv), distTol());
+    // if (!yinsetPtr->isBounded()) {
+    //   vecCrv.push_back(rect);
+    //   yinsetPtr =
+    //       std::make_shared<YinSet<2, Order>>(SRS(std::move(vecCrv)),
+    //       distTol());
+    // }
     gridSRS[i0][i1] = yinsetPtr;
   }
 }
@@ -311,6 +312,25 @@ auto CutCellHelper<Order>::fillInner(
         throw std::runtime_error("Boundary cell must be inner or outer.");
       }
     }
+    auto localLo = lo + h * iVec{i0, i1};
+    auto localHi = localLo + h;
+    Curve<2, Order> rect = createRect<Order>(localLo, localHi);
+    if (gridSRS[i0][i1] != nullptr) {
+      auto vol = gridSRS[i0][i1]->area();
+      bool addRect = vol < -1e-8;
+      if (std::abs(vol) < distTol()) {
+        rVec mid = lo + h * iVec{i0, i1} + h * 0.5;
+        int tag = PointsLocater(tol).operator()(
+            srs.getOrientedJordanCurvesRef(), {mid}, bounded)[0];
+        addRect = (tag == CellType::INNER);
+      }
+      if (addRect) {
+        auto vecCrv = gridSRS[i0][i1]->getBoundaryCycles();
+        vecCrv.push_back(rect);
+        gridSRS[i0][i1] = std::make_shared<YinSet<2, Order>>(
+            SRS(std::move(vecCrv)), distTol());
+      }
+    }
   }
   if (addInner) {
     loop_box_2(box, i0, i1) {
@@ -320,9 +340,8 @@ auto CutCellHelper<Order>::fillInner(
         auto localHi = localLo + h;
         Curve<2, Order> rect = createRect<Order>(localLo, localHi);
         vector<OrientedJordanCurve<2, Order>> vecCrv = {rect};
-        // gridSRS[i0][i1] = (new YinSet<2, Order>(SRS(vecCrv), tol));
         gridSRS[i0][i1] =
-            (std::make_shared<YinSet<2, Order>>(SRS(vecCrv), tol));
+            (std::make_shared<YinSet<2, Order>>(SRS(vecCrv), distTol()));
       }
     }
   }

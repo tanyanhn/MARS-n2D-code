@@ -152,7 +152,7 @@ class Curve {
   int compare(const Curve& rhs, const rVec& p, int ix, int iy, Real tol) const;
   // type = 0, startpoint()
   // type = 1, endpoint()
-  auto getComparableDirection(Real tol, int type = 0) const -> rVec;
+  auto getComparablePoint(Real tol, int type = 0) const -> rVec;
   bool equal(const Curve& rhs, Real tol) const;
 
   // curvature at t

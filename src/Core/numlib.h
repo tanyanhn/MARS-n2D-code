@@ -156,7 +156,7 @@ fzero(const T_Func &f, const T_Der &df, Real x0, int maxIter, Real tol) {
       localFx = f(localX0);
       if (whileCount++ > 100)
         throw std::runtime_error(std::format(
-            "Newton iteration may not converge, f(x) = {}, dx = {} \n", fx,
+            "whileCount: Newton iteration may not converge, f(x) = {}, dx = {} \n", fx,
             dx));
       dx /= 2;
     }
@@ -166,7 +166,7 @@ fzero(const T_Func &f, const T_Der &df, Real x0, int maxIter, Real tol) {
   }
   if (maxIter < 0 && (std::abs(fx) > tol))
     throw std::runtime_error(std::format(
-        "Newton iteration may not converge, f(x) = {}, dx = {} \n", fx, dx));
+        "maxIter: Newton iteration may not converge, f(x) = {}, dx = {} \n", fx, dx));
   return x0;
 }
 

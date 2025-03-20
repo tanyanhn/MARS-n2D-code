@@ -65,7 +65,7 @@ class ERK<Dim, Type, VectorFunction>
   }
   void timeStep(const VectorFunction<Dim> &v, Vector<Point> &pts, Real tn,
                 Real dt) {
-    using Array = Eigen::Array<HighPrecisionNumber, -1, -1>;
+    using Array = VectorFunction<2>::Array;
     int num = pts.size();
     Vector<Array> step(ButcherTab::nStages, Array(2, num));
     Array result = Array::Zero(2, num);

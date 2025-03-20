@@ -368,7 +368,7 @@ auto YinSet<2, Order>::cutCell(const Box<Dim> &box, const Interval<Dim> &range,
                                     gridCurves, newtonTol());
 
   // past in every cells.
-  CutCellHelper<Order>::pastCells(lo, h, box, gridCurves, ret, tol);
+  CutCellHelper<Order>::pastCells(lo, h, box, gridCurves, ret, newtonTol()*10);
 
   // fill inner cell rectangles.
   auto tags = CutCellHelper<Order>::fillInner(lo, h, box, *this, gridCurves,
