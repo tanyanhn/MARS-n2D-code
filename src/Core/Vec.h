@@ -60,7 +60,7 @@ class Vec {
 
   template <class T2>
   Vec<T, Dim> &operator=(const Vec<T2, Dim> &rhs) {
-    for (auto d = 0; d < Dim; d++) coord[d] = rhs.coord[d];
+    for (auto d = 0; d < Dim; d++) coord[d] = rhs[d];
     return *this;
   }
 
