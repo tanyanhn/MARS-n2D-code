@@ -205,8 +205,8 @@ TEST_CASE("Disk 4 vortex T = 4/8/12/16, Convergence Test.",
   {
     // const auto* testName = "Disk4Vortex4";
     // const auto* testName = "Disk4Vortex8";
-    const auto* testName = "Disk4Vortex12";
-    // const auto* testName = "Disk4Vortex16";
+    // const auto* testName = "Disk4Vortex12";
+    const auto* testName = "Disk4Vortex16";
     auto dir = rootDir + "/results/TrackInterface/" + testName + "/";
     mkdir(dir.c_str(), 0755);
     RecorderInitialize(RecorderInfo{DebugLevel::INFO, dir});

@@ -92,8 +92,8 @@ class ERK<Dim, Type, VectorFunction>
 
     // Update points with result
     for (int i = 0; i < num; i++) {
-      pts[i][0] = result(0, i).getDouble();
-      pts[i][1] = result(1, i).getDouble();
+      pts[i][0] = result(0, i);
+      pts[i][1] = result(1, i);
     }
   }
 };
