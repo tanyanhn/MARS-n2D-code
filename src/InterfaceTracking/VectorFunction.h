@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "Core/Config.h"
+#include "Core/HighPrecisionNumber.h"
 #include "Core/Tensor.h"
 #include "Core/Vec.h"
 #include "Recorder/Timer.h"
@@ -16,7 +17,7 @@ class VectorFunction {
   using Point = Vec<Real, Dim>;
 
  protected:
-  using Array = Eigen::Array<long double, -1, -1>;
+  using Array = Eigen::Array<HighPrecisionNumber, -1, -1>;
 
   template <class T>
   using Vector = std::vector<T>;

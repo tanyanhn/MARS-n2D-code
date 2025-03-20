@@ -3,6 +3,7 @@
 
 #include <vector>
 
+#include "Core/HighPrecisionNumber.h"
 #include "RKButcher.h"
 #include "TimeIntegrator.h"
 
@@ -64,7 +65,7 @@ class ERK<Dim, Type, VectorFunction>
   }
   void timeStep(const VectorFunction<Dim> &v, Vector<Point> &pts, Real tn,
                 Real dt) {
-    using Array = Eigen::Array<long double, -1, -1>;
+    using Array = Eigen::Array<HighPrecisionNumber, -1, -1>;
     int num = pts.size();
     Vector<Array> step(ButcherTab::nStages, Array(2, num));
     Array result = Array::Zero(2, num);
@@ -91,8 +92,8 @@ class ERK<Dim, Type, VectorFunction>
 
     // Update points with result
     for (int i = 0; i < num; i++) {
-      pts[i][0] = result(0, i);
-      pts[i][1] = result(1, i);
+      pts[i][0] = result(0, i).getDouble();
+      pts[i][1] = result(1, i).getDouble();
     }
   }
 };
