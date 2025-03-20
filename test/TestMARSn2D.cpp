@@ -27,6 +27,7 @@ auto diskTEST(const std::string& jsonFile) {
   auto params = read_config(jsonFile);
   distTol(params.tolerance.distTol);
   newtonTol(params.tolerance.newtonTol);
+  newtonMaxIter(params.tolerance.newtonMaxIter);
   // time
   const Real te = params.time.te;
   const Real t0 = params.time.t0;
@@ -202,9 +203,9 @@ void checkResult(auto& yinSets, auto& box, auto& range, auto& addInner,
 TEST_CASE("Disk 4 vortex T = 4/8/12/16, Convergence Test.",
           "[Disk][Vortex][MARSn2D][Convergence]") {
   {
-    // const auto* testName = "Disk4Vortex4";
+    const auto* testName = "Disk4Vortex4";
     // const auto* testName = "Disk4Vortex8";
-    const auto* testName = "Disk4Vortex12";
+    // const auto* testName = "Disk4Vortex12";
     // const auto* testName = "Disk4Vortex16";
     auto dir = rootDir + "/results/TrackInterface/" + testName + "/";
     mkdir(dir.c_str(), 0755);

@@ -163,7 +163,7 @@ class Curve {
   static Real paraCalculator(const auto& poly, int ix, Real x, Real t0,
                              Real tol) {
     auto xPoly = getComp(poly, ix);
-    return root(xPoly - x, t0, tol, newtonMaxIter);
+    return root(xPoly - x, t0, tol, newtonMaxIter());
   };
 
   // friend helpers

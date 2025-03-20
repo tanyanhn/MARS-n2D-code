@@ -15,6 +15,7 @@ struct SimulationParams {
   struct {
     Real distTol;
     Real newtonTol;
+    int newtonMaxIter;
   } tolerance;
   // Time parameters
   struct {
@@ -76,6 +77,7 @@ inline void from_json(const nlohmann::json& j, SimulationParams& params) {
   const auto& tolerance = j.at("tolerance");
   params.tolerance.distTol = tolerance.at("distTol").get<Real>();
   params.tolerance.newtonTol = tolerance.at("newtonTol").get<Real>();
+  params.tolerance.newtonMaxIter = tolerance.at("newtonMaxIter").get<int>();
   // 解析时间参数
   const auto& time = j.at("time");
   params.time.te = time.at("te");

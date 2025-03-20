@@ -357,8 +357,9 @@ auto YinSet<2, Order>::cutCell(const Box<Dim> &box, const Interval<Dim> &range,
 
   vector<vector<vector<Curve<2, Order>>>> gridCurves(
       N0, vector<vector<Curve<2, Order>>>(N1));
-  // for (auto v : intersections[0]) {
-  //   auto p = orientedJordanCurves[0](v);
+  // for (int i = 0; i < intersections[0].size(); ++i) {
+  //   auto v = *std::next(intersections[0].begin(), i);
+  //   auto p = orientedJordanCurves.at(0)(v);
   //   auto r = Vec<Real, 2>((p - lo) / h);
   //   std::cout << "p = " << p << ", r = " << r << std::endl;
   // }

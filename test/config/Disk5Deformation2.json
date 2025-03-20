@@ -1,12 +1,13 @@
 {
   "tolerance": {
     "distTol": 1.0e-12,
-    "newtonTol": 1.0e-16
+    "newtonTol": 1.0e-16,
+    "newtonMaxIter": 20
   },
   "time": {
       "te": 2.0,
       "t0": 0.0,
-      "Cr": 0.125,
+      "Cr": 1,
       "uM": 1.0
   },
   "field": {
@@ -14,7 +15,7 @@
       "pars" : [4]
   },
   "grid": {
-      "N0": 8,
+      "N0": 128,
       "lo": [0.0, 0.0],
       "hi": [1.0, 1.0],
       "aimOrder": 4,

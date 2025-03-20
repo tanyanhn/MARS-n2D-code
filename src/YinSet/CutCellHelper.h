@@ -105,7 +105,7 @@ auto CutCellHelper<Order>::intersectGridLine(
       for (int k = 0; k < DIM; ++k) {
         RealPolynomial<Order> xPoly = getComp(polys[i], k);
         intersect(k, lo[k], xPoly, h[k], knots[i], knots[i + 1],
-                  intersectionsForCurve, newtonMaxIter);
+                  intersectionsForCurve, newtonMaxIter());
       }
     }
   }
@@ -306,6 +306,8 @@ auto CutCellHelper<Order>::fillInner(
       } else if (tag == CellType::OUTER) {
         tags[i0][i1] = CellType::BOUNDOUTER;
       } else {
+        // may be result of makeMonotonic(to)::translate(), have to enlarge
+        // distTol.
         throw std::runtime_error("Boundary cell must be inner or outer.");
       }
     }

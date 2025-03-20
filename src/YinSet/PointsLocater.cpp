@@ -155,7 +155,7 @@ PointsLocater::operator()(const vector<OrientedJordanCurve<DIM, Order>> &ys,
           continue;
 
         auto brk =
-            root(xPoly - x, (knots[i + 1] - knots[i]) / 2, tol, newtonMaxIter);
+            root(xPoly - x, (knots[i + 1] - knots[i]) / 2, tol, newtonMaxIter());
         if (brk < tol || brk > knots[i + 1] - knots[i] - tol) {
           if (brk < tol && brk > -tol)
             brk = 0;

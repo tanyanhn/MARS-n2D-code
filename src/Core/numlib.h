@@ -138,17 +138,22 @@ inline void backtrack(
 }
 
 template <class T_Func, class T_Der>
+#ifdef OPTNONE
+          __attribute__((optnone))
+#endif  // OPTNONE
 inline Real fzero(const T_Func &f, const T_Der &df, Real x0, int maxIter,
                   Real tol) {
   Real fx = f(x0);
-  while (maxIter-- > 0 && std::abs(fx) > tol) {
+  Real dx = 0;
+  while (maxIter-- > 0 && (std::abs(fx) > tol)) {
     Real dfx = df(x0);
-    x0 -= fx / dfx;
+    dx = fx / dfx;
+    x0 -= dx;
     fx = f(x0);
   }
-  if (maxIter == 0 && std::abs(fx) > tol)
+  if (maxIter < 0 && (std::abs(fx) > tol))
     throw std::runtime_error(
-        std::format("Newton iteration may not converge, f(x) = {} \n", fx));
+        std::format("Newton iteration may not converge, f(x) = {}, dx = {} \n", fx, dx));
   return x0;
 }
 
