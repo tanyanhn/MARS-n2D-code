@@ -167,19 +167,18 @@ class Vortex : public VectorFunction<2> {
  public:
   const Point operator()(const Point &pt, Real t) const override {
     Point y;
-    y[0] =
-        cos(M_PI * t / T) * pow(sin(M_PI * pt[0]), 2) * sin(2 * M_PI * pt[1]);
-    y[1] =
-        -cos(M_PI * t / T) * pow(sin(M_PI * pt[1]), 2) * sin(2 * M_PI * pt[0]);
+    y[0] = speed_ * cos(M_PI * t / T_) * pow(sin(M_PI * pt[0]), 2) *
+           sin(2 * M_PI * pt[1]);
+    y[1] = speed_ * -cos(M_PI * t / T_) * pow(sin(M_PI * pt[1]), 2) *
+           sin(2 * M_PI * pt[0]);
     return y;
   }
 
-  void operator()(const Array &pts, Real t,
-                  Array &output) const override {
+  void operator()(const Array &pts, Real t, Array &output) const override {
     Timer timer("vectorFunction::operator()");
     // const long N = pts.cols();
 
-    const double scale = cos(M_PI * t / T);
+    const double scale = speed_ * cos(M_PI * t / T_);
     // 预先计算公共因子x = M_PI * pts.array()
     const Array x = M_PI * pts.array();
     const Array cos_term = x.cos();
@@ -195,25 +194,26 @@ class Vortex : public VectorFunction<2> {
 
   const Vector<Real> getJacobi(const Point &pt, Real t) const override {
     Vector<Real> ptjac(4);
-    ptjac[0] = cos(M_PI * t / T) * 2 * M_PI * sin(M_PI * pt[0]) *
+    ptjac[0] = speed_ * cos(M_PI * t / T_) * 2 * M_PI * sin(M_PI * pt[0]) *
                cos(M_PI * pt[0]) * sin(2 * M_PI * pt[1]);
-    ptjac[1] = cos(M_PI * t / T) * 2 * M_PI * pow(sin(M_PI * pt[0]), 2) *
-               cos(2 * M_PI * pt[1]);
-    ptjac[2] = -cos(M_PI * t / T) * 2 * M_PI * sin(M_PI * pt[1]) *
+    ptjac[1] = speed_ * cos(M_PI * t / T_) * 2 * M_PI *
+               pow(sin(M_PI * pt[0]), 2) * cos(2 * M_PI * pt[1]);
+    ptjac[2] = speed_ * -cos(M_PI * t / T_) * 2 * M_PI * sin(M_PI * pt[1]) *
                cos(M_PI * pt[1]) * sin(2 * M_PI * pt[0]);
-    ptjac[3] = -cos(M_PI * t / T) * 2 * M_PI * pow(sin(M_PI * pt[1]), 2) *
-               cos(2 * M_PI * pt[0]);
+    ptjac[3] = speed_ * -cos(M_PI * t / T_) * 2 * M_PI *
+               pow(sin(M_PI * pt[1]), 2) * cos(2 * M_PI * pt[0]);
     return ptjac;
   }
 
  public:
-  Vortex(Real _T) : T(_T){};
+  Vortex(Real T, Real speed = 1) : T_(T), speed_(speed){};
   static std::string staticClassName() { return "Vortex"; }
 
  private:
-  Real T;
+  Real T_;
+  Real speed_;
 };
-REGISTER_CLASS(Vortex, Real) // 注册参数类型
+REGISTER_CLASS(Vortex, Real, Real)  // 注册参数类型
 
 class Deformation : public VectorFunction<2> {
  private:
@@ -224,7 +224,7 @@ class Deformation : public VectorFunction<2> {
   using Vector = std::vector<T>;
 
  public:
-  const Point operator()(const Point &pt, Real t) const override{
+  const Point operator()(const Point &pt, Real t) const override {
     Point y;
     y[0] = cos(M_PI * t / T) * sin(n * M_PI * (pt[0] + 0.5)) *
            sin(n * M_PI * (pt[1] + 0.5));
@@ -233,8 +233,7 @@ class Deformation : public VectorFunction<2> {
     return y;
   }
 
-  void operator()(const Array &pts, Real t,
-                  Array &output) const override {
+  void operator()(const Array &pts, Real t, Array &output) const override {
     Timer timer("vectorFunction::operator()");
     using namespace Eigen;
 
@@ -256,7 +255,7 @@ class Deformation : public VectorFunction<2> {
     output.row(1) = scale * (cos_x * cos_y);
   }
 
-  const Vector<Real> getJacobi(const Point &pt, Real t) const override{
+  const Vector<Real> getJacobi(const Point &pt, Real t) const override {
     Vector<Real> ptjac(4);
     ptjac[0] = cos(M_PI * t / T) * n * M_PI * cos(n * M_PI * (pt[0] + 0.5)) *
                sin(n * M_PI * (pt[1] + 0.5));
@@ -277,6 +276,6 @@ class Deformation : public VectorFunction<2> {
   Real T;
   int n;
 };
-REGISTER_CLASS(Deformation, Real, int) // 注册参数类型
+REGISTER_CLASS(Deformation, Real, int)  // 注册参数类型
 
 #endif

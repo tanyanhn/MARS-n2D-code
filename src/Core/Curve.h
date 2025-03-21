@@ -31,6 +31,18 @@ class Curve {
     knots.push_back(len);
   }
 
+  template<int Order2>
+  explicit Curve(const Curve<Dim, Order2>&& rhs) : knots((rhs.getKnots())) {
+    static_assert(Order2 < Order, "Order2 must be less than Order");
+    for (const auto& p : rhs.getPolys()) {
+      T_Polynomial poly(0);
+      for (int i = 0; i < Order2; ++i) {
+        poly[i] = p[i];
+      }
+      polys.push_back(poly);
+    }
+  }
+
   Curve(std::vector<Real>&& knots_,
         std::vector<Polynomial<Order, rVec>>&& polys_)
       : knots(std::move(knots_)), polys(std::move(polys_)) {}

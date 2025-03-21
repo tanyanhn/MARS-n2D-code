@@ -12,7 +12,7 @@
   },
   "field": {
       "velocityName" : "Vortex",
-      "pars" : []
+      "pars" : [-1.0]
   },
   "grid": {
       "N0": 32,

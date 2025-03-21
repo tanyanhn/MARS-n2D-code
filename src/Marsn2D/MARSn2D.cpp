@@ -1,7 +1,7 @@
 #include "Marsn2D/MARSn2D.h"
 
-#include "Recorder/Timer.h"
 #include "Recorder/ProgressBar.h"
+#include "Recorder/Timer.h"
 
 namespace Marsn2D {
 
@@ -14,40 +14,54 @@ void MARSn2D<Order, VelocityField>::discreteFlowMap(const VectorFunction<2> &v,
 }
 
 template <int Order, template <int> class VelocityField>
+void MARSn2D<Order, VelocityField>::plot(const IG &ig, int step,
+                                         const PlotConfig &plotConfig) const {
+  auto yinSets = ig.approxYinSet();
+  int count = 0;
+  for (auto &yinSet : yinSets) {
+    std::string fileName = plotConfig.fName + "_Step" + std::to_string(step) +
+                           "_" + std::to_string(count++);
+    if (plotConfig.output == NORMAL) {
+      std::ofstream of(fileName + "_n.dat");
+      yinSet.dump(of);
+    } else if (plotConfig.output == CUTCELL) {
+      auto [res, boundary, tags] = yinSet.cutCell(
+          plotConfig.box, plotConfig.range, plotConfig.plotInner);
+      std::ofstream of(fileName + "_c.dat", std::ios_base::binary);
+      dumpVecYinSet<Order>(res, of);
+    }
+  }
+}
+
+template <int Order, template <int> class VelocityField>
+#ifdef OPTNONE
+__attribute__((optnone))
+#endif  // OPTNONE
 void MARSn2D<Order, VelocityField>::trackInterface(
     const VelocityField<DIM> &v, IG &ig, Real StartTime, Real dt, Real EndTime,
-    PlotConfig plotConfig) const {
+    const PlotConfig& plotConfig) const {
   Real tn = StartTime;
   int stages = ceil(abs(EndTime - StartTime) / abs(dt));
   Real k = (EndTime - StartTime) / stages;
   int step = 0;
-  if (plotConfig.output != NONE && step % plotConfig.opStride == 0) {
-    auto yinSets = ig.approxYinSet();
-    int count = 0;
-    for (auto &yinSet : yinSets) {
-      std::string fileName = plotConfig.fName + "_Step" + std::to_string(step) +
-                             "_" + std::to_string(count++);
-      if (plotConfig.output == NORMAL) {
-        std::ofstream of(fileName + "_n.dat");
-        yinSet.dump(of);
-      } else if (plotConfig.output == CUTCELL) {
-        auto [res, boundary, tags] = yinSet.cutCell(
-            plotConfig.box, plotConfig.range, plotConfig.plotInner);
-        std::ofstream of(fileName + "_c.dat", std::ios_base::binary);
-        dumpVecYinSet<Order>(res, of);
-      }
-    }
-  }
+  int polyStep = stages / plotConfig.opStride;
   ProgressBar bar(stages, "Tracking...");
   while (step < stages) {
+    if (plotConfig.output != NONE && step % polyStep == 0) {
+      plot(ig, step, plotConfig);
+    }
     if (printDetail)
       std::cout << "Step: " << step << "     time now: " << tn << '\n';
+    else
+      bar.update();
     timeStep(v, ig, tn, k);
     // std::cout << '\n';
     std::cout.flush();
     tn += k;
     step++;
-    bar.update();
+  }
+  if (plotConfig.output != NONE) {
+    plot(ig, step, plotConfig);
   }
 }
 
@@ -208,8 +222,12 @@ void MARSn2D<Order, VelocityField>::timeStep(const VelocityField<DIM> &v,
   Timer t("timeStep");
   int insertCount = 0;
   int removeCount = 0;
-  auto stepCrv = [this, &v, tn, dt, &insertCount, &removeCount](
-                     Edge &preEdge, EdgeMark &marks) {
+  auto stepCrv = [ this, &v, tn, dt, &insertCount, &
+                   removeCount ](Edge & preEdge, EdgeMark & marks)
+#ifdef OPTNONE
+      __attribute__((optnone))
+#endif  // OPTNONE
+  {
     vector<Real> curv;
     vector<Real> hL;
     discreteFlowMap(v, marks, tn, dt);
@@ -246,7 +264,7 @@ void MARSn2D<Order, VelocityField>::timeStep(const VelocityField<DIM> &v,
     }
 
     bool removed = true;
-    while (removed && removeCount < removeTimesMax) {
+    while (removed && removeCount < removeTimesMax && marks.size() > 2) {
       updateHL(curv, marks, hL);
       vector<unsigned int> indices;
       locateTinyEdges(marks, hL, indices, rTiny_);
@@ -278,19 +296,13 @@ void MARSn2D<Order, VelocityField>::timeStep(const VelocityField<DIM> &v,
     insertCount = 0;
     removeCount = 0;
     stepCrv(*edgeIter, *markIter);
+    if (printDetail) {
+      std::cout << std::format("Insert: {}, Remove: {}. \n", insertCount,
+                               removeCount);
+    }
   }
   // #pragma omp critical
   ig.updateCurve();
-  if (printDetail) {
-    std::cout << std::format("Insert: {}, Remove: {}. updateCurve", insertCount,
-                             removeCount)
-              << '\n';
-    // pushLogEvent(std::format("Insert: {}, Remove: {}. updateCurve",
-    // insertCount,
-    //                          removeCount),
-    //              "MARSn2D", DebugLevel::INFO);
-    // popLogEvent();
-  }
 }
 
 template <int Order, template <int> class VelocityField>

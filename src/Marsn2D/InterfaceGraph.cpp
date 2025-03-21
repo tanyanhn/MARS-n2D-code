@@ -108,7 +108,10 @@ void approxInterfaceGraph<Order>::updateCurve() {
     }
     Curve<DIM, Order> crv;
     if constexpr (Order == 4)
-      crv = fitCurveEigen(knots, type, newtonTol());
+      if (knots.size() > 3)
+        crv = fitCurveEigen(knots, type, newtonTol());
+      else
+        crv = Curve<2, Order>(fitCurve<2>(knots));
     else
       crv = fitCurve<Order>(knots, type);
     // checkFitCurve(crv, type);

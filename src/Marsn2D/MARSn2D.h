@@ -46,12 +46,14 @@ class MARSn2D {
         printDetail(print) {}
 
   void trackInterface(const VelocityField<DIM> &v, IG &ig, Real StartTime,
-                      Real dt, Real EndTime, PlotConfig plotConfig) const;
+                      Real dt, Real EndTime, const PlotConfig& plotConfig) const;
 
  private:
   void timeStep(const VelocityField<DIM> &v, IG &ig, Real tn, Real dt) const;
   void discreteFlowMap(const VectorFunction<2> &v, EdgeMark &marks, Real tn,
                        Real dt) const;
+
+  void plot(const IG &ig, int step, const PlotConfig &plotConfig) const;
 
   void locateLongEdges(
       EdgeMark &marks, const vector<Real> &hL,

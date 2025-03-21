@@ -63,8 +63,11 @@ class ERK<Dim, Type, VectorFunction>
     }
     return result;
   }
-  void timeStep(const VectorFunction<Dim> &v, Vector<Point> &pts, Real tn,
-                Real dt) {
+#ifdef OPTNONE
+  __attribute__((optnone))
+#endif  // OPTNONE
+  void
+  timeStep(const VectorFunction<Dim> &v, Vector<Point> &pts, Real tn, Real dt) {
     using Array = VectorFunction<2>::Array;
     int num = pts.size();
     Vector<Array> step(ButcherTab::nStages, Array(2, num));
@@ -82,12 +85,25 @@ class ERK<Dim, Type, VectorFunction>
 
       for (int j = 0; j < i; j++) {
         // Vectorized stage update
+        // if constexpr (has_ad<ButcherTab>() == std::true_type()) {
+        //   tmPts += step[j] * (dt * ButcherTab::a[i][j] /
+        //   ButcherTab::ad[i][j]);
+        // } else {
         tmPts += step[j] * (ButcherTab::a[i][j] * dt);
+        // }
       }
       // Compute stage derivative
+      // if constexpr (has_ad<ButcherTab>() == std::true_type()) {
+      //   v(tmPts, tn + dt * ButcherTab::c[i] / ButcherTab::cd[i], step[i]);
+      // } else {
       v(tmPts, tn + ButcherTab::c[i] * dt, step[i]);
+      // }
       // Vectorized result update
+      // if constexpr (has_ad<ButcherTab>() == std::true_type()) {
+      //   result += step[i] * (dt * ButcherTab::b[i] / ButcherTab::bd[i]);
+      // } else {
       result += step[i] * (ButcherTab::b[i] * dt);
+      // }
     }
 
     // Update points with result

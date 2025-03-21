@@ -15,13 +15,13 @@
       "pars" : [4]
   },
   "grid": {
-      "N0": 32,
+      "N0": 16,
       "lo": [0.0, 0.0],
       "hi": [1.0, 1.0],
-      "aimOrder": 8,
-      "hLCoefficient": 7.5,
+      "aimOrder": 4,
+      "hLCoefficient": 0.2,
       "rTiny": 0.05,
-      "nGrid": 3
+      "nGrid": 1
   },
   "curvature_adaption": {
       "curvUsed": true,
@@ -38,6 +38,6 @@
   "domain_disk": {
       "center": [0.5, 0.5],
       "radius": [0.15, 0.15],
-      "parts": [0.1, 0.3, 0.5, 0.7, 0.9]
+      "parts": [0.05, 0.25, 0.45, 0.65, 0.85]
   }
 }

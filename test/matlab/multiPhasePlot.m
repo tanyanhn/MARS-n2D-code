@@ -1,18 +1,21 @@
 %% MARS plot
-close all
-clear
+% close all
+% clear
+hold on
 lineColor = '';
 fillColor = 'bcrgmy';
 % filedir = "results/CutCell/";
 % filedir = "results/InterfaceGraph/";
-filedir = "../../results/TrackInterface/Disk4Vortex8/";
+filedir = "../../results/TrackInterface/Disk4Vortex16/";
+% filedir = "../../results/TrackInterface/Disk5Deformation4/";
 % round = "No4_";
 
 % filename = round + "Start.dat";
 % filename = round + "Step160.dat";
 % filename = "spadjor-13.input.dat";
 % filename = "localVolumes.dat";
-filename = "localYinset.dat";
+% filename = "localYinset.dat";
+filename = "4Circle_grid32_Step2048_4_n.dat";
 
 Order = 4;
 N = 4;
@@ -20,13 +23,13 @@ Shape = "Rose";
 % Shape = "Rectangle";
 % filename = num2str(Order) + Shape + num2str(N) + "_" + num2str(k) + ".dat";
 hd = fopen(filedir + filename);
-tensor = true;
+tensor = false;
 volume = false;
 if volume
     dat = readCellVolume(hd);
 else
-    figure
-    for k = 3:1:3
+    % figure
+    for k = 4:1:5
 
         if ~tensor
             sf = readYinSet(hd);
