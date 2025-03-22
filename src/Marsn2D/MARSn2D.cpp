@@ -87,12 +87,26 @@ void MARSn2D<Order, VelocityField>::locateTinyEdges(
     EdgeMark &marks, const vector<Real> &hL, vector<unsigned int> &indices,
     Real efficientOfHL) const {
   size_t numEdge = marks.size() - 1;
+  vector<Real> lengths;
   for (size_t i = 0; i < numEdge; i++) {
     Real length = norm(marks[i + 1] - marks[i]);
+    lengths.push_back(length);
+  }
+  for (size_t i = 0; i < numEdge; i++) {
     // remove when both side curv not satisfy condition.
     Real constrain = efficientOfHL * std::min(hL[i], hL[i + 1]);
-    if (length < constrain) {
-      indices.emplace_back(i);
+    if (lengths[i] < constrain) {
+      if (i == 0) {
+        indices.emplace_back(++i);
+      } else if (i == numEdge - 1) {
+        indices.emplace_back(i);
+      } else {
+        if (lengths[i - 1] < lengths[i + 1]) {
+          indices.emplace_back(i);
+        } else {
+          indices.emplace_back(++i);
+        }
+      }
     }
   }
 }
@@ -165,7 +179,7 @@ void MARSn2D<Order, VelocityField>::removeMarks(
   size_t index = 0;
   bool continueFlag = false;
   for (size_t i = 0; i < numMarks; i++) {
-    if (index == indices.size() || i != indices[index] + 1) {
+    if (index == indices.size() || i != indices[index]) {
       newMarks.push_back(marks[i]);
       if (curvConfig_.used) newCurv.push_back(curv[i]);
       continueFlag = false;
@@ -270,11 +284,11 @@ void MARSn2D<Order, VelocityField>::timeStep(const VelocityField<DIM> &v,
       locateTinyEdges(marks, hL, indices, rTiny_);
       removed = !indices.empty();
       if (removed) {
-        if (indices.back() == marks.size() - 2) {
-          indices.pop_back();
-          if (indices.empty() || indices.back() != marks.size() - 3)
-            indices.push_back(marks.size() - 3);
-        }
+        // if (indices.back() == marks.size() - 2) {
+        //   indices.pop_back();
+        //   if (indices.empty() || indices.back() != marks.size() - 3)
+        //     indices.push_back(marks.size() - 3);
+        // }
         removeMarks(indices, marks, curv);
         removeCount++;
         if (removeCount >= removeTimesMax)
