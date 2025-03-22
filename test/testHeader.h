@@ -4,6 +4,7 @@
 #include "Core/Vec.h"
 #include "Core/dirConfig.h"
 #include "Marsn2D/InterfaceGraph.h"
+#include "Marsn2D/MARSReadJson.hpp"
 #include "YinSet/YinSet.h"
 #include "catch_amalgamated.hpp"
 
@@ -168,56 +169,70 @@ auto Generator::createDiskGraph(Point center, rVec radius, Real hL,
   vector<vector<EdgeIndex>> cyclesEdgesId(parts.size() + 1);
   vector<vector<size_t>> YinSetId(parts.size() + 1);
 
-  auto eValue = [center, radius](Real angle) {
-    return Point{center + rVec{radius[0] * cos(angle), radius[1] * sin(angle)}};
-  };
+  if (parts.empty()) {
+    cyclesEdgesId.resize(2);
+    YinSetId.resize(2);
+    EdgeMark pts = markEllipse(center, radius, hL, {0, 2 * M_PI});
+    edgeMarks.push_back(std::move(pts));
+    smoothConditions.emplace_back((int)edgeMarks.size(),
+                                  (int)edgeMarks.size());
+    cyclesEdgesId[0].push_back(1);
+    cyclesEdgesId[1].push_back(-1);
+    YinSetId[0].push_back(0);
+    YinSetId[1].push_back(1);
+  } else {
+    auto eValue = [center, radius](Real angle) {
+      return Point{center +
+                   rVec{radius[0] * cos(angle), radius[1] * sin(angle)}};
+    };
 
-  vector<Segment<DIM>> separateSegment;
-  for (size_t i = 0; i < parts.size(); ++i) {
-    Segment seg(eValue(parts[i]), center);
-    int parallelSegId = -1;
-    for (size_t j = 0; j < separateSegment.size(); ++j) {
-      if (seg.parallel(separateSegment[j], distTol())) {
-        parallelSegId = j;
-        break;
+    vector<Segment<DIM>> separateSegment;
+    for (size_t i = 0; i < parts.size(); ++i) {
+      Segment seg(eValue(parts[i]), center);
+      int parallelSegId = -1;
+      for (size_t j = 0; j < separateSegment.size(); ++j) {
+        if (seg.parallel(separateSegment[j], distTol())) {
+          parallelSegId = j;
+          break;
+        }
       }
+      separateSegment.push_back(seg);
+      auto pts = markSegment(seg, hL);
+      int sign = -2;
+      if (parallelSegId != -1) {
+        std::reverse(pts.begin(), pts.end());
+        smoothConditions.emplace_back(parallelSegId + 1,
+                                      (int)edgeMarks.size() + 1);
+        sign = -1;
+      } else {
+        sign = 1;
+      }
+      edgeMarks.push_back(std::move(pts));
+      auto& vec = cyclesEdgesId[(i - 1 + parts.size()) % parts.size()];
+      vec.push_back(sign * (int)edgeMarks.size());
+      if (vec.size() == 2) std::swap(vec[0], vec[1]);
+      cyclesEdgesId[i].push_back(-sign * (int)edgeMarks.size());
     }
-    separateSegment.push_back(seg);
-    auto pts = markSegment(seg, hL);
-    int sign = -2;
-    if (parallelSegId != -1) {
-      std::reverse(pts.begin(), pts.end());
-      smoothConditions.emplace_back(parallelSegId + 1,
-                                    (int)edgeMarks.size() + 1);
-      sign = -1;
-    } else {
-      sign = 1;
+
+    if (norm(parts.back() - parts.front()) > distTol())
+      parts.push_back(parts.front());
+
+    for (size_t i = 0; i < parts.size() - 1; ++i) {
+      EdgeMark pts = markEllipse(center, radius, hL, {parts[i], parts[i + 1]});
+
+      edgeMarks.push_back(std::move(pts));
+      smoothConditions.emplace_back(
+          (int)edgeMarks.size() - 1 + (i == 0 ? parts.size() - 1 : 0),
+          (int)edgeMarks.size());
+      cyclesEdgesId[i].push_back((int)edgeMarks.size());
+      cyclesEdgesId[parts.size() - 1].push_back(-(int)edgeMarks.size());
+      YinSetId[i].push_back(i);
     }
-    edgeMarks.push_back(std::move(pts));
-    auto& vec = cyclesEdgesId[(i - 1 + parts.size()) % parts.size()];
-    vec.push_back(sign * (int)edgeMarks.size());
-    if (vec.size() == 2) std::swap(vec[0], vec[1]);
-    cyclesEdgesId[i].push_back(-sign * (int)edgeMarks.size());
+    std::reverse(cyclesEdgesId[parts.size() - 1].begin(),
+                 cyclesEdgesId[parts.size() - 1].end());
+    YinSetId[parts.size() - 1].push_back(parts.size() - 1);
+    // smoothConditions.clear();
   }
-
-  if (norm(parts.back() - parts.front()) > distTol())
-    parts.push_back(parts.front());
-
-  for (size_t i = 0; i < parts.size() - 1; ++i) {
-    EdgeMark pts = markEllipse(center, radius, hL, {parts[i], parts[i + 1]});
-
-    edgeMarks.push_back(std::move(pts));
-    smoothConditions.emplace_back(
-        (int)edgeMarks.size() - 1 + (i == 0 ? parts.size() - 1 : 0),
-        (int)edgeMarks.size());
-    cyclesEdgesId[i].push_back((int)edgeMarks.size());
-    cyclesEdgesId[parts.size() - 1].push_back(-(int)edgeMarks.size());
-    YinSetId[i].push_back(i);
-  }
-  std::reverse(cyclesEdgesId[parts.size() - 1].begin(),
-               cyclesEdgesId[parts.size() - 1].end());
-  YinSetId[parts.size() - 1].push_back(parts.size() - 1);
-  // smoothConditions.clear();
 
   return approxInterfaceGraph<Order>(std::move(edgeMarks), smoothConditions,
                                      std::move(cyclesEdgesId),
@@ -274,3 +289,103 @@ auto Generator::createRoseGraph(Point center, Real a, Real hL,
                                      std::move(YinSetId), distTol());
 }
 
+template <int Order>
+#ifdef OPTNONE
+__attribute__((optnone))
+#endif  // OPTNONE
+auto diskTEST(const std::string& jsonFile) {
+  using namespace std;
+  auto params = read_config(jsonFile);
+  distTol(params.tolerance.distTol);
+  newtonTol(params.tolerance.newtonTol);
+  newtonMaxIter(params.tolerance.newtonMaxIter);
+  // time
+  const Real te = params.time.te;
+  const Real t0 = params.time.t0;
+  const Real Cr = params.time.Cr;
+  const Real uM = params.time.uM;
+  // grid
+  const int N0 = params.grid.N0;
+  const rVec lo = params.grid.lo;
+  const rVec hi = params.grid.hi;
+  const int aimOrder = params.grid.aimOrder;
+  const Real hLCoefficient = params.grid.hLCoefficient;
+  const Real rTiny = params.grid.rTiny;
+  const int nGrid = params.grid.nGrid;
+  std::shared_ptr<TimeIntegrator<DIM, VectorFunction>> timeIntegrator;
+  if (aimOrder == 4) {
+    timeIntegrator = make_shared<ERK<DIM, RK::ClassicRK4, VectorFunction>>();
+  } else if (aimOrder == 6) {
+    timeIntegrator = make_shared<ERK<DIM, RK::Verner6, VectorFunction>>();
+  } else if (aimOrder == 8) {
+    timeIntegrator =
+        make_shared<ERK<DIM, RK::PrinceDormand8, VectorFunction>>();
+  }
+  const Real T = te;
+  const auto velocityPtr = params.field.velocity;
+
+  // curvature-based adaption
+  const bool curvUsed = params.curvature.curvUsed;
+  const Real rCMin = params.curvature.rCMin;
+  const Real rhoMin = params.curvature.rhoMin;
+  const Real rhoMax = params.curvature.rhoMax;
+  const typename Marsn2D::MARSn2D<
+      Order, VectorFunction>::CurvatureAdaptionConfig curvConfig{
+      .used = curvUsed,
+      .rCMin = rCMin,
+      .rhoCRange = Interval<1>{rhoMin, rhoMax},
+      .sigma = [](Real x) { return x; },
+  };
+
+  // plot
+  const int plotOutput = params.plotConfig.plotOutput;
+  const bool plotInner = params.plotConfig.plotInner;
+  const int plotStride = params.plotConfig.plotStride;
+  const bool printDetail = params.plotConfig.printDetail;
+  const struct Marsn2D::MARSn2D<Order, VectorFunction>::PlotConfig plotConfig {
+    .output = plotOutput, .plotInner = plotInner, .opStride = plotStride,
+    .fName = to_string(Order) + "Circle" + "_grid" + to_string(N0) + "_T" +
+             to_string((int)T),
+    .range = {lo, hi},
+  };
+
+  // domain disk
+  const Point center = params.domain.center;
+  const rVec radius = params.domain.radius;
+  vector<Real> parts = params.domain.parts;
+  for (auto& part : parts) part *= 2 * M_PI;
+  const Real exactArea = M_PI * radius[0] * radius[1] / parts.size();
+  const Real exactLength = 2 * M_PI * radius[0] / parts.size() + 2 * radius[0];
+
+  // for multi grid.
+  vector<Marsn2D::approxInterfaceGraph<Order>> vecDisk;
+  vector<int> vecN;
+  vector<Box<DIM>> vecBox;
+  // vector<rVec> vecH;
+  vector<Real> vecHL;
+  vector<Real> vecDt;
+  Real N = N0;
+  for (uint i = 0; i < nGrid; ++i) {
+    rVec h = (hi - lo) / N;
+    Real hL = hLCoefficient * std::pow(h[0] * h[1], 0.5 * aimOrder / Order);
+    Real dt = std::min(h[0], h[1]) / uM * Cr;
+    const auto disk =
+        Generator::createDiskGraph<Order>(center, radius, hL / 2, parts);
+    vecDisk.emplace_back(std::move(disk));
+    vecN.emplace_back(N);
+    vecBox.emplace_back(0, N - 1);
+    // vecH.emplace_back(h);
+    vecHL.emplace_back(hL);
+    vecDt.emplace_back(dt);
+    N = N * 2;
+  }
+
+  // accurate solution
+  Real hL = vecHL.back() / 10;
+  auto exactDisk =
+      Generator::createDiskGraph<Order>(center, radius, hL / 2, parts);
+
+  return make_tuple(vecDisk, exactDisk, radius, exactArea, exactLength, vecBox,
+                    vecN, aimOrder, vecHL, rTiny, nGrid, curvConfig, plotConfig,
+                    printDetail, t0, vecDt, te, timeIntegrator, velocityPtr);
+}

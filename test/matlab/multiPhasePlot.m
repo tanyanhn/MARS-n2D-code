@@ -8,17 +8,16 @@ fillColor = 'bcrgmy';
 % filedir = "results/CutCell/";
 % filedir = "results/InterfaceGraph/";
 % filedir = "../../results/TrackInterface/Disk4Vortex16/";
-filedir = "../../results/TrackInterface/Disk5Deformation4/";
+% filedir = "../../results/TrackInterface/Disk5Deformation4/";
+filedir = "../../test/data1/";
 % round = "No4_";
 
-% filename = round + "Start.dat";
-% filename = round + "Step160.dat";
 % filename = "spadjor-13.input.dat";
 % filename = "localVolumes.dat";
 % filename = "localYinset.dat";
 % filename = "4Circle_grid32_Step2048_4_n.dat";
-filename = "4Circle_grid32.dat";
-
+% filename = "4Circle_grid32.dat";
+filename = "Panda.dat";
 Order = 4;
 N = 4;
 Shape = "Rose";
