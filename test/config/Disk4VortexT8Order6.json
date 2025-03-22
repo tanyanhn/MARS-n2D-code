@@ -18,8 +18,8 @@
       "N0": 32,
       "lo": [0.0, 0.0],
       "hi": [1.0, 1.0],
-      "aimOrder": 8,
-      "hLCoefficient": 12,
+      "aimOrder": 6,
+      "hLCoefficient": 1,
       "rTiny": 0.01,
       "nGrid": 3
   },

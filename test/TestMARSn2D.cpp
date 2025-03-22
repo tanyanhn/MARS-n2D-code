@@ -127,166 +127,103 @@ auto diskTEST(const std::string& jsonFile) {
   // }
 }
 
-template <int Order>
-void checkResult(auto& yinSets, auto& box, auto& range, auto& addInner,
-                 auto& radius, auto& N, auto& h, auto& output, auto& dir,
-                 auto& name, auto& exactLength, auto& exactArea) {
-  for (int i = 0; i < yinSets.size(); ++i) {
-    auto [res, boundary, tags] = yinSets[i].cutCell(box, range, addInner);
-    if (output) {
-      string fileName = to_string(Order) + name + to_string(N) + "_" +
-                        to_string(i + 1) + ".dat";
-      std::ofstream of(dir + fileName, std::ios_base::binary);
-      dumpTensorYinSet<Order>(res, of);
-      // yinSets[i].dump(of);
-    }
-
-    INFO("Integral Area and length.");
-    Real totalArea = 0;
-    Real length = 0;
-    Real fullCell = h[0] * h[1];
-    loop_box_2(res.box(), i0, i1) {
-      if (tags[i0][i1] == 1 || tags[i0][i1] == 2) {
-        totalArea += fullCell;
-      } else if (tags[i0][i1] == 0 || tags[i0][i1] == -2 || tags[i0][i1] == 2) {
-        if (res(i0, i1)) {
-          for (const auto& crv : res(i0, i1)->getBoundaryCycles())
-            totalArea += area(crv);
-        }
-        for (const auto& crv : boundary(i0, i1)) length += arclength(crv);
-      }
-    }
-    if (i == yinSets.size() - 1) {
-      exactArea = 1 - exactArea * (yinSets.size() - 1);
-      exactLength = 2 * M_PI * radius[0];
-    }
-    Real areaError = std::abs(totalArea - exactArea) / (exactArea);
-    Real lengthError = std::abs(length - exactLength) / (exactLength);
-    std::cout << to_string(i) + "th areaError = " << areaError << '\n';
-    std::cout << to_string(i) + "th lengthError = " << lengthError << '\n';
-    // REQUIRE(std::fabs(areaError) < distTol() / exactArea);
-    // REQUIRE(std::fabs(lengthError) < distTol() / exactLength);
-  }
-}
-
-TEST_CASE("Disk 4 vortex T = 4/8/12/16, Convergence Test.",
-          "[Disk][Vortex][MARSn2D][Convergence]") {
-  {
-    // const auto* testName = "Disk4Vortex4";
-    // const auto* testName = "Disk4Vortex8";
-    // const auto* testName = "Disk4Vortex12";
-    const auto* testName = "Disk4Vortex16";
-    auto dir = rootDir + "/results/TrackInterface/" + testName + "/";
-    mkdir(dir.c_str(), 0755);
-    RecorderInitialize(RecorderInfo{DebugLevel::INFO, dir});
-
-    SECTION("4-th order disk") {
-      constexpr int Order = 4;
-      pushLogStage("Initialize");
-      auto [vecDisk, exactDisk, radius, exactArea, exactLength, vecBox, vecN,
-            aimOrder, vecHL, rTiny, nGrid, curvConfig, plotConfig, printDetail,
-            t0, vecDt, te, timeIntegrator, velocityPtr] =
-          diskTEST<Order>(rootDir + "/test/config/" + testName + ".json");
-      popLogStage();
-
-      pushLogStage("TrackInterface");
-
-      for (uint i = 0; i < nGrid; ++i) {
-        // 每个线程创建自己的plotConfig副本
-        auto localPlotConfig = plotConfig;  // 假设PlotConfig可复制
-
-        localPlotConfig.fName =
-            to_string(Order) + "Circle" + "_grid" + to_string(vecN[i]);
-        localPlotConfig.fName = dir + localPlotConfig.fName;
-
-        MARSn2D<Order, VectorFunction> CM(timeIntegrator, vecHL[i], rTiny,
-                                          curvConfig, printDetail);
-        CM.trackInterface(*velocityPtr, vecDisk[i], t0, vecDt[i], te,
-                          localPlotConfig);
-      }
-      popLogStage();
-
-      pushLogStage("CheckResult");
-      auto errors = cutCellError(vecDisk, exactDisk, vecBox, plotConfig.range);
-      printCellError(errors);
-    }
-    ::Timer::printStatistics();
+void trackInterfaceTest(const string& testName,
+                        DebugLevel debugLevel = DebugLevel::OFF) {
+  auto dir = rootDir + "/results/TrackInterface/" + testName + "/";
+  mkdir(dir.c_str(), 0755);
+  RecorderInitialize(RecorderInfo{debugLevel, dir});
+  SECTION("4-th order disk") {
+    constexpr int Order = 4;
+    pushLogStage("Initialize");
+    auto [vecDisk, exactDisk, radius, exactArea, exactLength, vecBox, vecN,
+          aimOrder, vecHL, rTiny, nGrid, curvConfig, plotConfig, printDetail,
+          t0, vecDt, te, timeIntegrator, velocityPtr] =
+        diskTEST<Order>(rootDir + "/test/config/" + testName + ".json");
     popLogStage();
-    RecorderFinalize();
-  }
-}
-
-TEST_CASE("Disk 5 deformation T = 2/4, Convergence Test.",
-          "[Disk][Deformation][MARSn2D][Convergence]") {
-  {
-    // const auto* testName = "Disk5Deformation2";
-    const auto* testName = "Disk5Deformation4";
-    auto dir = rootDir + "/results/TrackInterface/" + testName + "/";
-    mkdir(dir.c_str(), 0755);
-    RecorderInitialize(RecorderInfo{DebugLevel::INFO, dir});
-
-    SECTION("4-th order disk") {
-      constexpr int Order = 4;
-      pushLogStage("Initialize");
-      auto [vecDisk, exactDisk, radius, exactArea, exactLength, vecBox, vecN,
-            aimOrder, vecHL, rTiny, nGrid, curvConfig, plotConfig, printDetail,
-            t0, vecDt, te, timeIntegrator, velocityPtr] =
-          diskTEST<Order>(rootDir + "/test/config/" + testName + ".json");
-      popLogStage();
-
-      pushLogStage("TrackInterface");
-      for (uint i = 0; i < nGrid; ++i) {
-        plotConfig.fName =
-            to_string(Order) + "Circle" + "_grid" + to_string(vecN[i]);
-        plotConfig.fName = dir + plotConfig.fName;
-        MARSn2D<Order, VectorFunction> CM(timeIntegrator, vecHL[i], rTiny,
-                                          curvConfig, printDetail);
-
-        CM.trackInterface(*velocityPtr, vecDisk[i], t0, vecDt[i], te,
-                          plotConfig);
-      }
-      popLogStage();
-
-      pushLogStage("CheckResult");
-      std::ofstream of(plotConfig.fName + ".dat");
-      auto yinsets = vecDisk[0].approxYinSet();
-      yinsets[0].dump(of);
-      auto errors = cutCellError(vecDisk, exactDisk, vecBox, plotConfig.range);
-      printCellError(errors);
+    pushLogStage("TrackInterface");
+    for (uint i = 0; i < nGrid; ++i) {
+      // 每个线程创建自己的plotConfig副本
+      auto localPlotConfig = plotConfig;  // 假设PlotConfig可复制
+      localPlotConfig.fName =
+          to_string(Order) + "Circle" + "_grid" + to_string(vecN[i]);
+      localPlotConfig.fName = dir + localPlotConfig.fName;
+      MARSn2D<Order, VectorFunction> CM(timeIntegrator, vecHL[i], rTiny,
+                                        curvConfig, printDetail);
+      CM.trackInterface(*velocityPtr, vecDisk[i], t0, vecDt[i], te,
+                        localPlotConfig);
     }
-    ::Timer::printStatistics();
     popLogStage();
-    RecorderFinalize();
+    pushLogStage("CheckResult");
+    auto errors = cutCellError(vecDisk, exactDisk, vecBox, plotConfig.range);
+    printCellError(errors);
   }
+  ::Timer::printStatistics();
+  popLogStage();
+  RecorderFinalize();
 }
 
-// TEST_CASE("Disk 4 vortex4, RK4: Area and Length Test.",
-//           "[Disk][Vortex][4][MARSn2D]") {
-//   ::Timer t("disk4Vortex4");
-//   const auto* testName = "Disk4Vortex4";
-//   auto dir = rootDir + "/results/TrackInterface/" + testName + "/";
-//   mkdir(dir.c_str(), 0755);
-//   SECTION("2-th order disk") {
-//     constexpr int Order = 2;
-//     auto [disk, radius, exactArea, exactLength, box, N, aimOrder, h, hL,
-//     rTiny,
-//           nGrid, curvConfig, plotConfig, printDetail, t0, dt, te,
-//           timeIntegrator, vortex] =
-//         diskTEST<Order>(rootDir + "/test/config/" + testName + ".json");
-//     plotConfig.fName = dir + plotConfig.fName;
-//     MARSn2D<Order, VectorFunction> CM(timeIntegrator, hL, rTiny, curvConfig,
-//                                       printDetail);
+TEST_CASE("Disk 4 vortex T = 4, Order = 4", "[Disk][Vortex][T4][Order4]") {
+  trackInterfaceTest("Disk4VortexT4Order4");
+}
+TEST_CASE("Disk 4 vortex T = 4, Order = 6", "[Disk][Vortex][T4][Order6]") {
+  trackInterfaceTest("Disk4VortexT4Order6");
+}
+TEST_CASE("Disk 4 vortex T = 4, Order = 8", "[Disk][Vortex][T4][Order8]") {
+  trackInterfaceTest("Disk4VortexT4Order8");
+}
 
-//     CM.trackInterface(vortex, disk, t0, dt, te, plotConfig);
+TEST_CASE("Disk 4 vortex T = 8, Order = 4", "[Disk][Vortex][T8][Order4]") {
+  trackInterfaceTest("Disk4VortexT8Order4");
+}
+TEST_CASE("Disk 4 vortex T = 8, Order = 6", "[Disk][Vortex][T8][Order6]") {
+  trackInterfaceTest("Disk4VortexT8Order6");
+}
+TEST_CASE("Disk 4 vortex T = 8, Order = 8", "[Disk][Vortex][T8][Order8]") {
+  trackInterfaceTest("Disk4VortexT8Order8");
+}
 
-//     INFO("Integral Area and length.");
-//     auto yinSets = disk.approxYinSet();
+TEST_CASE("Disk 4 vortex T = 12, Order = 4", "[Disk][Vortex][T12][Order4]") {
+  trackInterfaceTest("Disk4VortexT12Order4");
+}
+TEST_CASE("Disk 4 vortex T = 12, Order = 6", "[Disk][Vortex][T12][Order6]") {
+  trackInterfaceTest("Disk4VortexT12Order6");
+}
+TEST_CASE("Disk 4 vortex T = 12, Order = 8", "[Disk][Vortex][T12][Order8]") {
+  trackInterfaceTest("Disk4VortexT12Order8");
+}
 
-//     checkResult<Order>(yinSets, box, plotConfig.range, addInner, radius, N,
-//     h,
-//                        output, dir, plotConfig.fName, exactLength,
-//                        exactArea);
-//     t.~Timer();
-//     ::Timer::printStatistics();
-//   }
-// }
+TEST_CASE("Disk 4 vortex T = 16, Order = 4", "[Disk][Vortex][T16][Order4]") {
+  trackInterfaceTest("Disk4VortexT16Order4");
+}
+TEST_CASE("Disk 4 vortex T = 16, Order = 6", "[Disk][Vortex][T16][Order6]") {
+  trackInterfaceTest("Disk4VortexT16Order6");
+}
+TEST_CASE("Disk 4 vortex T = 16, Order = 8", "[Disk][Vortex][T16][Order8]") {
+  trackInterfaceTest("Disk4VortexT16Order8");
+}
+
+TEST_CASE("Disk 5 deformation T = 2, Order = 4",
+          "[Disk][Deformation][T2][Order4]") {
+  trackInterfaceTest("Disk5DeformationT2Order4");
+}
+TEST_CASE("Disk 5 deformation T = 2, Order = 6",
+          "[Disk][Deformation][T2][Order6]") {
+  trackInterfaceTest("Disk5DeformationT2Order6");
+}
+TEST_CASE("Disk 5 deformation T = 2, Order = 8",
+          "[Disk][Deformation][T2][Order8]") {
+  trackInterfaceTest("Disk5DeformationT2Order8");
+}
+
+TEST_CASE("Disk 5 deformation T = 4, Order = 4",
+          "[Disk][Deformation][T4][Order4]") {
+  trackInterfaceTest("Disk5DeformationT4Order4");
+}
+TEST_CASE("Disk 5 deformation T = 4, Order = 6",
+          "[Disk][Deformation][T4][Order6]") {
+  trackInterfaceTest("Disk5DeformationT4Order6");
+}
+TEST_CASE("Disk 5 deformation T = 4, Order = 8",
+          "[Disk][Deformation][T4][Order8]") {
+  trackInterfaceTest("Disk5DeformationT4Order8");
+}

@@ -18,10 +18,10 @@
       "N0": 32,
       "lo": [0.0, 0.0],
       "hi": [1.0, 1.0],
-      "aimOrder": 8,
-      "hLCoefficient": 10,
-      "rTiny": 0.1,
-      "nGrid": 3
+      "aimOrder": 4,
+      "hLCoefficient": 0.2,
+      "rTiny": 0.05,
+      "nGrid": 1
   },
   "curvature_adaption": {
       "curvUsed": true,

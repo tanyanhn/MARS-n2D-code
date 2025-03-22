@@ -5,9 +5,9 @@
     "newtonMaxIter": 40
   },
   "time": {
-      "te": 12.0,
+      "te": 4.0,
       "t0": 0.0,
-      "Cr": 0.125,
+      "Cr": 0.25,
       "uM": 1.0
   },
   "field": {
@@ -18,21 +18,21 @@
       "N0": 32,
       "lo": [0.0, 0.0],
       "hi": [1.0, 1.0],
-      "aimOrder": 4,
-      "hLCoefficient": 0.2,
-      "rTiny": 0.1,
-      "nGrid": 3
+      "aimOrder": 6,
+      "hLCoefficient": 1,
+      "rTiny": 0.05,
+      "nGrid": 1
   },
   "curvature_adaption": {
-      "curvUsed": true,
-      "rCMin": 0.03,
+      "curvUsed": false,
+      "rCMin": 0.1,
       "rhoMin": 5.0,
       "rhoMax": 10000.0
   },
   "plot": {
       "plotOutput": 0,
       "plotInner": false,
-      "plotStride": 8.0,
+      "plotStride": 2,
       "printDetail": false
   },
   "domain_disk": {
