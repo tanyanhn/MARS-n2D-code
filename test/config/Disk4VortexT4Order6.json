@@ -21,7 +21,7 @@
       "aimOrder": 6,
       "hLCoefficient": 1,
       "rTiny": 0.05,
-      "nGrid": 1
+      "nGrid": 3
   },
   "curvature_adaption": {
       "curvUsed": false,
