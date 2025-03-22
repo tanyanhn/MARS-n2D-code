@@ -19,7 +19,7 @@
       "lo": [0.0, 0.0],
       "hi": [1.0, 1.0],
       "aimOrder": 4,
-      "hLCoefficient": 0.2,
+      "hLCoefficient": 0.1,
       "rTiny": 0.01,
       "nGrid": 3
   },
