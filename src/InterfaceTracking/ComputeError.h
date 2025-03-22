@@ -229,7 +229,7 @@ cutCellError(const vector<Marsn2D::approxInterfaceGraph<Order>> &lhss,
 
   // compute lhss
   Vector<Vector<Vector<Real>>> ret(
-      numYinsets, Vector<Vector<Real>>(2, Vector<Real>(2 * num - 1, 0)));
+      numYinsets + 1, Vector<Vector<Real>>(2, Vector<Real>(2 * num - 1, 0)));
   for (size_t g = 0; g < num; g++) {
     auto grid = num - g - 1;
     Real h = h0[0] / (1 << grid);
@@ -252,11 +252,14 @@ cutCellError(const vector<Marsn2D::approxInterfaceGraph<Order>> &lhss,
           std::cout << std::format("i = {}, j = {}, LInf = {}", i0, i1, LInf);
         }
       }
+      ret[numYinsets][0][2 * grid] += L1;
+      ret[numYinsets][1][2 * grid] =
+          std::max(ret[numYinsets][1][2 * grid], LInf);
     }
     rhsVolumes = coarseVolumes(rhsVolumes);
   }
   for (size_t i = 0; i < num - 1; i++) {
-    for (size_t j = 0; j < numYinsets; ++j) {
+    for (size_t j = 0; j < numYinsets + 1; ++j) {
       ret[j][0][2 * i + 1] =
           log(ret[j][0][2 * i] / ret[j][0][2 * i + 2]) / log(2);
       ret[j][1][2 * i + 1] =
@@ -274,20 +277,33 @@ std::string join(const Range &range) {
   for (const auto &elem : range) {
     if (!first) oss << ' ';
     if (++count % 2)
-      oss << std::format("{:.2e} ", elem);
+      oss << std::format("{:.2e} & ", elem);
     else
-      oss << std::format("{:.2f} ", elem);
+      oss << std::format("{:.2f} & ", elem);
     first = false;
   }
   return oss.str();
 }
 
-inline void printCellError(const Vector<Vector<Vector<Real>>> &errors) {
-  int count = 0;
-  for (const auto &i : errors) {
-    std::cout << std::format("YinSet-{} L1    : {}\n         Linfty: {}\n\n",
-                             count++, join(i[0]), join(i[1]));
+inline void printCellError(const Vector<Vector<Vector<Real>>> &errors,
+                           const std::string &resultFileName = "") {
+  auto print = [](auto &of, const Vector<Vector<Vector<Real>>> &errors) {
+    int count = 0;
+    for (const auto &i : errors) {
+      if (count < errors.size() - 1) {
+        of << std::format("YinSet-{} L1    : {}\n         Linfty: {}\n\n",
+                          count++, join(i[0]), join(i[1]));
+      } else {
+        of << std::format("Total    L1    : {}\n         Linfty: {}\n\n",
+                          join(i[0]), join(i[1]));
+      }
+    }
+  };
+  if (!resultFileName.empty()) {
+    std::ofstream of(resultFileName);
+    print(of, errors);
   }
+  print(std::cout, errors);
 }
 
 #endif

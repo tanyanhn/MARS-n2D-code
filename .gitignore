@@ -8,5 +8,6 @@ vcpkg_installed/
 *.dat
 *.asv
 tmpos.dat
+aResult.txt
 
 dirConfig.h

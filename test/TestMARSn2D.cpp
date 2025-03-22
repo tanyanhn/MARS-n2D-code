@@ -14,11 +14,6 @@ using namespace nlohmann;
 bool addInner = false;
 bool output = false;
 
-// auto read_config(const std::string& filename) {
-//   std::ifstream ifs(filename);
-//   return json::parse(ifs);
-// }
-
 template <int Order>
 #ifdef OPTNONE
 __attribute__((optnone))
@@ -41,11 +36,6 @@ auto diskTEST(const std::string& jsonFile) {
   const Real hLCoefficient = params.grid.hLCoefficient;
   const Real rTiny = params.grid.rTiny;
   const int nGrid = params.grid.nGrid;
-  // const rVec h0 = (hi - lo) / N0;
-  // const Real hL0 =
-  //     hLCoefficient * std::pow(h0[0] * h0[1], 0.5 * aimOrder / Order);
-  // const Box<DIM> box(0, N0 - 1);
-  // const Real dt0 = std::min(h0[0], h0[1]) / uM * Cr;
   std::shared_ptr<TimeIntegrator<DIM, VectorFunction>> timeIntegrator;
   if (aimOrder == 4) {
     timeIntegrator = make_shared<ERK<DIM, RK::ClassicRK4, VectorFunction>>();
@@ -56,8 +46,6 @@ auto diskTEST(const std::string& jsonFile) {
         make_shared<ERK<DIM, RK::PrinceDormand8, VectorFunction>>();
   }
   const Real T = te;
-  // const auto vortex = std::make_shared<Vortex>(T);
-  // const auto velocityPtr = vortex;
   const auto velocityPtr = params.field.velocity;
 
   // curvature-based adaption
@@ -124,7 +112,6 @@ auto diskTEST(const std::string& jsonFile) {
   return make_tuple(vecDisk, exactDisk, radius, exactArea, exactLength, vecBox,
                     vecN, aimOrder, vecHL, rTiny, nGrid, curvConfig, plotConfig,
                     printDetail, t0, vecDt, te, timeIntegrator, velocityPtr);
-  // }
 }
 
 void trackInterfaceTest(const string& testName,
@@ -142,8 +129,7 @@ void trackInterfaceTest(const string& testName,
     popLogStage();
     pushLogStage("TrackInterface");
     for (uint i = 0; i < nGrid; ++i) {
-      // 每个线程创建自己的plotConfig副本
-      auto localPlotConfig = plotConfig;  // 假设PlotConfig可复制
+      auto localPlotConfig = plotConfig;
       localPlotConfig.fName =
           to_string(Order) + "Circle" + "_grid" + to_string(vecN[i]);
       localPlotConfig.fName = dir + localPlotConfig.fName;
@@ -155,7 +141,8 @@ void trackInterfaceTest(const string& testName,
     popLogStage();
     pushLogStage("CheckResult");
     auto errors = cutCellError(vecDisk, exactDisk, vecBox, plotConfig.range);
-    printCellError(errors);
+    std::string resultFileName = dir + "aResult.txt";
+    printCellError(errors, resultFileName);
   }
   ::Timer::printStatistics();
   popLogStage();
