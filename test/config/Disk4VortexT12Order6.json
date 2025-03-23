@@ -20,7 +20,7 @@
       "hi": [1.0, 1.0],
       "aimOrder": 6,
       "hLCoefficient": 1,
-      "rTiny": 0.05,
+      "rTiny": 0.1,
       "nGrid": 3
   },
   "curvature_adaption": {
