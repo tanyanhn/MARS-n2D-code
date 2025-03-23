@@ -1,8 +1,8 @@
 {
   "tolerance": {
     "distTol": 1.0e-13,
-    "newtonTol": 1.0e-15,
-    "newtonMaxIter": 40
+    "newtonTol": 1.0e-19,
+    "newtonMaxIter": 200
   },
   "time": {
       "te": 12.0,

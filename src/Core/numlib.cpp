@@ -1,5 +1,6 @@
 #include "numlib.h"
 
+
 constexpr Real GaussLegendreConstant<1>::knots[];
 constexpr Real GaussLegendreConstant<1>::weights[];
 constexpr Real GaussLegendreConstant<2>::knots[];

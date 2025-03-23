@@ -10,7 +10,11 @@ void MARSn2D<Order, VelocityField>::discreteFlowMap(const VectorFunction<2> &v,
                                                     EdgeMark &marks, Real tn,
                                                     Real dt) const {
   Timer t("discreteFlowMap");
+  // using Eigen.
   TI_->timeStep(v, marks, tn, dt);
+  // for (auto & pt : marks) {
+  //   pt = TI_->timeStep(v, pt, tn, dt);
+  // }
 }
 
 template <int Order, template <int> class VelocityField>
@@ -54,10 +58,14 @@ void MARSn2D<Order, VelocityField>::trackInterface(
       std::cout << "Step: " << step << "     time now: " << tn << '\n';
     else
       bar.update();
-    timeStep(v, ig, tn, k);
-    // std::cout << '\n';
+    if (step == stages - 1) {
+      timeStep(v, ig, tn, EndTime - tn);
+      tn = EndTime;
+    } else {
+      timeStep(v, ig, tn, k);
+      tn += k;
+    }
     std::cout.flush();
-    tn += k;
     step++;
   }
   if (plotConfig.output != NONE) {

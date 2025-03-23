@@ -345,7 +345,7 @@ auto YinSet<2, Order>::cutCell(const Box<Dim> &box, const Interval<Dim> &range,
   vector<vector<YinSetPtr>> ret(N0, vector<YinSetPtr>(N1, nullptr));
   // since in pastCells will attach curve boundary to grid line, and will
   // increase tol error.
-  Real tol = distTol() / 2;
+  Real tol = 5e-16;
 
   auto lo = range.lo();
   auto hi = range.hi();
@@ -368,7 +368,7 @@ auto YinSet<2, Order>::cutCell(const Box<Dim> &box, const Interval<Dim> &range,
                                     gridCurves, newtonTol());
 
   // past in every cells.
-  CutCellHelper<Order>::pastCells(lo, h, box, gridCurves, ret, newtonTol()*10);
+  CutCellHelper<Order>::pastCells(lo, h, box, gridCurves, ret, tol);
 
   // fill inner cell rectangles.
   auto tags = CutCellHelper<Order>::fillInner(lo, h, box, *this, gridCurves,

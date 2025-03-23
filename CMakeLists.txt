@@ -37,7 +37,7 @@ pkg_check_modules(mpfr REQUIRED IMPORTED_TARGET mpfr)
 # message("lib: " ${Eigen_LIBRARY})
 
 # may be slower with ON.
-option(USE_TENSOR_OPENMP "Whether to use the OpenMP parallelism for tensor." ON)
+option(USE_TENSOR_OPENMP "Whether to use the OpenMP parallelism for tensor." OFF)
 if(USE_TENSOR_OPENMP)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DUSE_TENSOR_OPENMP")
 endif()

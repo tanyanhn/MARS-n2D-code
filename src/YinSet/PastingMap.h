@@ -8,13 +8,13 @@
 #include "Core/VecCompare.h"
 #include "YinSet/OrientedJordanCurve.h"
 
-template <int Order>
+template <int Order, typename Num = Real>
 class OutEdgeSelectorByKnots {
  public:
-  using rVec = Vec<Real, SpaceDim>;
+  using rVec = Vec<Num, SpaceDim>;
   using Crv = Curve<SpaceDim, Order>;
 
-  OutEdgeSelectorByKnots(Real _tol, const Crv& existing,
+  OutEdgeSelectorByKnots(Num _tol, const Crv& existing,
                          const std::vector<Crv>& allCrvs_)
       : tol(_tol),
         // indir(existing.midpoint() - existing.endpoint()),
@@ -26,7 +26,7 @@ class OutEdgeSelectorByKnots {
   bool operator()(const size_t&, const size_t&) const;
 
  protected:
-  Real tol;
+  Num tol;
   // rVec standpoint;
   rVec indir;
   const std::vector<Crv>& allCrvs;
@@ -34,47 +34,48 @@ class OutEdgeSelectorByKnots {
 
 //==========================================================
 
-template <int Order, class Selector = OutEdgeSelectorByKnots<Order>>
+template <int Order, typename Num = Real,
+          class Selector = OutEdgeSelectorByKnots<Order, Num>>
 class PastingMap {
  public:
-  using rVec = Vec<Real, SpaceDim>;
+  using rVec = Vec<Num, SpaceDim>;
   using Crv = Curve<SpaceDim, Order>;
   template <class T>
   using vector = std::vector<T>;
 
-  PastingMap(Real _tol)
+  PastingMap(Num _tol)
       : tol(_tol),
-        graph(VecCompare<Real, SpaceDim>(tol)),
-        cellGraph(VecCompare<Real, SpaceDim - 1>(tol)) {}
+        graph(VecCompare<Num, SpaceDim>(tol)),
+        cellGraph(VecCompare<Num, SpaceDim - 1>(tol)) {}
   void formClosedLoops(vector<OrientedJordanCurve<DIM, Order>>& outCont);
   void formCellClosedLoops(vector<OrientedJordanCurve<DIM, Order>>& outCont);
   template <class T_Crv>
   void addEdge(T_Crv&& newEdge, bool necessary = true);
   template <class T_Crv>
-  void addCellEdge(T_Crv&& newEdge, Real start, Real end,
+  void addCellEdge(T_Crv&& newEdge, Num start, Num end,
                    bool necessary = true);
-  void setPeriod(Real p) { period = p; }
+  void setPeriod(Num p) { period = p; }
   void addVertex(const rVec& newVertex) { graph.insert({newVertex, {}}); }
 
  protected:
   using Iter = std::set<size_t>::const_iterator;
   void removeEdge(const rVec& oldtail,  auto& repo, Iter eit);
-  Real tol;
+  Num tol;
   std::vector<Crv> allCrvs;
-  std::map<rVec, std::set<size_t>, VecCompare<Real, SpaceDim>> graph;
-  std::map<Real, std::set<size_t>, VecCompare<Real, 1>> cellGraph;
+  std::map<rVec, std::set<size_t>, VecCompare<Num, SpaceDim>> graph;
+  std::map<Num, std::set<size_t>, VecCompare<Num, 1>> cellGraph;
   std::set<size_t> necessaryEdge;  // for the necessary edge form loop
   bool useCellGraph = false;
-  std::unordered_map<size_t, std::pair<Real, Real>> endPoints;
-  Real period;
+  std::unordered_map<size_t, std::pair<Num, Num>> endPoints;
+  Num period;
 };
 
-template <int Order, class Selector>
+template <int Order, typename Num, class Selector>
 template <class T_Crv>
 #ifdef OPTNONE
 __attribute__((optnone))
 #endif  // OPTNONE
-void PastingMap<Order, Selector>::addEdge(T_Crv&& newEdge, bool necessary) {
+void PastingMap<Order, Num, Selector>::addEdge(T_Crv&& newEdge, bool necessary) {
   rVec start = newEdge.startpoint();
   auto iter = graph.find(start);
   if (iter != graph.end()) {
@@ -108,12 +109,12 @@ void PastingMap<Order, Selector>::addEdge(T_Crv&& newEdge, bool necessary) {
 }
 
 
-template <int Order, class Selector>
+template <int Order, typename Num, class Selector>
 template <class T_Crv>
 #ifdef OPTNONE
 __attribute__((optnone))
 #endif  // OPTNONE
-void PastingMap<Order, Selector>::addCellEdge(T_Crv&& newEdge, Real start, Real end, bool necessary) {
+void PastingMap<Order, Num, Selector>::addCellEdge(T_Crv&& newEdge, Num start, Num end, bool necessary) {
   useCellGraph = true;
   auto iter = cellGraph.find(start);
   if (iter != cellGraph.end()) {

@@ -17,7 +17,7 @@ class Polynomial {
   CoefType coefs[Order];
 
  public:
-  // enum { _Order = Order };
+  enum { _Order = Order };
 
   Polynomial(const CoefType &_c = CoefType()) {
     coefs[0] = _c;
@@ -30,6 +30,11 @@ class Polynomial {
     for (int i = 0; i < Order; ++i) coefs[i] = *q++;
   }
 
+  template <class CoefType2>
+  explicit Polynomial(const Polynomial<Order, CoefType2> &p) {
+    for (int i = 0; i < Order; ++i) coefs[i] = p[i];
+  }
+
  public:
   const CoefType &operator[](int k) const { return coefs[k]; }
 
@@ -40,12 +45,13 @@ class Polynomial {
      Evaluate the polynomial at x.
    */
   template <class T2>
-  #ifdef OPTNONE
+#ifdef OPTNONE
   __attribute__((optnone))
-  #endif  // OPTNONE
-  CoefType operator()(const T2 &x) const {
+#endif  // OPTNONE
+  CoefType
+  operator()(const T2 &x) const {
     CoefType val = 0;
-    for (int d = Order - 1; d >=0; --d) {
+    for (int d = Order - 1; d >= 0; --d) {
       val = val * x + coefs[d];
     }
     return val;
@@ -126,6 +132,8 @@ class Polynomial {
     for (int d = 0; d < Order; d++) res.coefs[d] = coefs[d] / scalar;
     return res;
   }
+
+  // CoefType diffInClosedPoint(Real t0, Real t1) const {  }
 };
 
 template <class CoefType>
@@ -244,6 +252,94 @@ inline Inserter extrema(const RealPolynomial<Order> &poly, Inserter rts,
                         Real tol) {
   if (Order >= 3) return roots(poly.der(), rts, tol);
   return rts;
+}
+
+template <class T_Func, class T_Der>
+#ifdef OPTNONE
+__attribute__((optnone))
+#endif  // OPTNONE
+inline Real
+fzero(const T_Func &hf, const T_Der &hdf, Real hx0, int maxIter, Real tol) {
+  using localReal = Real;
+  // Polynomial<decltype(hf)::_Order, localReal> f = hf;
+  // Polynomial<decltype(hdf)::_Order, localReal> df = hdf;
+  const auto &f = hf;
+  const auto &df = hdf;
+  localReal x0 = hx0;
+  localReal fx = f(x0);
+  localReal localFx = fx;
+  localReal localX0 = x0;
+  localReal dx = 0;
+  int whileCount = 0;
+  while (maxIter-- > 0 && (std::abs(fx) > tol)) {
+    localReal dfx = df(x0);
+    dx = fx / dfx;
+    while (std::abs(localFx) >= std::abs(fx)) {
+      localX0 = x0 - dx;
+      localFx = f(localX0);
+      if (whileCount++ > 100)
+        throw std::runtime_error(
+            std::format("whileCount: Newton iteration may not converge, f(x) = "
+                        "{}, dx = {} \n",
+                        fx, dx));
+      dx /= 2;
+    }
+    whileCount = 0;
+    x0 = localX0;
+    fx = localFx;
+  }
+  if (maxIter < 0 && (std::abs(fx) > tol))
+    throw std::runtime_error(std::format(
+        "maxIter: Newton iteration may not converge, f(x) = {}, dx = {} \n", fx,
+        dx));
+  return x0;
+}
+
+template <>
+#ifdef OPTNONE
+__attribute__((optnone))
+#endif  // OPTNONE
+inline Real
+fzero<Polynomial<4, Real>, Polynomial<3, Real>>(const Polynomial<4, Real> &hf,
+                                                const Polynomial<3, Real> &hdf,
+                                                Real hx0, int maxIter,
+                                                Real tol) {
+  using localReal = long double;
+  Polynomial<4, localReal> f(hf);
+  auto df = f.der();
+  localReal x0 = hx0;
+  localReal fx = f(x0);
+  localReal localFx = fx;
+  localReal localX0 = x0;
+  localReal dx = 0;
+  localReal div = 1;
+  int whileCount = 0;
+  while (maxIter-- > 0 && (std::abs(fx) > tol)) {
+    localReal dfx = df(x0);
+    dx = fx / dfx;
+    while (std::abs(localFx) >= std::abs(fx)) {
+      localX0 = x0 - dx / div;
+      localFx = f(localX0);
+      div *= 2;
+      if (whileCount++ > 100) {
+        // fzero<Polynomial<4, Real>, Polynomial<3, Real>>(hf, hdf, hx0, maxIter,
+        //                                                 tol);
+        throw std::runtime_error(
+            std::format("long double version, whileCount: Newton iteration may not converge, f(x) = "
+                        "{}, dx = {} \n",
+                        fx, dx / div));
+      }
+    }
+    whileCount = 0;
+    div /= 2;
+    x0 = localX0;
+    fx = localFx;
+  }
+  if (maxIter < 0 && (std::abs(fx) > tol))
+    throw std::runtime_error(std::format(
+        "long double version, maxIter: Newton iteration may not converge, f(x) = {}, dx = {} \n", fx,
+        dx / div));
+  return x0;
 }
 
 #endif  // POLYNOMIAL_H

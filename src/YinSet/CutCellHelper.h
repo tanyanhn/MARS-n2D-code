@@ -68,8 +68,9 @@ auto CutCellHelper<Order>::intersectGridLine(
           __attribute__((optnone))
 #endif  // OPTNONE
       {
-        Real p0 = xPoly[0];
-        Real p1 = xPoly(knotsEnd - knotStart);
+        using localReal = long double;
+        localReal p0 = xPoly[0];
+        localReal p1 = xPoly(knotsEnd - knotStart);
         bool swapped = false;
         if (p0 > p1) {
           std::swap(p0, p1);
@@ -77,13 +78,13 @@ auto CutCellHelper<Order>::intersectGridLine(
         }
         int startRow = std::ceil((p0 - lo - tol) / h);
         int endRow = std::floor((p1 - lo + tol) / h);
-        if (std::fabs(p0 - (lo + h * startRow)) < tol) {
+        if (std::fabs(p0 - (lo + h * startRow)) <= tol) {
           auto value = !swapped ? knotStart : knotsEnd;
           intersectionsForCurve.insert(value);
           // auto p = xPoly(value);
           ++startRow;
         }
-        if (std::fabs(p1 - (lo + h * endRow)) < tol) {
+        if (std::fabs(p1 - (lo + h * endRow)) <= tol) {
           auto value = !swapped ? knotsEnd : knotStart;
           intersectionsForCurve.insert(value);
           // auto p = xPoly(value);
@@ -91,7 +92,7 @@ auto CutCellHelper<Order>::intersectGridLine(
         }
 
         for (int r = startRow; r <= endRow; ++r) {
-          Real row = lo + r * h;
+          localReal row = lo + r * h;
           auto intersection =
               root(xPoly - row, (knotsEnd - knotStart) / 2, tol, newtonMaxIter);
           if (intersection > 0 && intersection < knotsEnd - knotStart) {
@@ -166,17 +167,19 @@ auto CutCellHelper<Order>::pastCells(
       continue;
     }
 
-    auto localLo = lo + h * iVec{i0, i1};
-    auto localHi = localLo + h;
+    using localReal = Real;
+
+    Vec<localReal, 2> localLo(lo + h * iVec{i0, i1});
+    Vec<localReal, 2> localHi = localLo + h;
     Curve<2, Order> rect = createRect<Order>(localLo, localHi);
 
-    vector<Real> brks;
-    Real pre0 = 0;
-    Real pre1 = pre0 + h[0];
-    Real pre2 = pre1 + h[1];
-    Real pre3 = pre2 + h[0];
+    vector<localReal> brks;
+    localReal pre0 = 0;
+    localReal pre1 = pre0 + h[0];
+    localReal pre2 = pre1 + h[1];
+    localReal pre3 = pre2 + h[0];
     // tol * 2 since we move point while attach cell,
-    PastingMap<Order> pasting(tol * 2);
+    PastingMap<Order, localReal> pasting(tol * 2);
     pasting.setPeriod(pre3 + h[1]);
     vector<OrientedJordanCurve<2, Order>> res;
     for (auto &crv : gridCurves[i0][i1]) {
