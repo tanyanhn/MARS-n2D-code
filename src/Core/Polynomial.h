@@ -322,12 +322,15 @@ fzero<Polynomial<4, Real>, Polynomial<3, Real>>(const Polynomial<4, Real> &hf,
       localFx = f(localX0);
       div *= 2;
       if (whileCount++ > 100) {
-        // fzero<Polynomial<4, Real>, Polynomial<3, Real>>(hf, hdf, hx0, maxIter,
+        // fzero<Polynomial<4, Real>, Polynomial<3, Real>>(hf, hdf, hx0,
+        // maxIter,
         //                                                 tol);
-        throw std::runtime_error(
-            std::format("long double version, whileCount: Newton iteration may not converge, f(x) = "
-                        "{}, dx = {} \n",
-                        fx, dx / div));
+        std::cout << std::format(
+            "long double version, whileCount: Newton iteration may not "
+            "converge, f(x) = "
+            "{}, dx = {} \n",
+            fx, dx / div);
+        break;
       }
     }
     whileCount = 0;
@@ -336,9 +339,10 @@ fzero<Polynomial<4, Real>, Polynomial<3, Real>>(const Polynomial<4, Real> &hf,
     fx = localFx;
   }
   if (maxIter < 0 && (std::abs(fx) > tol))
-    throw std::runtime_error(std::format(
-        "long double version, maxIter: Newton iteration may not converge, f(x) = {}, dx = {} \n", fx,
-        dx / div));
+    std::cout << std::format(
+        "long double version, maxIter: Newton iteration may not converge, f(x) "
+        "= {}, dx = {} \n",
+        fx, dx / div);
   return x0;
 }
 
