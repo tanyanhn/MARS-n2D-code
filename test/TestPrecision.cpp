@@ -1,7 +1,7 @@
-#include "testHeader.h"
-
+#include <iostream>
+#include <limits>
 int main() {
-  using localTestType = Real;
+  using localTestType = long double;
   // 二进制尾数的位数（包括隐式位）
   std::cout << "二进制尾数位数: " << std::numeric_limits<localTestType>::digits
             << std::endl;

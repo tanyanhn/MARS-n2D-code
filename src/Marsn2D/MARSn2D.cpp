@@ -22,16 +22,14 @@ void MARSn2D<Order, VelocityField>::plot(const IG &ig, int step,
                                          const PlotConfig &plotConfig) const {
   auto yinSets = ig.approxYinSet();
   int count = 0;
+  std::string fileName = plotConfig.fName + "_Step" + std::to_string(step);
+  std::ofstream of(fileName + "_c.dat", std::ios_base::binary);
   for (auto &yinSet : yinSets) {
-    std::string fileName = plotConfig.fName + "_Step" + std::to_string(step) +
-                           "_" + std::to_string(count++);
     if (plotConfig.output == NORMAL) {
-      std::ofstream of(fileName + "_n.dat");
       yinSet.dump(of);
     } else if (plotConfig.output == CUTCELL) {
       auto [res, boundary, tags] = yinSet.cutCell(
           plotConfig.box, plotConfig.range, plotConfig.plotInner);
-      std::ofstream of(fileName + "_c.dat", std::ios_base::binary);
       dumpVecYinSet<Order>(res, of);
     }
   }
@@ -113,7 +111,8 @@ void MARSn2D<Order, VelocityField>::locateTinyEdges(
       } else if (i == numEdge - 1) {
         indices.emplace_back(i);
       } else {
-        if (lengths[i - 1] < lengths[i + 1]) {
+        if (lengths[i - 1] / std::min(hL[i], hL[i - 1]) <
+            lengths[i + 1] / std::min(hL[i + 1], hL[i + 2])) {
           indices.emplace_back(i);
         } else {
           indices.emplace_back(++i);

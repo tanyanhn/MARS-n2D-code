@@ -381,7 +381,7 @@ auto diskTEST(const std::string& jsonFile) {
   }
 
   // accurate solution
-  Real hL = vecHL.back() / 10;
+  Real hL = vecHL.back() * rTiny * 10;
   auto exactDisk =
       Generator::createDiskGraph<Order>(center, radius, hL / 2, parts);
 
