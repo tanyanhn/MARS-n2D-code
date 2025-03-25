@@ -13,6 +13,7 @@ InterfaceGraph::InterfaceGraph(
     : edges_(edges) {
   decomposeEdgeSet(smoothConditions, edges_, trials_, circuits_);
 }
+
 void InterfaceGraph::decomposeEdgeSet(
     const vector<SmoothnessIndicator>& smoothConditions,
     const vector<EdgeMark>& edges, vector<vector<EdgeIndex>>& trials,
@@ -65,7 +66,7 @@ approxInterfaceGraph<Order>::approxInterfaceGraph(
     const vector<SmoothnessIndicator>& smoothConditions,
     vector<vector<EdgeIndex>>&& cyclesEdgesId,
     vector<vector<size_t>>&& YinSetId, Real tol)
-    : undirectGraph(std::move(edgeMarks), smoothConditions),
+    : undirectGraph_(std::move(edgeMarks), smoothConditions),
       cyclesEdgesId_(std::move(cyclesEdgesId)),
       yinSetId_(std::move(YinSetId)),
       tol_(tol) {
@@ -77,9 +78,9 @@ template <int Order>
   __attribute__((optnone))
 #endif  // OPTNONE
 void approxInterfaceGraph<Order>::updateCurve() {
-  auto& marks_ = undirectGraph.edges_;
-  auto& trials_ = undirectGraph.trials_;
-  auto& circuits_ = undirectGraph.circuits_;
+  auto& marks_ = undirectGraph_.edges_;
+  auto& trials_ = undirectGraph_.trials_;
+  auto& circuits_ = undirectGraph_.circuits_;
   edges_.resize(marks_.size());
   // reverseEdges_.resize(marks_.size());
   Real tol = this->tol_;
@@ -194,13 +195,42 @@ auto approxInterfaceGraph<Order>::accessEdges()
                    typename vector<EdgeMark>::iterator>>
       ret;
 
-  auto& marks = undirectGraph.edges_;
+  auto& marks = undirectGraph_.edges_;
   auto iterMarks = marks.begin();
   auto iterEdges = edges_.begin();
   for (; iterMarks != marks.cend(); ++iterMarks, ++iterEdges) {
     ret.emplace_back(iterEdges, iterMarks);
   }
 
+  return ret;
+}
+
+template <int Order>
+auto approxInterfaceGraph<Order>::countMarks() const -> vector<size_t> {
+  vector<size_t> ret;
+  for (const auto& cycle : cyclesEdgesId_) {
+    ret.push_back(0);
+    for (auto id : cycle) {
+      ret.back() += undirectGraph_.edges_[std::abs(id) - 1].size() - 1;
+    }
+  }
+  return ret;
+}
+
+template <int Order>
+auto approxInterfaceGraph<Order>::countLengths() const -> vector<Real> {
+  vector<Real> ret;
+  vector<Real> edgeLengths;
+  for (const auto& edge : edges_) {
+    Real length = arclength(edge);
+    edgeLengths.push_back(length);
+  }
+  for (const auto& cycle : cyclesEdgesId_) {
+    ret.push_back(0);
+    for (auto id : cycle) {
+      ret.back() += edgeLengths[std::abs(id) - 1];
+    }
+  }
   return ret;
 }
 

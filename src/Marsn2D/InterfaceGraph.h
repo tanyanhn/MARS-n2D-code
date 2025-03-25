@@ -33,6 +33,7 @@ class InterfaceGraph {
       const vector<EdgeMark>& edges, vector<vector<EdgeIndex>>& trials,
       vector<vector<EdgeIndex>>& circuits);
 
+
   vector<vector<EdgeIndex>> trials_;
   vector<vector<EdgeIndex>> circuits_;
   vector<EdgeMark> edges_;
@@ -65,9 +66,11 @@ class approxInterfaceGraph {
                                          typename vector<EdgeMark>::iterator>>;
 
   void updateCurve();
+  auto countMarks() const -> vector<size_t>;
+  auto countLengths() const -> vector<Real>;
 
  private:
-  InterfaceGraph undirectGraph;
+  InterfaceGraph undirectGraph_;
   vector<Edge> edges_;
   // vector<Edge> reverseEdges_;
   // edges[abs(index) - 1], abs(index) starting from 1,

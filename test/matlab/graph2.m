@@ -1,51 +1,115 @@
+close all
 % 闭合曲线参数设置
 R = 1;              % 基础半径
-theta1 = pi/3;      % 第一个凸起位置（60度）
-theta2 = 2*pi/3;    % 第二个凸起位置（120度）
-A1 = 3;           % 第一个凸起幅度
-A2 = 0.3;           % 第二个凸起幅度
-k_left1 = 10;      % 第一个凸起左侧陡峭度
-k_right1 = 50;      % 第一个凸起右侧陡峭度
-k_left2 = 50;       % 第二个凸起左侧陡峭度
-k_right2 = 100;     % 第二个凸起右侧陡峭度
-theta_sharp = pi;   % 尖锐点位置（180度）
-C = -0.5;           % 尖锐点强度（调整后需增大）
-k_sharp = 5;       % 尖锐点宽度控制（值越大影响范围越小）
+
+% 用户指定凸起最高点坐标 (示例坐标)
+P1 = [1.125, 0.65];  % 第一个凸起最高点坐标（绝对坐标系）
+P2 = [1.125, -0.65]; % 第二个凸起最高点坐标（绝对坐标系）
+center = [-0.5 0];   % 曲线中心坐标
+
+% 计算相对坐标
+P1_rel = P1 - center; % 转换为相对于中心的坐标
+P2_rel = P2 - center;
+
+% 计算极坐标参数
+theta1 = mod(atan2(P1_rel(2), P1_rel(1)), 2*pi);  % 角度规范到[0, 2pi)
+H1 = norm(P1_rel);
+theta2 = mod(atan2(P2_rel(2), P2_rel(1)), 2*pi);  % 角度规范到[0, 2pi)
+H2 = norm(P2_rel);
+
+% 陡峭度参数
+k_left1 = 1000;     k_right1 = 1000; % 增大陡峭度参数
+k_left2 = 1000;      k_right2 = 1000;
+theta_sharp = pi;    % 尖锐点位置
+C = -0.5;            k_sharp = 50;   % 增大尖锐度参数
+
+% 计算幅度参数
+A1 = H1 - R;
+A2 = H2 - R;
 
 % 生成角度数组
-theta = linspace(0, 2*pi, 1000);
+theta = linspace(0, 2*pi, 10000); % 增加采样点数
 
-% 计算凸起项（保持不变）
+% 凸起计算函数（向量化计算）
 calcBump = @(t, t0, A, kl, kr) A*exp(-(t < t0).*kl.*(t0 - t).^2 - (t >= t0).*kr.*(t - t0).^2);
 term1 = calcBump(theta, theta1, A1, k_left1, k_right1);
 term2 = calcBump(theta, theta2, A2, k_left2, k_right2);
 
-% 计算改进的尖锐点项
-theta_diff = mod(theta - theta_sharp + pi, 2*pi) - pi;  % 规范到[-π, π)
-sharp_term = C * abs(theta_diff) .* exp(-k_sharp * theta_diff.^2); % 指数衰减修正
+% 尖锐点修正项
+theta_diff = mod(theta - theta_sharp + pi, 2*pi) - pi;
+sharp_term = C * abs(theta_diff) .* exp(-k_sharp * theta_diff.^2);
 
-% 计算总半径
+% 合成曲线
 r = R + term1 + term2 + sharp_term;
+x = r .* cos(theta) + center(1);
+y = r .* sin(theta) + center(2);
 
-% 转换为笛卡尔坐标并绘制
-x = r .* cos(theta);
-y = r .* sin(theta);
+% 计算x的数值导数
+dxdtheta = gradient(x, theta);
 
+% 寻找导数由正变负的交叉点
+signs = sign(dxdtheta);
+crossing_down = find(diff(signs) < 0);
+
+% 标量计算函数
+calcBump_single = @(t, t0, A, kl, kr) A * exp(-((t < t0) * kl * (t0 - t)^2 + (t >= t0) * kr * (t - t0)^2));
+sharp_term_single = @(t) C * abs(mod(t - theta_sharp + pi, 2*pi) - pi) * exp(-k_sharp * (mod(t - theta_sharp + pi, 2*pi) - pi)^2);
+
+% 寻找x极值点
+maxima_theta = [];
+for i = 1:length(crossing_down)
+    idx = crossing_down(i);
+    if idx >= length(theta)-1
+        continue;
+    end
+    t_low = theta(idx);
+    t_high = theta(idx + 1);
+    
+    % 定义x关于theta的函数（包含中心偏移）
+    compute_x = @(t) (R + calcBump_single(t, theta1, A1, k_left1, k_right1) + ...
+                      calcBump_single(t, theta2, A2, k_left2, k_right2) + ...
+                      sharp_term_single(t)) * cos(t) + center(1);
+    [t_opt, ~] = fminbnd(@(t) -compute_x(t), t_low, t_high, optimset('TolX', 1e-10));
+    maxima_theta(end+1) = t_opt;
+end
+
+if isempty(maxima_theta)
+    error('未找到极大值点');
+end
+
+% 绘制曲线
 figure;
 plot(x, y, 'LineWidth', 1.5);
 axis equal; grid on;
-title('改进的单尖锐点闭合曲线');
+title('闭合曲线及特征点');
 xlabel('X轴'); ylabel('Y轴');
-
-% 标注特征点
 hold on;
-plot(r(theta == theta1)*cos(theta1), r(theta == theta1)*sin(theta1), 'ro', 'MarkerSize', 8);
-plot(r(theta == theta2)*cos(theta2), r(theta == theta2)*sin(theta2), 'mo', 'MarkerSize', 8);
-plot(r(theta == theta_sharp)*cos(theta_sharp), r(theta == theta_sharp)*sin(theta_sharp),...
-     'kx', 'MarkerSize', 12, 'LineWidth', 2);
-legend('曲线', '凸起1', '凸起2', '尖锐点');
 
-% 验证对称位置（可添加检查代码）
-% sym_theta = mod(theta_sharp + pi, 2*pi);
-% sym_index = find(abs(theta - sym_theta) == min(abs(theta - sym_theta)), 1);
-% plot(x(sym_index), y(sym_index), 'g*', 'MarkerSize', 10); % 对称位置标记
+% 绘制X轴极值点
+for i = 1:length(maxima_theta)
+    theta_max = maxima_theta(i);
+    r_max = R + calcBump_single(theta_max, theta1, A1, k_left1, k_right1) + ...
+             calcBump_single(theta_max, theta2, A2, k_left2, k_right2) + ...
+             sharp_term_single(theta_max);
+    x_max = r_max * cos(theta_max) + center(1);
+    y_max = r_max * sin(theta_max) + center(2);
+    plot(x_max, y_max, 'g*', 'MarkerSize', 10, 'LineWidth', 2);
+end
+
+% 精确计算特征点坐标
+feature_points = [theta1, theta2, theta_sharp];
+colors = ['r', 'm', 'k'];
+markers = {'o', 'o', 'x'};
+
+for i = 1:3
+    theta_feature = feature_points(i);
+    r_feature = R + calcBump_single(theta_feature, theta1, A1, k_left1, k_right1) + ...
+                calcBump_single(theta_feature, theta2, A2, k_left2, k_right2) + ...
+                sharp_term_single(theta_feature);
+    x_feature = r_feature * cos(theta_feature) + center(1);
+    y_feature = r_feature * sin(theta_feature) + center(2);
+    plot(x_feature, y_feature, markers{i}, 'Color', colors(i), ...
+         'MarkerSize', 12, 'LineWidth', 2);
+end
+
+legend('曲线', 'X轴极值点', '凸起1', '凸起2', '尖锐点', 'Location', 'best');

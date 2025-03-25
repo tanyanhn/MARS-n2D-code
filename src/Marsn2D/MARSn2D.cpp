@@ -49,6 +49,8 @@ void MARSn2D<Order, VelocityField>::trackInterface(
   Real k = (EndTime - StartTime) / stages;
   int step = 0;
   int polyStep = stages / plotConfig.opStride;
+  vector<vector<size_t>> marksHistory;
+  vector<vector<Real>> lengthHistory;
   ProgressBar bar(stages, "Tracking...");
   while (step < stages) {
     if (plotConfig.output != NONE && step % polyStep == 0) {
@@ -66,6 +68,8 @@ void MARSn2D<Order, VelocityField>::trackInterface(
       tn += k;
     }
     std::cout.flush();
+    marksHistory.push_back(ig.countMarks());
+    lengthHistory.push_back(ig.countLengths());
     step++;
   }
   if (plotConfig.output != NONE) {
