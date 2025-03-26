@@ -181,10 +181,10 @@ TEST_CASE("Graph 4.1, Deformation T = 4, Order = 4",
   trackInterfaceTest("Graph41DeformationT4Order4");
 }
 TEST_CASE("Graph 4.1, Deformation T = 4, Order = 6",
-          "[Graph41][Deformation][T4][Order4]") {
+          "[Graph41][Deformation][T4][Order6]") {
   trackInterfaceTest("Graph41DeformationT4Order6");
 }
-TEST_CASE("Graph 4.1, Deformation T = 4, Order = 6",
-          "[Graph41][Deformation][T4][Order4]") {
-  trackInterfaceTest("Graph41DeformationT4Order6");
+TEST_CASE("Graph 4.1, Deformation T = 4, Order = 8",
+          "[Graph41][Deformation][T4][Order8]") {
+  trackInterfaceTest("Graph41DeformationT4Order8");
 }

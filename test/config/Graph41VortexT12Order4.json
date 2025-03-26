@@ -15,13 +15,13 @@
       "pars" : [-1.0]
   },
   "grid": {
-      "N0": 32,
+      "N0": 64,
       "lo": [0.0, 0.0],
       "hi": [1.0, 1.0],
       "aimOrder": 4,
       "hLCoefficient": 0.1,
       "rTiny": 0.1,
-      "nGrid": 3
+      "nGrid": 1
   },
   "curvature_adaption": {
       "curvUsed": true,
