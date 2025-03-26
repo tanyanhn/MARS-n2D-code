@@ -357,13 +357,73 @@ auto InterfaceGraphFactory::createGraph41(Real hL)
   edgeMarks[13] = markCurve(splitRes[2], hL);
   splitRes.clear();
 
+  // Ellipse 1
+  Point ell1Center{0.4, 0.575};
+  rVec radius1{0.125, 0.09};
+  edgeMarks[6] = markEllipse(ell1Center, radius1, hL, {0, M_PI / 2});
+  edgeMarks[1] = markEllipse(ell1Center, radius1, hL, {M_PI / 2, M_PI});
+  edgeMarks[3] = markEllipse(ell1Center, radius1, hL, {M_PI, 2 * M_PI});
+  edgeMarks[5] = markSegment(
+      Segment<2>(rVec{ell1Center[0] + radius1[0], ell1Center[1]}, ell1Center),
+      hL);
+  edgeMarks[2] = markSegment(
+      Segment<2>(ell1Center, rVec{ell1Center[0] - radius1[0], ell1Center[1]}),
+      hL);
+  edgeMarks[4] = markSegment(
+      Segment<2>(rVec{ell1Center[0], ell1Center[1] + radius1[1]}, ell1Center),
+      hL);
+
+  // Ellipse 2
+  Point ell2Center{0.4, 0.415};
+  rVec radius2{0.07, 0.035};
+  edgeMarks[7] = markEllipse(ell2Center, radius2, hL, {0, 2 * M_PI});
+
+  // Rose
+  Point roseCenter{0.4, 0.415};
+  Real radiusRose = 0.04;
+  edgeMarks[15] =
+      markRoseCurve(roseCenter, radiusRose, hL, {0, M_PI * 1.0 / 6});
+  edgeMarks[10] = markRoseCurve(roseCenter, radiusRose, hL,
+                                {M_PI * 1.0 / 6, M_PI * 2.0 / 6});
+  edgeMarks[9] = markRoseCurve(roseCenter, radiusRose, hL,
+                                {M_PI * 2.0 / 6, M_PI * 3.0 / 6});
+  edgeMarks[14] = markRoseCurve(roseCenter, radiusRose, hL,
+                                {M_PI * 3.0 / 6, M_PI * 4.0 / 6});
+
   smoothConditions.emplace_back(13, 12);
   smoothConditions.emplace_back(12, 14);
+
   smoothConditions.emplace_back(1, 9);
   smoothConditions.emplace_back(9, 1);
+
+  smoothConditions.emplace_back(7, 2);
+  smoothConditions.emplace_back(2, 4);
+  smoothConditions.emplace_back(4, 7);
+  smoothConditions.emplace_back(6, 3);
+
+  smoothConditions.emplace_back(8, 8);
+
+  smoothConditions.emplace_back(16, 11);
+  smoothConditions.emplace_back(11, 10);
+  smoothConditions.emplace_back(10, 15);
+
+  cyclesEdgesId[0] = (vector<EdgeIndex>{2, -3, -5});
+  cyclesEdgesId[1] = (vector<EdgeIndex>{5, -6, 7});
+  cyclesEdgesId[2] = (vector<EdgeIndex>{3, 4, 6});
   cyclesEdgesId[3] = (vector<EdgeIndex>{1, 9});
+  cyclesEdgesId[4] = (vector<EdgeIndex>{-2, -7, -4});
+  cyclesEdgesId[5] = (vector<EdgeIndex>{-8});
   cyclesEdgesId[6] = (vector<EdgeIndex>{13, 12, 14});
-  YinSetId[3] = (vector<size_t>{3, 6});
+  cyclesEdgesId[7] = (vector<EdgeIndex>{-9, -12});
+  cyclesEdgesId[8] = (vector<EdgeIndex>{10, 15});
+  cyclesEdgesId[9] = (vector<EdgeIndex>{16, 11});
+  cyclesEdgesId[10] = (vector<EdgeIndex>{-1, -13, -14});
+  YinSetId[0] = (vector<size_t>{0});
+  YinSetId[1] = (vector<size_t>{1});
+  YinSetId[2] = (vector<size_t>{2});
+  YinSetId[3] = (vector<size_t>{3, 4, 5, 6});
+  YinSetId[4] = (vector<size_t>{7, 8, 9});
+  YinSetId[5] = (vector<size_t>{10});
 
   return approxInterfaceGraph<Order>(std::move(edgeMarks), smoothConditions,
                                      std::move(cyclesEdgesId),
