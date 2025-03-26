@@ -66,7 +66,7 @@ class approxInterfaceGraph {
                                          typename vector<EdgeMark>::iterator>>;
 
   void updateCurve();
-  auto countMarks() const -> vector<size_t>;
+  auto countMarks() const -> vector<int>;
   auto countLengths() const -> vector<Real>;
 
  private:

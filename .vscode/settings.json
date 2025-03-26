@@ -27,10 +27,13 @@
       "brks",
       "Crvs",
       "curvs",
+      "Dormand",
       "Hasse",
+      "Marsn",
       "Simplicial",
       "SIMPLICIALCOMPLEX",
       "Spadjor",
-      "stod"
+      "stod",
+      "Verner"
     ],
 }

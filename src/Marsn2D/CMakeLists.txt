@@ -5,5 +5,6 @@ set(Marsn2D_Files
     Marsn2D/MARSn2D.h
     Marsn2D/MARSn2D.cpp
     Marsn2D/MARSReadJson.hpp
+    Marsn2D/InterfaceGraphFactory.h
     PARENT_SCOPE
 )

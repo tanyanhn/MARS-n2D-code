@@ -34,7 +34,7 @@ void trackInterfaceTest(const string& testName,
     popLogStage();
     pushLogStage("CheckResult");
     auto errors = cutCellError(vecDisk, exactDisk, vecBox, plotConfig.range);
-    std::string resultFileName = dir + "aResult.txt";
+    std::string resultFileName = dir + "00Result.txt";
     printCellError(errors, resultFileName);
   }
   ::Timer::printStatistics();
@@ -121,4 +121,16 @@ TEST_CASE("Disk 0 vortex T = 8, Order = 4", "[Disk0][Vortex][T8][Order4]") {
 }
 TEST_CASE("Disk 0 vortex T = 12, Order = 4", "[Disk0][Vortex][T12][Order4]") {
   trackInterfaceTest("Disk0VortexT12Order4");
+}
+
+TEST_CASE("Graph 4.1, vortex T = 4, Order = 4", "[Graph41][Vortex][T4][Order4]") {
+  constexpr int Order = 4;
+  auto dir = rootDir + "/results/TrackInterface/Graph41VortexT4Order4/";
+  mkdir(dir.c_str(), 0755);
+  auto graph = InterfaceGraphFactory::createGraph41<Order>(0.001);
+
+  auto yinsets = graph.approxYinSet();
+  std::ofstream of(rootDir + "/results/TrackInterface/Graph41VortexT4Order4/"
+                   "test.dat");
+  yinsets[3].dump(of);
 }

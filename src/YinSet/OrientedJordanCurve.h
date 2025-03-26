@@ -21,11 +21,13 @@ class OrientedJordanCurve : public Curve<Dim, Order> {
   // constructors
   OrientedJordanCurve() = default;
 
-  OrientedJordanCurve(const Curve<Dim, Order>& curve) : Curve<Dim, Order>(curve) {
+  OrientedJordanCurve(const Curve<Dim, Order>& curve)
+      : Curve<Dim, Order>(curve) {
     // makeSelfMonotonic(distTol());
     VecCompare<Real, Dim> vCmp(distTol());
-    assert(vCmp(curve.startpoint(), curve.endpoint()) == 0 &&
-           "Initial OrientedJordanCurve must maintain startpoint == endpoint.");
+    assert(curve.empty() || vCmp(curve.startpoint(), curve.endpoint()) == 0 &&
+                                "Initial OrientedJordanCurve must maintain "
+                                "startpoint == endpoint.");
   }
   virtual ~OrientedJordanCurve() = default;
 
@@ -43,9 +45,7 @@ class OrientedJordanCurve : public Curve<Dim, Order> {
   void define(const std::vector<Vec<Real, Dim>>& points,
               const vector<Vertex>& indexes);
 
-  void makeSelfMonotonic(Real tol) {
-    *this = this->makeMonotonic(tol);
-  }
+  void makeSelfMonotonic(Real tol) { *this = this->makeMonotonic(tol); }
 
   // locate the point in the OrientedJordanCurve.
   enum class LocateResult {

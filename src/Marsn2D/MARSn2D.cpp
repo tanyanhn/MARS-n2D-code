@@ -21,7 +21,6 @@ template <int Order, template <int> class VelocityField>
 void MARSn2D<Order, VelocityField>::plot(const IG &ig, int step,
                                          const PlotConfig &plotConfig) const {
   auto yinSets = ig.approxYinSet();
-  int count = 0;
   std::string fileName = plotConfig.fName + "_Step" + std::to_string(step);
   std::ofstream of(fileName + "_c.dat", std::ios_base::binary);
   for (auto &yinSet : yinSets) {
@@ -47,8 +46,10 @@ void MARSn2D<Order, VelocityField>::trackInterface(
   Real k = (EndTime - StartTime) / stages;
   int step = 0;
   int polyStep = stages / plotConfig.opStride;
-  vector<vector<size_t>> marksHistory;
+  vector<vector<int>> marksHistory;
   vector<vector<Real>> lengthHistory;
+  marksHistory.push_back(ig.countMarks());
+  lengthHistory.push_back(ig.countLengths());
   ProgressBar bar(stages, "Tracking...");
   while (step < stages) {
     if (plotConfig.output != NONE && step % polyStep == 0) {
@@ -72,6 +73,19 @@ void MARSn2D<Order, VelocityField>::trackInterface(
   }
   if (plotConfig.output != NONE) {
     plot(ig, step, plotConfig);
+    auto dir = getExportDir();
+    std::ofstream of1(dir + "00marksHistory.dat", std::ios_base::binary);
+    std::ofstream of2(dir + "00LengthHistory.dat", std::ios_base::binary);
+    int rows = marksHistory[0].size();
+    int cols = marksHistory.size();
+    of1.write((char*)&rows, sizeof(int));
+    of1.write((char*)&cols, sizeof(int));
+    of2.write((char*)&rows, sizeof(int));
+    of2.write((char*)&cols, sizeof(int));
+    for (size_t i = 0; i < marksHistory.size(); i++) {
+      of1.write((char*)marksHistory[i].data(), rows * sizeof(int));
+      of2.write((char*)lengthHistory[i].data(), rows * sizeof(Real));
+    }
   }
 }
 

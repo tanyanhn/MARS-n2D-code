@@ -24,7 +24,7 @@ void PastingMap<Order, Num, Selector>::formClosedLoops(vector<OrientedJordanCurv
 
   while (!necessaryEdge.empty() || !jordan.empty()) {
     Iter outEdge;
-    size_t tmp;
+    // size_t tmp;
     auto cands = graph.begin();
     if (jordan.empty()) {  // start a new loop
       auto id = *necessaryEdge.begin();
@@ -46,7 +46,7 @@ void PastingMap<Order, Num, Selector>::formClosedLoops(vector<OrientedJordanCurv
         throw std::runtime_error("cands candidates");
       outEdge = std::min_element(cands->second.cbegin(), cands->second.cend(),
                                  Selector(tol, jordan, allCrvs));
-      tmp = *outEdge;
+      // tmp = *outEdge;
     }
     jordan.concat(allCrvs[*outEdge]);
     newtail = jordan.endpoint();

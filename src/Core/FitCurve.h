@@ -1,3 +1,4 @@
+#pragma once
 #include <Eigen/Dense>
 #include <Eigen/IterativeLinearSolvers>
 #include <Eigen/OrderingMethods>
@@ -13,7 +14,7 @@ Eigen::VectorXd solveSystem(int n, const Eigen::SparseMatrix<double>& A,
 #ifdef OPTNONE
 __attribute__((optnone))
 #endif  // OPTNONE
-Curve<2, 4>
+inline Curve<2, 4>
 fitCurveEigen(const std::vector<Vec<Real, 2>>& points,
               typename Curve<2, 4>::BCType type, Real tol = newtonTol()) {
   using Eigen::VectorXd;
@@ -35,7 +36,7 @@ fitCurveEigen(const std::vector<Vec<Real, 2>>& points,
 
   // vector<array<array<Real, 4>, 2>> result(n - 1);
   std::vector<Polynomial<4, Vec<Real, 2>>> result(n - 1);
-  const Real total_length = knots.back();
+  // const Real total_length = knots.back();
 
   // Build and solve spline for each coordinate
   for (int coord = 0; coord < 2; ++coord) {
@@ -148,9 +149,9 @@ fitCurveEigen(const std::vector<Vec<Real, 2>>& points,
   return Curve<2, 4>(std::move(knots), std::move(result));
 }
 
-Eigen::VectorXd solveSystem(int n, const Eigen::SparseMatrix<double>& A,
-                            const Eigen::VectorXd& rhs, Real tol,
-                            int maxDirectSize, int maxIter) {
+inline Eigen::VectorXd solveSystem(int n, const Eigen::SparseMatrix<double>& A,
+                                   const Eigen::VectorXd& rhs, Real tol,
+                                   int maxDirectSize, int maxIter) {
   using namespace Eigen;
 
   // 智能阈值判定：基于矩阵非零元素数量

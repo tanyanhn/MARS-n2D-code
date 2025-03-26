@@ -107,6 +107,7 @@ void approxInterfaceGraph<Order>::updateCurve() {
       knots.insert(knots.end(), marks_[crvId].begin(), marks_[crvId].end());
       brksId.push_back(knots.size() - 1);
     }
+    if (knots.empty()) return;
     Curve<DIM, Order> crv;
     if constexpr (Order == 4)
       if (knots.size() > 3)
@@ -206,8 +207,8 @@ auto approxInterfaceGraph<Order>::accessEdges()
 }
 
 template <int Order>
-auto approxInterfaceGraph<Order>::countMarks() const -> vector<size_t> {
-  vector<size_t> ret;
+auto approxInterfaceGraph<Order>::countMarks() const -> vector<int> {
+  vector<int> ret;
   for (const auto& cycle : cyclesEdgesId_) {
     ret.push_back(0);
     for (auto id : cycle) {
