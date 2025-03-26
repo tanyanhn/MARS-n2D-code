@@ -53,6 +53,13 @@ edge4 = moveScale(edge4, move, scale);
 edge5 = moveScale(edge5, move, scale);
 edge6 = moveScale(edge6, move, scale);
 edge7 = moveScale(edge7, move, scale);
+% p = [7.25  9; 
+%     13.25 14.5];
+% p = [7.25 8.25;
+%     11 11.5];
+p = [11.1 ;
+    11.85];
+p = moveScale(p, move, scale)
 
 jordanCurve1 = [edge1(:, 1:end-1), edge2(:, 1:end-1), edge3(:, 1:end)];
 jordanCurve2 = [edge4(:, 1:end-1), edge5(:, 1:end-1), edge6(:, 1:end-1), edge7(:, 1:end)];

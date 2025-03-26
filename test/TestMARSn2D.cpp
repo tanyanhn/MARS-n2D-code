@@ -132,5 +132,7 @@ TEST_CASE("Graph 4.1, vortex T = 4, Order = 4", "[Graph41][Vortex][T4][Order4]")
   auto yinsets = graph.approxYinSet();
   std::ofstream of(rootDir + "/results/TrackInterface/Graph41VortexT4Order4/"
                    "test.dat");
-  yinsets[3].dump(of);
+                   int num = yinsets.size();
+  of.write((char*)&num, sizeof(int));
+  for (int i = 0; i < yinsets.size(); ++i) yinsets[num - i - 1].dump(of);
 }

@@ -37,8 +37,12 @@ struct InterfaceGraphFactory {
   static auto markCurve(const Curve<DIM, Order>& crv, Real hL);
 };
 
-inline auto InterfaceGraphFactory::markRoseCurve(Point center, Real a, Real hL,
-                                                 rVec range, int numPetal) {
+#ifdef OPTNONE
+__attribute__((optnone))
+#endif  // OPTNONE
+inline auto
+InterfaceGraphFactory::markRoseCurve(Point center, Real a, Real hL, rVec range,
+                                     int numPetal) {
   vector<Point> pts;
   VecCompare<Real, DIM> vCmp(distTol());
   // |x'(\theta)| \leq 4 a
@@ -302,6 +306,9 @@ auto InterfaceGraphFactory::createRoseGraph(Point center, Real a, Real hL,
 }
 
 template <int Order>
+#ifdef OPTNONE
+__attribute__((optnone))
+#endif  // OPTNONE
 auto InterfaceGraphFactory::createGraph41(Real hL)
     -> approxInterfaceGraph<Order> {
   vector<EdgeMark> edgeMarks(16);
@@ -379,16 +386,20 @@ auto InterfaceGraphFactory::createGraph41(Real hL)
   edgeMarks[7] = markEllipse(ell2Center, radius2, hL, {0, 2 * M_PI});
 
   // Rose
-  Point roseCenter{0.4, 0.415};
-  Real radiusRose = 0.04;
-  edgeMarks[15] =
-      markRoseCurve(roseCenter, radiusRose, hL, {0, M_PI * 1.0 / 6});
-  edgeMarks[10] = markRoseCurve(roseCenter, radiusRose, hL,
-                                {M_PI * 1.0 / 6, M_PI * 2.0 / 6});
-  edgeMarks[9] = markRoseCurve(roseCenter, radiusRose, hL,
-                                {M_PI * 2.0 / 6, M_PI * 3.0 / 6});
+  Point roseCenter{0.67, 0.475};
+  Real radiusRose = 0.09;
   edgeMarks[14] = markRoseCurve(roseCenter, radiusRose, hL,
-                                {M_PI * 3.0 / 6, M_PI * 4.0 / 6});
+                                {M_PI * 4.0 / 6, M_PI * 5.0 / 6});
+  std::reverse(edgeMarks[14].begin(), edgeMarks[14].end());
+  edgeMarks[9] = markRoseCurve(roseCenter, radiusRose, hL,
+                               {M_PI * 5.0 / 6, M_PI * 6.0 / 6});
+  std::reverse(edgeMarks[9].begin(), edgeMarks[9].end());
+  edgeMarks[10] = markRoseCurve(roseCenter, radiusRose, hL,
+                                {M_PI * 6.0 / 6, M_PI * 7.0 / 6});
+  std::reverse(edgeMarks[10].begin(), edgeMarks[10].end());
+  edgeMarks[15] = markRoseCurve(roseCenter, radiusRose, hL,
+                                {M_PI * 7.0 / 6, M_PI * 8.0 / 6});
+  std::reverse(edgeMarks[15].begin(), edgeMarks[15].end());
 
   smoothConditions.emplace_back(13, 12);
   smoothConditions.emplace_back(12, 14);

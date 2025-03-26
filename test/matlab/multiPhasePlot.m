@@ -25,12 +25,12 @@ Shape = "Rose";
 % Shape = "Rectangle";
 % filename = num2str(Order) + Shape + num2str(N) + "_" + num2str(k) + ".dat";
 hd = fopen(filedir + filename);
-tensor = false;
+tensor = true;
 volume = false;
 if volume
     dat = readCellVolume(hd);
 else
-    for k = 4:1:5
+    for k = 1:1:6
 
         if ~tensor
             sf = readYinSet(hd);
@@ -38,7 +38,7 @@ else
         else
             vecSf = readVecYinSet(hd);
             for i=1:length(vecSf)
-                plotYinSet(vecSf{i}, lineColor, fillColor(k)); hold on
+                plotYinSet(vecSf{i}, lineColor, fillColor(i)); hold on
             end
         end
     end
