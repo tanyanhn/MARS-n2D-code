@@ -209,10 +209,13 @@ auto approxInterfaceGraph<Order>::accessEdges()
 template <int Order>
 auto approxInterfaceGraph<Order>::countMarks() const -> vector<int> {
   vector<int> ret;
-  for (const auto& cycle : cyclesEdgesId_) {
+  for (const auto& yinset : yinSetId_) {
     ret.push_back(0);
-    for (auto id : cycle) {
-      ret.back() += undirectGraph_.edges_[std::abs(id) - 1].size() - 1;
+    for (const auto& cycleId : yinset) {
+      const auto& cycle = cyclesEdgesId_[cycleId];
+      for (auto id : cycle) {
+        ret.back() += undirectGraph_.edges_[std::abs(id) - 1].size() - 1;
+      }
     }
   }
   return ret;
@@ -226,10 +229,13 @@ auto approxInterfaceGraph<Order>::countLengths() const -> vector<Real> {
     Real length = arclength(edge);
     edgeLengths.push_back(length);
   }
-  for (const auto& cycle : cyclesEdgesId_) {
+  for (const auto& yinset : yinSetId_) {
     ret.push_back(0);
-    for (auto id : cycle) {
-      ret.back() += edgeLengths[std::abs(id) - 1];
+    for (const auto& cycleId : yinset) {
+      const auto& cycle = cyclesEdgesId_[cycleId];
+      for (auto id : cycle) {
+        ret.back() += edgeLengths[std::abs(id) - 1];
+      }
     }
   }
   return ret;

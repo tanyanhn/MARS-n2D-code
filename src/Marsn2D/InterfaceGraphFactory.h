@@ -510,7 +510,7 @@ auto diskTEST(const std::string& jsonFile) {
   const Real exactLength = 2 * M_PI * radius[0] / parts.size() + 2 * radius[0];
 
   // for multi grid.
-  vector<Marsn2D::approxInterfaceGraph<Order>> vecDisk;
+  vector<Marsn2D::approxInterfaceGraph<Order>> vecDomain;
   vector<int> vecN;
   vector<Box<DIM>> vecBox;
   // vector<rVec> vecH;
@@ -521,9 +521,13 @@ auto diskTEST(const std::string& jsonFile) {
     rVec h = (hi - lo) / N;
     Real hL = hLCoefficient * std::pow(h[0] * h[1], 0.5 * aimOrder / Order);
     Real dt = std::min(h[0], h[1]) / uM * Cr;
-    const auto disk = InterfaceGraphFactory::createDiskGraph<Order>(
-        center, radius, hL / 2, parts);
-    vecDisk.emplace_back(std::move(disk));
+    if (params.domain.name == "Disk") {
+      const auto disk = InterfaceGraphFactory::createDiskGraph<Order>(
+          center, radius, hL / 2, parts);
+      vecDomain.emplace_back(std::move(disk));
+    } else if (params.domain.name == "Graph41") {
+      vecDomain.emplace_back(InterfaceGraphFactory::createGraph41<Order>(hL));
+    }
     vecN.emplace_back(N);
     vecBox.emplace_back(0, N - 1);
     // vecH.emplace_back(h);
@@ -534,12 +538,23 @@ auto diskTEST(const std::string& jsonFile) {
 
   // accurate solution
   Real hL = vecHL.back() * rTiny * 10;
-  auto exactDisk = InterfaceGraphFactory::createDiskGraph<Order>(center, radius,
-                                                                 hL / 2, parts);
+  if (params.domain.name == "Disk") {
+    auto exactDomain = InterfaceGraphFactory::createDiskGraph<Order>(
+        center, radius, hL / 2, parts);
 
-  return make_tuple(vecDisk, exactDisk, radius, exactArea, exactLength, vecBox,
-                    vecN, aimOrder, vecHL, rTiny, nGrid, curvConfig, plotConfig,
-                    printDetail, t0, vecDt, te, timeIntegrator, velocityPtr);
+    return make_tuple(vecDomain, exactDomain, radius, exactArea, exactLength,
+                      vecBox, vecN, aimOrder, vecHL, rTiny, nGrid, curvConfig,
+                      plotConfig, printDetail, t0, vecDt, te, timeIntegrator,
+                      velocityPtr);
+  }
+  // if (params.domain.name == "Graph41") {
+  auto exactDomain = InterfaceGraphFactory::createGraph41<Order>(hL);
+
+  return make_tuple(vecDomain, exactDomain, radius, exactArea, exactLength,
+                    vecBox, vecN, aimOrder, vecHL, rTiny, nGrid, curvConfig,
+                    plotConfig, printDetail, t0, vecDt, te, timeIntegrator,
+                    velocityPtr);
+  // }
 }
 
 }  // namespace Marsn2D

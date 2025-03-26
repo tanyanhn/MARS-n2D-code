@@ -1,7 +1,8 @@
 
 
-filedir = "../../results/TrackInterface/Disk5Deformation4/";
-filename1 = "00markHistory.dat";
+% filedir = "../../results/TrackInterface/Disk5Deformation4/";
+filedir = "../../results/TrackInterface/Graph41VortexT4Order4/";
+filename1 = "00marksHistory.dat";
 filename2 = "00LengthHistory.dat";
 
 hd1 = fopen(filedir + filename1);
@@ -18,14 +19,15 @@ B = fread(hd2, [rows2, cols2], "double");
 A = A ./ A(:, 1);
 B = B ./ B(:, 1);
 
-t = linespace(0, 1, cols1);
+fillColor = getColor();
+t = linspace(0, 1, cols1);
 figure
 for i = 1:rows1
-    plot(t, A(i, :)); hold on;
+    plot(t, A(i, :), 'Color', fillColor{i}, 'LineWidth', 5); hold on;
 end
 figure
 for i = 1:rows2
-    plot(t, B(i, :)); hold on;
+    plot(t, B(i, :), 'Color', fillColor{i}, 'LineWidth', 5); hold on;
 end
 
 fclose(hd1);

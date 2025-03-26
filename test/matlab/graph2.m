@@ -2,12 +2,12 @@ close all
 
 figure 
 max_step = 1e-2;
-move = [-1.7; -5.2];
+move = [-1.7; -5.25];
 scale = [1 / 14];
 
 controlpoints1 = [9, 2.75, 2.75, 8.5;...
                  15.95, 15.85, 9.5, 9]'; 
-controlpoints2 = [10, 8.5, 12, 8.5;...
+controlpoints2 = [10, 8.5, 12.0008, 8.5;...
                  13., 10.5, 9, 9]' ;
 controlpoints2 = reverse(controlpoints2);
 controlpoints3 = [9, 13.75, 10.5, 10;...

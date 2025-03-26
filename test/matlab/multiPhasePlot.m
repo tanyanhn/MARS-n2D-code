@@ -4,7 +4,7 @@ close all
 % hold on
 figure
 lineColor = '';
-fillColor = 'bcrgmy';
+fillColor = getColor();
 % filedir = "results/CutCell/";
 % filedir = "results/InterfaceGraph/";
 % filedir = "../../results/TrackInterface/Disk4Vortex16/";
@@ -16,9 +16,10 @@ filedir = "../../results/TrackInterface/Graph41VortexT4Order4/";
 % filename = "spadjor-13.input.dat";
 % filename = "localVolumes.dat";
 % filename = "localYinset.dat";
-% filename = "4Circle_grid32_Step2048_4_n.dat";
+filename = "4Circle_grid128_Step2048_c.dat";
 % filename = "4Circle_grid32.dat";
-filename = "test.dat";
+% filename = "00test.dat";
+% filename = "test.dat";
 Order = 4;
 N = 4;
 Shape = "Rose";
@@ -30,15 +31,18 @@ volume = false;
 if volume
     dat = readCellVolume(hd);
 else
-    for k = 1:1:6
+    for k = 2:1:7
 
         if ~tensor
             sf = readYinSet(hd);
-            plotYinSet(sf, lineColor, fillColor(k)); hold on
+            plotYinSet(sf, lineColor, fillColor{k}); hold on
         else
             vecSf = readVecYinSet(hd);
-            for i=1:length(vecSf)
-                plotYinSet(vecSf{i}, lineColor, fillColor(i)); hold on
+            if k == 1 
+                continue;
+            end
+            for i=length(vecSf):-1:1
+                plotYinSet(vecSf{i}, lineColor, fillColor{k}); hold on
             end
         end
     end

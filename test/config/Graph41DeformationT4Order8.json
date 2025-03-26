@@ -11,22 +11,22 @@
       "uM": 1.0
   },
   "field": {
-      "velocityName" : "Vortex",
-      "pars" : [-1.0]
+      "velocityName" : "Deformation",
+      "pars" : [4]
   },
   "grid": {
       "N0": 32,
       "lo": [0.0, 0.0],
       "hi": [1.0, 1.0],
-      "aimOrder": 4,
-      "hLCoefficient": 0.1,
+      "aimOrder": 8,
+      "hLCoefficient": 7.5,
       "rTiny": 0.05,
       "nGrid": 3
   },
   "curvature_adaption": {
-      "curvUsed": false,
+      "curvUsed": true,
       "rCMin": 0.1,
-      "rhoMin": 5.0,
+      "rhoMin": 1.0,
       "rhoMax": 10000.0
   },
   "plot": {
@@ -36,9 +36,6 @@
       "printDetail": false
   },
   "domain_disk": {             
-      "name" : "Disk",
-      "center": [0.5, 0.75],
-      "radius": [0.15, 0.15],
-      "parts": [0.0, 0.25, 0.5, 0.75]
+      "name" : "Graph41"
   }
 }

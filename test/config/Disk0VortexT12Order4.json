@@ -32,10 +32,11 @@
   "plot": {
       "plotOutput": 2,
       "plotInner": false,
-      "plotStride": 8,
+      "plotStride": 2,
       "printDetail": false
   },
-  "domain_disk": {
+  "domain_disk": {             
+      "name" : "Disk",
       "center": [0.5, 0.75],
       "radius": [0.2, 0.2],
       "parts": []

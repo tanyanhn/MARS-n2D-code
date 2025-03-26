@@ -5,14 +5,14 @@
     "newtonMaxIter": 200
   },
   "time": {
-      "te": 4.0,
+      "te": 2.0,
       "t0": 0.0,
       "Cr": 0.125,
       "uM": 1.0
   },
   "field": {
-      "velocityName" : "Vortex",
-      "pars" : [-1.0]
+      "velocityName" : "Deformation",
+      "pars" : [4]
   },
   "grid": {
       "N0": 32,
@@ -24,9 +24,9 @@
       "nGrid": 3
   },
   "curvature_adaption": {
-      "curvUsed": false,
-      "rCMin": 0.1,
-      "rhoMin": 5.0,
+      "curvUsed": true,
+      "rCMin": 0.2,
+      "rhoMin": 1.0,
       "rhoMax": 10000.0
   },
   "plot": {
@@ -36,9 +36,6 @@
       "printDetail": false
   },
   "domain_disk": {             
-      "name" : "Disk",
-      "center": [0.5, 0.75],
-      "radius": [0.15, 0.15],
-      "parts": [0.0, 0.25, 0.5, 0.75]
+      "name" : "Graph41"
   }
 }

@@ -5,6 +5,9 @@
 #include "Recorder/Timer.h"
 #include "testHeader.h"
 
+#ifdef OPTNONE
+__attribute__((optnone))
+#endif  // OPTNONE
 void trackInterfaceTest(const string& testName,
                         DebugLevel debugLevel = DebugLevel::OFF) {
   mkdir((rootDir + "/results").c_str(), 0755);
@@ -12,10 +15,10 @@ void trackInterfaceTest(const string& testName,
   auto dir = rootDir + "/results/TrackInterface/" + testName + "/";
   mkdir(dir.c_str(), 0755);
   RecorderInitialize(RecorderInfo{debugLevel, dir});
-  SECTION("4-th order disk") {
+  SECTION("4-th order") {
     constexpr int Order = 4;
     pushLogStage("Initialize");
-    auto [vecDisk, exactDisk, radius, exactArea, exactLength, vecBox, vecN,
+    auto [vecDomain, exactDomain, radius, exactArea, exactLength, vecBox, vecN,
           aimOrder, vecHL, rTiny, nGrid, curvConfig, plotConfig, printDetail,
           t0, vecDt, te, timeIntegrator, velocityPtr] =
         diskTEST<Order>(rootDir + "/test/config/" + testName + ".json");
@@ -26,14 +29,24 @@ void trackInterfaceTest(const string& testName,
       localPlotConfig.fName =
           to_string(Order) + "Circle" + "_grid" + to_string(vecN[i]);
       localPlotConfig.fName = dir + localPlotConfig.fName;
+      localPlotConfig.box = vecBox[i];
       MARSn2D<Order, VectorFunction> CM(timeIntegrator, vecHL[i], rTiny,
                                         curvConfig, printDetail);
-      CM.trackInterface(*velocityPtr, vecDisk[i], t0, vecDt[i], te,
+      CM.trackInterface(*velocityPtr, vecDomain[i], t0, vecDt[i], te,
                         localPlotConfig);
     }
     popLogStage();
     pushLogStage("CheckResult");
-    auto errors = cutCellError(vecDisk, exactDisk, vecBox, plotConfig.range);
+    std::ofstream of(dir + "00test.dat");
+    for (auto& domain : vecDomain) {
+      auto yinSets = domain.approxYinSet();
+      int num = yinSets.size();
+      of.write((char*)&num, sizeof(int));
+      for (auto& yin : yinSets) yin.dump(of);
+      of.close();
+    }
+    auto errors =
+        cutCellError(vecDomain, exactDomain, vecBox, plotConfig.range);
     std::string resultFileName = dir + "00Result.txt";
     printCellError(errors, resultFileName);
   }
@@ -123,16 +136,55 @@ TEST_CASE("Disk 0 vortex T = 12, Order = 4", "[Disk0][Vortex][T12][Order4]") {
   trackInterfaceTest("Disk0VortexT12Order4");
 }
 
-TEST_CASE("Graph 4.1, vortex T = 4, Order = 4", "[Graph41][Vortex][T4][Order4]") {
-  constexpr int Order = 4;
-  auto dir = rootDir + "/results/TrackInterface/Graph41VortexT4Order4/";
-  mkdir(dir.c_str(), 0755);
-  auto graph = InterfaceGraphFactory::createGraph41<Order>(0.001);
+TEST_CASE("Graph 4.1, vortex T = 4, Order = 4",
+          "[Graph41][Vortex][T4][Order4]") {
+  // constexpr int Order = 4;
+  // auto dir = rootDir + "/results/TrackInterface/Graph41VortexT4Order4/";
+  // mkdir(dir.c_str(), 0755);
+  // auto graph = InterfaceGraphFactory::createGraph41<Order>(0.001);
+  // auto yinsets = graph.approxYinSet();
+  // std::ofstream of(rootDir + "/results/TrackInterface/Graph41VortexT4Order4/"
+  //                  "test.dat");
+  //                  int num = yinsets.size();
+  // of.write((char*)&num, sizeof(int));
+  // for (int i = 0; i < yinsets.size(); ++i) yinsets[num - i - 1].dump(of);
+  trackInterfaceTest("Graph41VortexT4Order4");
+}
 
-  auto yinsets = graph.approxYinSet();
-  std::ofstream of(rootDir + "/results/TrackInterface/Graph41VortexT4Order4/"
-                   "test.dat");
-                   int num = yinsets.size();
-  of.write((char*)&num, sizeof(int));
-  for (int i = 0; i < yinsets.size(); ++i) yinsets[num - i - 1].dump(of);
+TEST_CASE("Graph 4.1, vortex T = 8, Order = 4",
+          "[Graph41][Vortex][T8][Order4]") {
+  trackInterfaceTest("Graph41VortexT8Order4");
+}
+TEST_CASE("Graph 4.1, vortex T = 12, Order = 4",
+          "[Graph41][Vortex][T12][Order4]") {
+  trackInterfaceTest("Graph41VortexT12Order4");
+}
+TEST_CASE("Graph 4.1, vortex T = 16, Order = 4",
+          "[Graph41][Vortex][T16][Order4]") {
+  trackInterfaceTest("Graph41VortexT16Order4");
+}
+TEST_CASE("Graph 4.1, vortex T = 16, Order = 4",
+          "[Graph41][Vortex][T16][Order6]") {
+  trackInterfaceTest("Graph41VortexT16Order6");
+}
+TEST_CASE("Graph 4.1, vortex T = 16, Order = 4",
+          "[Graph41][Vortex][T16][Order8]") {
+  trackInterfaceTest("Graph41VortexT16Order8");
+}
+
+TEST_CASE("Graph 4.1, Deformation T = 2, Order = 4",
+          "[Graph41][Deformation][T2][Order4]") {
+  trackInterfaceTest("Graph41DeformationT2Order4");
+}
+TEST_CASE("Graph 4.1, Deformation T = 4, Order = 4",
+          "[Graph41][Deformation][T4][Order4]") {
+  trackInterfaceTest("Graph41DeformationT4Order4");
+}
+TEST_CASE("Graph 4.1, Deformation T = 4, Order = 6",
+          "[Graph41][Deformation][T4][Order4]") {
+  trackInterfaceTest("Graph41DeformationT4Order6");
+}
+TEST_CASE("Graph 4.1, Deformation T = 4, Order = 6",
+          "[Graph41][Deformation][T4][Order4]") {
+  trackInterfaceTest("Graph41DeformationT4Order6");
 }

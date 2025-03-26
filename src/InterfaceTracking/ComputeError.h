@@ -208,9 +208,9 @@ cutCellError(const vector<Marsn2D::approxInterfaceGraph<Order>> &lhss,
         for (auto &volume : volumes) {
           sum += volume[i][j];
         }
-        if (norm(sum - fullCell) > 1e-12) {
-          std::cout << std::format("i = {}, j = {}, sum = {} \n", i, j, sum);
-        }
+        // if (norm(sum - fullCell) > 1e-12) {
+        //   std::cout << std::format("i = {}, j = {}, sum = {} \n", i, j, sum);
+        // }
       }
     }
   };
@@ -248,9 +248,9 @@ cutCellError(const vector<Marsn2D::approxInterfaceGraph<Order>> &lhss,
         L1 += std::fabs(localVolumes[i0][i1] - rhsVolumes[i][i0][i1]);
         LInf = std::max(LInf,
                         abs(localVolumes[i0][i1] - rhsVolumes[i][i0][i1]) / h);
-        if (LInf > 2e-3) {
-          std::cout << std::format("i = {}, j = {}, LInf = {}", i0, i1, LInf);
-        }
+        // if (LInf > 2e-3) {
+        //   std::cout << std::format("i = {}, j = {}, LInf = {}", i0, i1, LInf);
+        // }
       }
       ret[numYinsets][0][2 * grid] += L1;
       ret[numYinsets][1][2 * grid] =

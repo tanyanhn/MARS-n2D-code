@@ -4,8 +4,8 @@
 
 #include "Core/Config.h"
 #include "Core/Vec.h"
-#include "InterfaceTracking/RKButcher.h"
 #include "InterfaceTracking/ERK.h"
+#include "InterfaceTracking/RKButcher.h"
 #include "InterfaceTracking/VelocityField.h"
 #include "Marsn2D/MARSn2D.h"
 
@@ -64,6 +64,7 @@ struct SimulationParams {
 
   // Domain disk parameters
   struct {
+    std::string name;
     Point center;
     rVec radius;
     std::vector<Real> parts;
@@ -127,9 +128,12 @@ inline void from_json(const nlohmann::json& j, SimulationParams& params) {
 
   // 解析域参数
   const auto& domain = j.at("domain_disk");
-  params.domain.center = domain.at("center");
-  params.domain.radius = domain.at("radius");
-  params.domain.parts = domain.at("parts").get<std::vector<Real>>();
+  params.domain.name = domain.at("name");
+  if (domain.contains("center")) {
+    params.domain.center = domain.at("center");
+    params.domain.radius = domain.at("radius");
+    params.domain.parts = domain.at("parts").get<std::vector<Real>>();
+  }
 }
 
 inline SimulationParams read_config(const std::string& filename) {
