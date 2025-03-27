@@ -12,7 +12,7 @@
           "program": "${workspaceFolder}/build/test/${fileBasenameNoExtension}",
           "args": [
             // " [Disk4][T4][Order8] ",
-            "[Graph41][Vortex][T4][Order4]",
+            "[Graph41][Deformation][T4][Order8]",
             // "--rng-seed 634119452"
           ],
           "cwd": "${workspaceFolder}",

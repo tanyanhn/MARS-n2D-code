@@ -347,7 +347,7 @@ auto YinSet<2, Order>::cutCell(const Box<Dim> &box, const Interval<Dim> &range,
   vector<vector<YinSetPtr>> ret(N0, vector<YinSetPtr>(N1, nullptr));
   // since in pastCells will attach curve boundary to grid line, and will
   // increase tol error.
-  Real tol = 5e-15;
+  Real tol = 1e-14;
 
   auto lo = range.lo();
   auto hi = range.hi();
