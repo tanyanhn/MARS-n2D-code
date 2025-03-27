@@ -15,7 +15,7 @@
       "pars" : [-1.0]
   },
   "grid": {
-      "N0": 64,
+      "N0": 128,
       "lo": [0.0, 0.0],
       "hi": [1.0, 1.0],
       "aimOrder": 4,
@@ -25,7 +25,7 @@
   },
   "curvature_adaption": {
       "curvUsed": true,
-      "rCMin": 0.03,
+      "rCMin": 0.01,
       "rhoMin": 5.0,
       "rhoMax": 10000.0
   },
