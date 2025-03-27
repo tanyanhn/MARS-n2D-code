@@ -1,20 +1,20 @@
 close all 
 
 figure 
-max_step = 1e-2;
+max_step = 5e-4;
 move = [-1.7; -5.26];
 scale = [1 / 14];
 
 controlpoints1 = [9, 2.75, 2.75, 8.5;...
                  15.95, 15.85, 9.5, 9]'; 
-controlpoints2 = [10, 8.5, 12.0008, 8.5;...
+controlpoints2 = [10, 8.5, 12.00072, 8.5;...
                  13., 10.5, 9, 9]' ;
 controlpoints2 = reverse(controlpoints2);
 controlpoints3 = [9, 13.7508, 10.5, 10;...
                  15.95, 15.74985, 14, 13]';
 controlpoints3 = reverse(controlpoints3);
 
-controlpoints4 = [13.5, 10.523, 11.5, 12.25;...
+controlpoints4 = [13.5, 10.523055, 11.5, 12.25;...
                  14.75, 16, 14, 13]' ;
 controlpoints5 = [12.25, 13., 12.75, 11.75;...
                  13., 12., 11.75, 11.25]' ;
@@ -36,14 +36,10 @@ edge5 = bezierCurve(controlpoints5, max_step)';
 edge6 = bezierCurve(controlpoints6, max_step)';
 edge7 = bezierCurve(controlpoints7, max_step)';
 
-k1 = 272; k2 = 315;
-k3 = 301; k4 = 326;
+k1 = 5531; k2 = 7682;
+k3 = 6405; k4 = 7122;
 [edge2, edge6] = attachPoint(edge2, edge6, k1, k4);
 [edge3, edge4] = attachPoint(edge3, edge4, k2, k3);
-k1 = k1 - 1 + size(edge1, 2) - 1;
-k2 = k2 - 1 + size(edge1, 2) - 1 + size(edge2, 2) - 1;
-k3 = k3 - 1;
-k4 = k4 - 1 + size(edge4, 2) - 1 + size(edge5, 2) - 1;
 
 
 edge1 = moveScale(edge1, move, scale);
@@ -53,6 +49,12 @@ edge4 = moveScale(edge4, move, scale);
 edge5 = moveScale(edge5, move, scale);
 edge6 = moveScale(edge6, move, scale);
 edge7 = moveScale(edge7, move, scale);
+plot(edge2(1, k1), edge2(2, k1), '*'); hold on
+plot(edge4(1, k3), edge4(2, k3), '*'); hold on
+% plot(edge4(1, k4 + 1), edge4(2, k4 + 1), '*'); hold on
+% plot(edge4(1, k4 - 1), edge4(2, k4 - 1), '*'); hold on
+
+
 % p = [7.25  9; 
 %     13.25 14.5];
 % p = [7.25 8.25;
@@ -61,13 +63,15 @@ p = [11.1 ;
     11.85];
 p = moveScale(p, move, scale)
 
+k1 = k1 - 1 + size(edge1, 2) - 1;
+k2 = k2 - 1 + size(edge1, 2) - 1 + size(edge2, 2) - 1;
+k3 = k3 - 1;
+k4 = k4 - 1 + size(edge4, 2) - 1 + size(edge5, 2) - 1;
 jordanCurve1 = [edge1(:, 1:end-1), edge2(:, 1:end-1), edge3(:, 1:end)];
 jordanCurve2 = [edge4(:, 1:end-1), edge5(:, 1:end-1), edge6(:, 1:end-1), edge7(:, 1:end)];
 
 jordanCurve1(:, 1) - jordanCurve1(:, end)
 jordanCurve2(:, 1) - jordanCurve2(:, end)
-
-
 
 plot(edge1(1,:), edge1(2,:)); hold on
 plot(edge2(1,:), edge2(2,:)); hold on

@@ -78,6 +78,8 @@ class SegmentedRealizableSpadjor {
     return volume;
   }
 
+  bool empty() const { return orientedJordanCurves.empty(); }
+
  protected:
   SegmentedRealizableSpadjor() = default;
 

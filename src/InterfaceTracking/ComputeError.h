@@ -153,7 +153,8 @@ cutCellError(const vector<Marsn2D::approxInterfaceGraph<Order>> &lhss,
     h = h / (box.size());
     Real fullCell = h[0] * h[1];
     auto N = box.size();
-    Vector<Vector<Real>> volume(N[0], Vector<Real>(N[1]));
+    Vector<Vector<Real>> volume(N[0], Vector<Real>(N[1], 0));
+    if (yinset.empty()) return volume;
     auto [rhsRes, rhsBoundary, rhsTags] = yinset.cutCell(box, range, false);
     // std::ofstream of(getExportDir() + "localYinset" + ".dat",
     // std::ios_base::binary); dumpVecYinSet<Order>(rhsRes, of);

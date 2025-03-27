@@ -18,6 +18,9 @@ void MARSn2D<Order, VelocityField>::discreteFlowMap(const VectorFunction<2> &v,
 }
 
 template <int Order, template <int> class VelocityField>
+#ifdef OPTNONE
+__attribute__((optnone))
+#endif  // OPTNONE
 void MARSn2D<Order, VelocityField>::plot(const IG &ig, int step,
                                          const PlotConfig &plotConfig) const {
   auto yinSets = ig.approxYinSet();
@@ -54,6 +57,9 @@ void MARSn2D<Order, VelocityField>::trackInterface(
   lengthHistory.push_back(ig.countLengths());
   ProgressBar bar(stages, "Tracking...");
   while (step < stages) {
+    if (plotConfig.output != NONE && (step + 40) % polyStep == 0) {
+      plot(ig, step, plotConfig);
+    }
     if (plotConfig.output != NONE && step % polyStep == 0) {
       plot(ig, step, plotConfig);
     }

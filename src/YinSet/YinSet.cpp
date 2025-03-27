@@ -240,6 +240,7 @@ template <int Order>
 void YinSet<2, Order>::dump(std::ostream &os) const {
   const int N = orientedJordanCurves.size();
   os.write((char *)&N, sizeof(int));
+  if (N == 0) return;
   // save the boundaries according to the order of BFS
   const auto &rootOfForest = diagram.back();
   std::queue<int> Q;
@@ -339,6 +340,7 @@ auto YinSet<2, Order>::cutCell(const Box<Dim> &box, const Interval<Dim> &range,
                                bool addInner) const
     -> std::tuple<vector<vector<YinSetPtr>>,
                   vector<vector<vector<Curve<2, Order>>>>, vector<vector<int>>> {
+  if (this->empty()) return {};
   const int N0 = box.hi()[0] - box.lo()[0] + 1;
   const int N1 = box.hi()[1] - box.lo()[1] + 1;
   rVec size(box.size());
