@@ -26,14 +26,27 @@ while true
     if isempty(exceed_idx), break; end
     
     % 对每个需要细分的区间插入中点
-    for i = flip(exceed_idx)'
-        t_mid = (t_list(i) + t_list(i+1)) / 2;
+    new_t_list = [];
+    new_points = [];
+    for i = 1:length(t_list) - 1
+        if (distances(i) >max_step)
+            num = distances(i) / max_step * 2;
+            t_mid = linspace(t_list(i), t_list(i + 1), num + 1);
+            t_mid = t_mid(1:end-1)';
+        else
+            t_mid = t_list(i);
+        end
+        % t_mid = (t_list(i) + t_list(i+1)) / 2;
         mid_point = bezierPoint(control_points, t_mid);
         
         % 插入新点到列表中
-        t_list = [t_list(1:i); t_mid; t_list(i+1:end)];
-        points = [points(1:i,:); mid_point; points(i+1:end,:)];
+        new_t_list = [new_t_list; t_mid];
+        new_points = [new_points; mid_point];
     end
+    new_t_list = [new_t_list; t_list(end)];
+    new_points = [new_points; points(end, :)];
+    t_list = new_t_list;
+    points = new_points;
 end
 
 % 确保包含终点
@@ -46,12 +59,19 @@ end
 
 % 三次贝塞尔曲线单点计算函数
 function pt = bezierPoint(control_points, t)
-    c0 = (1 - t)^3;
-    c1 = 3*(1 - t)^2*t;
-    c2 = 3*(1 - t)*t^2;
-    c3 = t^3;
-    pt = c0*control_points(1,:) + ...
-         c1*control_points(2,:) + ...
-         c2*control_points(3,:) + ...
-         c3*control_points(4,:);
+    % 将t转换为列向量以确保维度正确
+    t = t(:);
+    
+    % 计算各贝塞尔基函数的值（均为列向量）
+    c0 = (1 - t).^3;
+    c1 = 3*(1 - t).^2.*t;
+    c2 = 3*(1 - t).*t.^2;
+    c3 = t.^3;
+    
+    % 确保控制点是正确的维度（4×dim）
+    % 通过列方向扩展进行矩阵乘法，最终得到n×dim矩阵
+    pt = c0 * control_points(1,:) + ...
+         c1 * control_points(2,:) + ...
+         c2 * control_points(3,:) + ...
+         c3 * control_points(4,:);
 end

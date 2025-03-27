@@ -1,7 +1,7 @@
 close all 
 
 figure 
-max_step = 5e-4;
+max_step = 2e-4;
 move = [-1.7; -5.26];
 scale = [1 / 14];
 
@@ -14,7 +14,7 @@ controlpoints3 = [9, 13.7508, 10.5, 10;...
                  15.95, 15.74985, 14, 13]';
 controlpoints3 = reverse(controlpoints3);
 
-controlpoints4 = [13.5, 10.523055, 11.5, 12.25;...
+controlpoints4 = [13.5, 10.523065, 11.5, 12.25;...
                  14.75, 16, 14, 13]' ;
 controlpoints5 = [12.25, 13., 12.75, 11.75;...
                  13., 12., 11.75, 11.25]' ;
@@ -36,10 +36,6 @@ edge5 = bezierCurve(controlpoints5, max_step)';
 edge6 = bezierCurve(controlpoints6, max_step)';
 edge7 = bezierCurve(controlpoints7, max_step)';
 
-k1 = 5531; k2 = 7682;
-k3 = 6405; k4 = 7122;
-[edge2, edge6] = attachPoint(edge2, edge6, k1, k4);
-[edge3, edge4] = attachPoint(edge3, edge4, k2, k3);
 
 
 edge1 = moveScale(edge1, move, scale);
@@ -49,6 +45,12 @@ edge4 = moveScale(edge4, move, scale);
 edge5 = moveScale(edge5, move, scale);
 edge6 = moveScale(edge6, move, scale);
 edge7 = moveScale(edge7, move, scale);
+[~, k1] = min(abs(edge2(2,:) - 0.30825));
+[~, k4] = min(abs(edge6(2,:) - 0.308248392313240));
+[~, k2] = min(abs(edge3(2,:) - 0.686083));
+[~, k3] = min(abs(edge4(1,:) - 0.700516));
+[edge2, edge6] = attachPoint(edge2, edge6, k1, k4);
+[edge3, edge4] = attachPoint(edge3, edge4, k2, k3);
 plot(edge2(1, k1), edge2(2, k1), '*'); hold on
 plot(edge4(1, k3), edge4(2, k3), '*'); hold on
 % plot(edge4(1, k4 + 1), edge4(2, k4 + 1), '*'); hold on
