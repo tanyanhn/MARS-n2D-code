@@ -57,9 +57,9 @@ void MARSn2D<Order, VelocityField>::trackInterface(
   lengthHistory.push_back(ig.countLengths());
   ProgressBar bar(stages, "Tracking...");
   while (step < stages) {
-    if (plotConfig.output != NONE && (step + 40) % polyStep == 0) {
-      plot(ig, step, plotConfig);
-    }
+    // if (plotConfig.output != NONE && (step + 40) % polyStep == 0) {
+    //   plot(ig, step, plotConfig);
+    // }
     if (plotConfig.output != NONE && step % polyStep == 0) {
       plot(ig, step, plotConfig);
     }
