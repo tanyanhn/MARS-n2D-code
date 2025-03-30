@@ -134,6 +134,34 @@ inline void dumpError(const Vector<Vector<Real>> &errors,
   }
 }
 
+inline void saveErrorToVTK(const std::vector<std::vector<double>>& error, const std::string& filename) {
+    std::ofstream vtkFile(filename);
+    int Ny = error.size();    // 行数（Y方向）
+    int Nx = (Ny > 0) ? error[0].size() : 0; // 列数（X方向）
+
+    // 写入VTK头部
+    vtkFile << "# vtk DataFile Version 3.0\n";
+    vtkFile << "Error Data\n";
+    vtkFile << "ASCII\n";
+    vtkFile << "DATASET STRUCTURED_POINTS\n";
+    vtkFile << "DIMENSIONS " << Nx << " " << Ny << " 1\n";
+    vtkFile << "SPACING 1 1 1\n"; // 假设网格间距为1，可修改为实际值
+    vtkFile << "ORIGIN 0 0 0\n";  // 假设原点在(0,0)，可修改为实际值
+    vtkFile << "POINT_DATA " << (Nx * Ny) << "\n";
+    vtkFile << "SCALARS error double 1\n";
+    vtkFile << "LOOKUP_TABLE default\n";
+
+    // 按行优先写入误差数据（VisIt的默认顺序）
+    for (int y = 0; y < Ny; ++y) {
+        for (int x = 0; x < Nx; ++x) {
+            vtkFile << error[x][y] << " ";
+        }
+        vtkFile << "\n";
+    }
+    vtkFile.close();
+}
+
+
 // return: each yinset - 2(L^2 and L^\infty) - each grid
 template <int Order>
 #ifdef OPTNONE
@@ -231,9 +259,12 @@ cutCellError(const vector<Marsn2D::approxInterfaceGraph<Order>> &lhss,
   // compute lhss
   Vector<Vector<Vector<Real>>> ret(
       numYinsets + 1, Vector<Vector<Real>>(2, Vector<Real>(2 * num - 1, 0)));
+  auto dir = getExportDir();
+  std::string visitFile = dir + "error";
   for (size_t g = 0; g < num; g++) {
     auto grid = num - g - 1;
     Real h = h0[0] / (1 << grid);
+
     const auto &lhsYinsets = lhss[grid].approxYinSet();
     for (size_t i = 0; i < numYinsets; ++i) {
       auto &L1 = ret[i][0][2 * grid];
@@ -246,16 +277,18 @@ cutCellError(const vector<Marsn2D::approxInterfaceGraph<Order>> &lhss,
       //             ".dat");
       // }
       loop_box_2(boxs[grid], i0, i1) {
-        L1 += std::fabs(localVolumes[i0][i1] - rhsVolumes[i][i0][i1]);
-        LInf = std::max(LInf,
-                        abs(localVolumes[i0][i1] - rhsVolumes[i][i0][i1]) / h);
-        // if (LInf > 2e-3) {
-        //   std::cout << std::format("i = {}, j = {}, LInf = {}", i0, i1, LInf);
-        // }
+        localVolumes[i0][i1] = std::fabs(localVolumes[i0][i1] - rhsVolumes[i][i0][i1]);
+        L1 += localVolumes[i0][i1];
+        LInf = std::max(LInf, localVolumes[i0][i1] / h);
+        if (localVolumes[i0][i1] > 5.9297e-11) {
+          std::cout << std::format("i = {}, j = {}, LInf = {}", i0, i1, LInf);
+        }
       }
       ret[numYinsets][0][2 * grid] += L1;
       ret[numYinsets][1][2 * grid] =
           std::max(ret[numYinsets][1][2 * grid], LInf);
+      saveErrorToVTK(localVolumes, visitFile + "_g" + std::to_string(grid) +
+                                       "_i" + std::to_string(i) + ".vtk");
     }
     rhsVolumes = coarseVolumes(rhsVolumes);
   }

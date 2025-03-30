@@ -30,14 +30,14 @@ while true
     new_points = [];
     for i = 1:length(t_list) - 1
         if (distances(i) >max_step)
-            num = distances(i) / max_step * 2;
+            num = ceil(distances(i) / max_step) * 3;
             t_mid = linspace(t_list(i), t_list(i + 1), num + 1);
             t_mid = t_mid(1:end-1)';
+            mid_point = bezierPoint(control_points, t_mid);
         else
             t_mid = t_list(i);
+            mid_point = points(i, :);
         end
-        % t_mid = (t_list(i) + t_list(i+1)) / 2;
-        mid_point = bezierPoint(control_points, t_mid);
         
         % 插入新点到列表中
         new_t_list = [new_t_list; t_mid];

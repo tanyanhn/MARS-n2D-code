@@ -9,16 +9,16 @@ fillColor = getColor();
 % filedir = "results/InterfaceGraph/";
 % filedir = "../../results/TrackInterface/Disk4Vortex16/";
 % filedir = "../../results/TrackInterface/Disk5Deformation4/";
-filedir = "../../results/TrackInterface/Graph41VortexT8Order4/";
+filedir = "../../results/TrackInterface/Graph41VortexT4Order4/";
 % filedir = "../../test/data1/";
 % round = "No4_";
 
 % filename = "spadjor-13.input.dat";
 % filename = "localVolumes.dat";
 % filename = "localYinset.dat";
-filename = "4Circle_grid32_Step1024_c.dat";
+% filename = "4Circle_grid32_Step1024_c.dat";
 % filename = "4Circle_grid32.dat";
-% filename = "00test.dat";
+filename = "00test.dat";
 % filename = "test.dat";
 Order = 4;
 N = 4;
@@ -42,7 +42,7 @@ else
                 continue;
             end
             for i=length(vecSf):-1:1
-                plotYinSet(vecSf{i}, lineColor, fillColor{k}); hold on
+                plotYinSet(vecSf{i}, lineColor, fillColor{i}); hold on
             end
         end
     end

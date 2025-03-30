@@ -139,30 +139,75 @@ inline auto InterfaceGraphFactory::markSegment(Segment<DIM> seg, Real hL) {
 }
 
 template <int Order>
+#ifdef OPTNONE
+__attribute__((optnone))
+#endif  // OPTNONE
 auto InterfaceGraphFactory::markCurve(const Curve<DIM, Order>& crv, Real hL) {
   Real knotRange = crv.getKnots().back() - crv.getKnots().front();
   auto eValue = [](auto& crv, Real t) {
     return crv(t + crv.getKnots().front());
   };
-  int num = std::ceil(knotRange / hL) * 2UL;
-  Real step = knotRange / num;
   vector<Point> pts;
+  vector<Real> ptsT;
+  Real localHL = 0.01;
+  int num = std::ceil(knotRange / localHL) * 2UL;
+  Real step = knotRange / num;
   pts.push_back(crv.startpoint());
+  ptsT.push_back(0);
   for (int i = 0; i < num; i++) {
     Real localStep = step;
     Real angle = step * i + localStep;
     Point local = eValue(crv, angle);
-    while (norm(pts.back() - local) > hL) {
+    while (norm(pts.back() - local) > localHL) {
       localStep /= 2;
       angle = step * i + localStep;
       local = eValue(crv, angle);
     }
     pts.push_back(local);
+    ptsT.push_back(angle);
   }
   if (norm(crv.endpoint() - pts.back()) < distTol()) {
     pts.pop_back();
+    ptsT.pop_back();
   }
   pts.push_back(crv.endpoint());
+  ptsT.push_back(crv.getKnots().back() - crv.getKnots().front());
+  
+  vector<Point> ptsNew;
+  vector<Real> ptsTNew;
+  while (localHL > hL) {
+    localHL /= 2;
+    for (int i = 0; i < pts.size(); i++) {
+      if (i == 0 || norm(pts[i] - pts[i - 1]) < localHL) {
+        ptsNew.push_back(pts[i]);
+        ptsTNew.push_back(ptsT[i]);
+        continue;
+      }
+      Real localStep = (ptsT[i] - ptsT[i - 1]) / 2;
+      Real angle = ptsT[i - 1];
+      while (true) {
+        auto localPt = eValue(crv, angle + localStep);
+        while (norm(localPt - ptsNew.back()) > localHL) {
+          localStep /= 2;
+          localPt = eValue(crv, angle + localStep);
+        }
+        angle += localStep;
+        ptsNew.push_back(localPt);
+        ptsTNew.push_back(angle);
+        localStep *= 2;
+        if (norm(localPt - pts[i]) < localHL) {
+          ptsNew.push_back(pts[i]);
+          ptsTNew.push_back(ptsT[i]);
+          break;
+        }
+      }
+    }
+    std::swap(pts, ptsNew);
+    std::swap(ptsT, ptsTNew);
+    ptsNew.clear();
+    ptsTNew.clear();
+  }
+
   return pts;
 }
 
@@ -429,11 +474,11 @@ auto InterfaceGraphFactory::createGraph41(Real hL)
   cyclesEdgesId[8] = (vector<EdgeIndex>{10, 15});
   cyclesEdgesId[9] = (vector<EdgeIndex>{16, 11});
   cyclesEdgesId[10] = (vector<EdgeIndex>{-1, -13, -14});
-  YinSetId[0] = (vector<size_t>{0});
-  YinSetId[1] = (vector<size_t>{1});
-  YinSetId[2] = (vector<size_t>{2});
-  YinSetId[3] = (vector<size_t>{3, 4, 5, 6});
-  YinSetId[4] = (vector<size_t>{7, 8, 9});
+  // YinSetId[0] = (vector<size_t>{0});
+  // YinSetId[1] = (vector<size_t>{1});
+  // YinSetId[2] = (vector<size_t>{2});
+  // YinSetId[3] = (vector<size_t>{3, 4, 5, 6});
+  // YinSetId[4] = (vector<size_t>{7, 8, 9});
   YinSetId[5] = (vector<size_t>{10});
 
   return approxInterfaceGraph<Order>(std::move(edgeMarks), smoothConditions,
