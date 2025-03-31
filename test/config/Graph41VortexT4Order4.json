@@ -24,7 +24,7 @@
       "nGrid": 3
   },
   "curvature_adaption": {
-      "curvUsed": false,
+      "curvUsed": true,
       "rCMin": 0.1,
       "rhoMin": 5.0,
       "rhoMax": 10000.0

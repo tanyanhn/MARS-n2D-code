@@ -20,11 +20,11 @@
       "hi": [1.0, 1.0],
       "aimOrder": 4,
       "hLCoefficient": 0.1,
-      "rTiny": 0.01,
+      "rTiny": 0.05,
       "nGrid": 3
   },
   "curvature_adaption": {
-      "curvUsed": false,
+      "curvUsed": true,
       "rCMin": 0.1,
       "rhoMin": 5.0,
       "rhoMax": 10000.0

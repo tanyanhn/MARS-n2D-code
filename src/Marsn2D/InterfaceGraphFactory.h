@@ -568,12 +568,13 @@ auto diskTEST(const std::string& jsonFile) {
     rVec h = (hi - lo) / N;
     Real hL = hLCoefficient * std::pow(h[0] * h[1], 0.5 * aimOrder / Order);
     Real dt = std::min(h[0], h[1]) / uM * Cr;
+    Real initialDist = hL / 2 * (curvUsed ? std::sqrt(rCMin) : 1);
     if (params.domain.name == "Disk") {
       const auto disk = InterfaceGraphFactory::createDiskGraph<Order>(
-          center, radius, hL / 2, parts);
+          center, radius, initialDist, parts);
       vecDomain.emplace_back(std::move(disk));
     } else if (params.domain.name == "Graph41") {
-      vecDomain.emplace_back(InterfaceGraphFactory::createGraph41<Order>(hL));
+      vecDomain.emplace_back(InterfaceGraphFactory::createGraph41<Order>(initialDist));
     }
     vecN.emplace_back(N);
     vecBox.emplace_back(0, N - 1);
@@ -585,9 +586,10 @@ auto diskTEST(const std::string& jsonFile) {
 
   // accurate solution
   Real hL = vecHL.back() / 4;
+  Real initialDist = hL / 2 * (curvUsed ? std::sqrt(rCMin) : 1);
   if (params.domain.name == "Disk") {
     auto exactDomain = InterfaceGraphFactory::createDiskGraph<Order>(
-        center, radius, hL, parts);
+        center, radius, initialDist, parts);
 
     return make_tuple(vecDomain, exactDomain, radius, exactArea, exactLength,
                       vecBox, vecN, aimOrder, vecHL, rTiny, nGrid, curvConfig,
@@ -595,7 +597,7 @@ auto diskTEST(const std::string& jsonFile) {
                       velocityPtr);
   }
   // if (params.domain.name == "Graph41") {
-  auto exactDomain = InterfaceGraphFactory::createGraph41<Order>(hL);
+  auto exactDomain = InterfaceGraphFactory::createGraph41<Order>(initialDist);
 
   return make_tuple(vecDomain, exactDomain, radius, exactArea, exactLength,
                     vecBox, vecN, aimOrder, vecHL, rTiny, nGrid, curvConfig,
