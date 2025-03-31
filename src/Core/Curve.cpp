@@ -181,14 +181,23 @@ Curve<Dim, Order>::split(const vector<Real> &brks,
 
 template <int Dim, int Order>
 Curve<Dim, Order> Curve<Dim, Order>::makeMonotonic(Real tol) const {
+  using localReal = double;
   Curve<Dim, Order> res;
   int np = knots.size() - 1;
   for (int i = 0; i < np; i++) {
-    std::vector<Real> ex;
+    Polynomial<Order, Vec<localReal, Dim>> polyi(polys[i]);
+    std::vector<localReal> ex;
     // find out all the monotonic pieces by first locating the extrema
     for (int d = 0; d < Dim; d++) {
-      auto rp = getComp(polys[i], d);
-      extrema<Real>(rp, std::back_inserter(ex), tol);
+      auto rp = getComp(polyi, d);
+      std::vector<localReal> localEx;
+      extrema<localReal>(rp, std::back_inserter(localEx), tol);
+      localReal bound[2] = {rp(0), rp(knots[i + 1] - knots[i])};
+      if (bound[0] > bound[1]) std::swap(bound[0], bound[1]);
+      for (auto& t : localEx) {
+        auto v = rp(t);
+        if (v < bound[0] - tol || v > bound[1] + tol) ex.push_back(t);
+      }
     }
     // filter out the extrema out of domain
     // note that polys[i] is expressed in the variable (t-knots[i])
@@ -214,8 +223,10 @@ Curve<Dim, Order> Curve<Dim, Order>::makeMonotonic(Real tol) const {
         ex.push_back(validDomain.hi()[0]);
       else
         ex.back() = validDomain.hi()[0];
-      for (std::size_t j = 0; j < ex.size() - 1; j++)
-        res.concat(polys[i].translate(ex[j]), ex[j + 1] - ex[j]);
+      for (std::size_t j = 0; j < ex.size() - 1; j++) {
+        T_Polynomial polyj(polyi.translate(ex[j]));
+        res.concat(polyj, ex[j + 1] - ex[j]);
+      }
     } else {
       // just copy if it is already mono
       res.concat(polys[i], knots[i + 1] - knots[i]);

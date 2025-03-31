@@ -188,6 +188,9 @@ auto CutCellHelper<Order>::pastCells(
         res.emplace_back(crv);
         continue;
       }
+      Polynomial<Order, Vec<long double, DIM>> tmppoly(crv.getPolys()[22]);
+      auto tmpT = crv.getKnots()[23] - crv.getKnots()[22];
+      auto tmpP = tmppoly(tmpT);
       auto points = {crv.startpoint(), crv.endpoint()};
       for (auto p : points) {
         if (std::fabs(p[1] - localLo[1]) < tol) {

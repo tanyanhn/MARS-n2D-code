@@ -77,7 +77,7 @@ inline Real newtonTol(Real tol = -1) noexcept {
 
 
 inline Real newtonSubCount(int Count = -1) noexcept {
-  static int newtonSubCount = 200;
+  static int newtonSubCount = 500;
   if (Count > 0) newtonSubCount = Count;
   return newtonSubCount;
 }
