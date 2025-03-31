@@ -86,7 +86,7 @@ class MARSn2D {
   Real rTiny_;
 
   bool printDetail;
-  int removeTimesMax = 0;  
-  int insertTimesMax = 0;
+  int removeTimesMax = 10;  
+  int insertTimesMax = 10;
 };
 }  // namespace MARSn2D

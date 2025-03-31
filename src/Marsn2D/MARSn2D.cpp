@@ -11,10 +11,10 @@ void MARSn2D<Order, VelocityField>::discreteFlowMap(const VectorFunction<2> &v,
                                                     Real dt) const {
   Timer t("discreteFlowMap");
   // using Eigen.
-  // TI_->timeStep(v, marks, tn, dt);
-  for (auto & pt : marks) {
-    pt = TI_->timeStep(v, pt, tn, dt);
-  }
+  TI_->timeStep(v, marks, tn, dt);
+  // for (auto & pt : marks) {
+  //   pt = TI_->timeStep(v, pt, tn, dt);
+  // }
 }
 
 template <int Order, template <int> class VelocityField>
