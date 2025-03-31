@@ -1,4 +1,4 @@
-
+close all
 
 % filedir = "../../results/TrackInterface/Disk5Deformation4/";
 filedir = "../../results/TrackInterface/Graph41VortexT4Order4/";

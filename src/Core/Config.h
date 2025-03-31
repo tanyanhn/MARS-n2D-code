@@ -75,6 +75,13 @@ inline Real newtonTol(Real tol = -1) noexcept {
   return newtonTol;
 }
 
+
+inline Real newtonSubCount(int Count = -1) noexcept {
+  static int newtonSubCount = 200;
+  if (Count > 0) newtonSubCount = Count;
+  return newtonSubCount;
+}
+
 inline int newtonMaxIter(int num = -1) noexcept {
   static int newtonMaxIter = 20;
   if (num > 0) newtonMaxIter = num;

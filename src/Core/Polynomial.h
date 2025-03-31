@@ -194,30 +194,30 @@ inline auto getComp(const Polynomial<Order, CoefType> &poly, int comp) {
 //==================================================
 // roots-finding functions for real polynomails
 
-template <int Order>
-using RealPolynomial = Polynomial<Order, Real>;
+// template <int Order>
+// using RealPolynomial = Polynomial<Order, Real>;
 
-template <int Order>
+template <class CoefType, int Order>
 struct _PolynomialRoots {
   template <class Inserter>
-  static Inserter roots(const RealPolynomial<Order> &, Inserter rts, Real) {
+  static Inserter roots(const Polynomial<Order, CoefType> &, Inserter rts, Real) {
     return rts;
   }
 };
 
-template <>
-struct _PolynomialRoots<2> {
+template <class CoefType>
+struct _PolynomialRoots<CoefType, 2> {
   template <class Inserter>
-  static Inserter roots(const RealPolynomial<2> &poly, Inserter rts, Real tol) {
+  static Inserter roots(const Polynomial<2, CoefType> &poly, Inserter rts, Real tol) {
     *rts++ = poly[0] / poly[1];
     return rts;
   }
 };
 
-template <>
-struct _PolynomialRoots<3> {
+template <class CoefType>
+struct _PolynomialRoots<CoefType, 3> {
   template <class Inserter>
-  static Inserter roots(const RealPolynomial<3> &poly, Inserter rts, Real tol) {
+  static Inserter roots(const Polynomial<3, CoefType> &poly, Inserter rts, Real tol) {
     const Real &a = poly[2];
     const Real &b = poly[1];
     const Real &c = poly[0];
@@ -234,21 +234,21 @@ struct _PolynomialRoots<3> {
   }
 };
 
-template <class Inserter, int Order>
-inline Inserter roots(const RealPolynomial<Order> &poly, Inserter rts,
+template <class CoefType, class Inserter, int Order>
+inline Inserter roots(const Polynomial<Order, CoefType> &poly, Inserter rts,
                       Real tol) {
-  return _PolynomialRoots<Order>::roots(poly, rts, tol);
+  return _PolynomialRoots<CoefType, Order>::roots(poly, rts, tol);
 };
 
-template <int Order>
-inline Real root(const RealPolynomial<Order> &poly, Real x0, Real tol,
+template <class CoefType, int Order>
+inline Real root(const Polynomial<Order, CoefType> &poly, Real x0, Real tol,
                  int maxIter) {
   auto q = poly.der();
   return fzero(poly, q, x0, maxIter, tol);
 }
 
-template <class Inserter, int Order>
-inline Inserter extrema(const RealPolynomial<Order> &poly, Inserter rts,
+template <class CoefType, class Inserter, int Order>
+inline Inserter extrema(const Polynomial<Order, CoefType> &poly, Inserter rts,
                         Real tol) {
   if (Order >= 3) return roots(poly.der(), rts, tol);
   return rts;
@@ -277,7 +277,7 @@ fzero(const T_Func &hf, const T_Der &hdf, Real hx0, int maxIter, Real tol) {
     while (std::abs(localFx) >= std::abs(fx)) {
       localX0 = x0 - dx;
       localFx = f(localX0);
-      if (whileCount++ > 100)
+      if (whileCount++ > newtonSubCount())
         throw std::runtime_error(
             std::format("whileCount: Newton iteration may not converge, f(x) = "
                         "{}, dx = {} \n",
@@ -345,5 +345,11 @@ fzero<Polynomial<4, Real>, Polynomial<3, Real>>(const Polynomial<4, Real> &hf,
         fx, dx / div);
   return x0;
 }
+
+
+// template <> struct _PolynomialRoots<Real, 2>;
+// template <> struct _PolynomialRoots<long double, 2>;
+// template <> struct _PolynomialRoots<Real, 3>;
+// template <> struct _PolynomialRoots<long double, 3>;
 
 #endif  // POLYNOMIAL_H

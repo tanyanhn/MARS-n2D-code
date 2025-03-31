@@ -188,7 +188,7 @@ Curve<Dim, Order> Curve<Dim, Order>::makeMonotonic(Real tol) const {
     // find out all the monotonic pieces by first locating the extrema
     for (int d = 0; d < Dim; d++) {
       auto rp = getComp(polys[i], d);
-      extrema(rp, std::back_inserter(ex), tol);
+      extrema<Real>(rp, std::back_inserter(ex), tol);
     }
     // filter out the extrema out of domain
     // note that polys[i] is expressed in the variable (t-knots[i])
