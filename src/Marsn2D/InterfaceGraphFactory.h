@@ -584,10 +584,10 @@ auto diskTEST(const std::string& jsonFile) {
   }
 
   // accurate solution
-  Real hL = vecHL.back() * rTiny * 10;
+  Real hL = vecHL.back() / 4;
   if (params.domain.name == "Disk") {
     auto exactDomain = InterfaceGraphFactory::createDiskGraph<Order>(
-        center, radius, hL / 2, parts);
+        center, radius, hL, parts);
 
     return make_tuple(vecDomain, exactDomain, radius, exactArea, exactLength,
                       vecBox, vecN, aimOrder, vecHL, rTiny, nGrid, curvConfig,
