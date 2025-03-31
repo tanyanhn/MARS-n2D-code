@@ -1,4 +1,4 @@
-function curvePoints = bezierCurve(control_points, max_step)
+function [points t_list] = bezierCurve(control_points, max_step, t_list)
 % 自适应生成贝塞尔曲线点列
 % 输入：
 %   control_points - 4x2矩阵，每行代表控制点的[x, y]坐标
@@ -12,9 +12,10 @@ if size(control_points,1) ~= 4
 end
 
 % 初始化包含起点和终点的列表
-t_list = [0; 1];
-points = [bezierPoint(control_points, 0); 
-          bezierPoint(control_points, 1)];
+if nargin < 3
+    t_list = [0 1];
+end
+points = bezierPoint(control_points, t_list);
 
 % 循环细分直到满足间距要求
 while true
@@ -30,7 +31,7 @@ while true
     new_points = [];
     for i = 1:length(t_list) - 1
         if (distances(i) >max_step)
-            num = ceil(distances(i) / max_step) * 3;
+            num = ceil(distances(i) / max_step) + 1;
             t_mid = linspace(t_list(i), t_list(i + 1), num + 1);
             t_mid = t_mid(1:end-1)';
             mid_point = bezierPoint(control_points, t_mid);
@@ -49,29 +50,6 @@ while true
     points = new_points;
 end
 
-% 确保包含终点
-if ~isequal(points(end,:), control_points(4,:))
-    points(end+1,:) = control_points(4,:);
-end
+points = points';
 
-curvePoints = points;
-end
-
-% 三次贝塞尔曲线单点计算函数
-function pt = bezierPoint(control_points, t)
-    % 将t转换为列向量以确保维度正确
-    t = t(:);
-    
-    % 计算各贝塞尔基函数的值（均为列向量）
-    c0 = (1 - t).^3;
-    c1 = 3*(1 - t).^2.*t;
-    c2 = 3*(1 - t).*t.^2;
-    c3 = t.^3;
-    
-    % 确保控制点是正确的维度（4×dim）
-    % 通过列方向扩展进行矩阵乘法，最终得到n×dim矩阵
-    pt = c0 * control_points(1,:) + ...
-         c1 * control_points(2,:) + ...
-         c2 * control_points(3,:) + ...
-         c3 * control_points(4,:);
 end

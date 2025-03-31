@@ -2,7 +2,7 @@ close all
 clear
 
 figure 
-max_step = 1e-2;
+max_step = 5e-2;
 move = [-1.7; -5.26];
 scale = [1 / 14];
 
@@ -22,7 +22,7 @@ controlpoints3 =...
     12.5,     15.85;
     9.,       15.95];
 
-adjust = 0.196445;
+adjust = 0.196448011;
 a = 11. -adjust;
 b= 13 +adjust;
 controlpoints4 =...
@@ -30,7 +30,7 @@ controlpoints4 =...
     10.5,     16;
     a,        14;
     12.,      13];
-adjust = -0.423635;
+adjust = -0.423638325;
 c = 12.8 -adjust;
 d= 8.8 +adjust;
 controlpoints5 = ...
@@ -49,31 +49,52 @@ controlpoints7 =...
     13.75,    12.5;
     13.5,     14.75];
 
+controlpoints1 = moveScale(controlpoints1', move, scale)';
+controlpoints2 = moveScale(controlpoints2', move, scale)';
+controlpoints3 = moveScale(controlpoints3', move, scale)';
+controlpoints4 = moveScale(controlpoints4', move, scale)';
+controlpoints5 = moveScale(controlpoints5', move, scale)';
+controlpoints6 = moveScale(controlpoints6', move, scale)';
+controlpoints7 = moveScale(controlpoints7', move, scale)';
 
-edge1 = bezierCurve(controlpoints1, max_step)';
-edge2 = bezierCurve(controlpoints2, max_step)';
-edge3 = bezierCurve(controlpoints3, max_step)';
+t2 = [0 0.374970154882757 1];
+t3 = [0 0.462330320609543 1];
+t4 = [0 0.516522770329877 1];
+t6 = [0 0.276571788121140 1];
+% attachPoint1 = [0.58311; 0.305639];
+% attachPoint2 = [0.675944; 0.672241];
+attachPoint1 = bezierCurve(controlpoints2, 100, t2(2));
+t6(2) = inverseBezier(controlpoints6, attachPoint1, t6(2));
+d1 = (bezierCurve(controlpoints6, 100, t6(2)) - attachPoint1);
+check(5) = d1(1);
+attachPoint2 = bezierCurve(controlpoints3, 100, t3(2));
+t4(2) = inverseBezier(controlpoints4, attachPoint2, t4(2));
+d2 = (bezierCurve(controlpoints4, 100, t4(2)) - attachPoint2);
+check(6) = d2(1)
+[edge1, t1] = bezierCurve(controlpoints1, max_step);
+[edge2, t2] = bezierCurve(controlpoints2, max_step, t2);
+[edge3, t3] = bezierCurve(controlpoints3, max_step, t3);
 
-edge4 = bezierCurve(controlpoints4, max_step)';
-edge5 = bezierCurve(controlpoints5, max_step)';
-edge6 = bezierCurve(controlpoints6, max_step)';
-edge7 = bezierCurve(controlpoints7, max_step)';
+[edge4, t4] = bezierCurve(controlpoints4, max_step, t4);
+[edge5, t5] = bezierCurve(controlpoints5, max_step);
+[edge6, t6] = bezierCurve(controlpoints6, max_step, t6);
+[edge7, t7] = bezierCurve(controlpoints7, max_step);
 
 
 
-edge1 = moveScale(edge1, move, scale);
-edge2 = moveScale(edge2, move, scale);
-edge3 = moveScale(edge3, move, scale);
-edge4 = moveScale(edge4, move, scale);
-edge5 = moveScale(edge5, move, scale);
-edge6 = moveScale(edge6, move, scale);
-edge7 = moveScale(edge7, move, scale);
-[~, k1] = min(abs(edge2(2,:) - 0.305636));
-[~, k4] = min(abs(edge6(2,:) - 0.305507980538836));
-[~, k2] = min(abs(edge3(2,:) - 0.672228));
-[~, k3] = min(abs(edge4(2,:) - 0.672226));
-[edge2, edge6] = attachPoint(edge2, edge6, k1, k4);
-[edge3, edge4] = attachPoint(edge3, edge4, k2, k3);
+% edge1 = moveScale(edge1, move, scale);
+% edge2 = moveScale(edge2, move, scale);
+% edge3 = moveScale(edge3, move, scale);
+% edge4 = moveScale(edge4, move, scale);
+% edge5 = moveScale(edge5, move, scale);
+% edge6 = moveScale(edge6, move, scale);
+% edge7 = moveScale(edge7, move, scale);
+[k1] = closeId(edge2, attachPoint1);
+[k4] = closeId(edge6, attachPoint1);
+[k2] = closeId(edge3, attachPoint2);
+[k3] = closeId(edge4, attachPoint2);
+[edge2, edge6] = attachPoint(edge2, edge6, k1, k4, attachPoint1);
+[edge3, edge4] = attachPoint(edge3, edge4, k2, k3, attachPoint2);
 plot(edge2(1, k1), edge2(2, k1), '*'); hold on
 plot(edge2(1, k1 + 1), edge2(2, k1 + 1), '*'); hold on
 plot(edge2(1, k1 - 1), edge2(2, k1 - 1), '*'); hold on
@@ -140,27 +161,27 @@ plot(x1, y1, 'o'); hold on;
 % disp(['3阶导数: ', num2str(ppder_eval(t0, 3, pp))])  % 6
 % disp(['4阶导数: ', num2str(ppder_eval(t0, 4, pp))])  % 0
 
-% plot(edge1(1,:), edge1(2,:)); hold on
-% plot(edge2(1,:), edge2(2,:)); hold on
-% plot(edge3(1,:), edge3(2,:)); hold on
+% plot(edge1(1,:), edge1(2,:), 'LineWidth', 1); hold on
+% plot(edge2(1,:), edge2(2,:), 'LineWidth', 1); hold on
+% plot(edge3(1,:), edge3(2,:), 'LineWidth', 1); hold on
 % 
-% plot(edge4(1,:), edge4(2,:)); hold on
-% plot(edge5(1,:), edge5(2,:)); hold on
-% plot(edge6(1,:), edge6(2,:)); hold on
-% plot(edge7(1,:), edge7(2,:)); hold on
+% plot(edge4(1,:), edge4(2,:), 'LineWidth', 1); hold on
+% plot(edge5(1,:), edge5(2,:), 'LineWidth', 1); hold on
+% plot(edge6(1,:), edge6(2,:), 'LineWidth', 1); hold on
+% plot(edge7(1,:), edge7(2,:), 'LineWidth', 1); hold on
 
 axis equal
 
 
 filename = "../data1/Graph41.input";
 hd = fopen(filename, 'w');
-writepp(hd, xsp1, xsp2);
+writepp(hd, xsp1, ysp1);
 writepp(hd, xsp2, ysp2);
 
 % dumpJordanCurve(jordanCurve1, hd);
 % dumpJordanCurve(jordanCurve2, hd);
 fwrite(hd, [t1(k1 + 1), t1(k2 + 1), t2(k3 + 1), t2(k4 + 1)], 'double');
-fclose(hd);
+% fclose(hd);
 
 
 % hd = fopen(filename, 'r');
@@ -168,6 +189,11 @@ fclose(hd);
 % b = fread(hd, 2, "double");
 % fclose(hd);
 
+function k1 = closeId(edge2, attachPoint1)
+dist1 = edge2(:,:) - attachPoint1;
+d1 = [1, 1] * (dist1 .* dist1);
+[~, k1] = min(d1);
+end
 
 function [pts] = moveScale(pts, move, scale) 
 pts = (pts + move) * scale;
@@ -183,8 +209,10 @@ function [pts] = reverse(pts)
 pts = pts(end:-1:1, :);
 end
 
-function [pts1, pts2] = attachPoint(pts1, pts2, i1, i2) 
-mid = (pts1(:, i1) + pts2(:, i2)) / 2;
+function [pts1, pts2] = attachPoint(pts1, pts2, i1, i2, mid)
+if nargin < 5
+    mid = (pts1(:, i1) + pts2(:, i2)) / 2;
+end
 pts1(:, i1) = mid;
 pts2(:, i2) = mid;
 % p1 = pts1(:, i1);
@@ -192,6 +220,6 @@ pts2(:, i2) = mid;
 % p3 = pts2(:, i2);
 % p4 = pts2(:, i2 + 1);
 % mid = (p1 + p2 + p3 + p4) / 4;
-% pts1 = [pts1(:, 1:i1); mid; pts1(:, i1 + 1:end)];
-% pts2 = [pts2(:, 1:i2); mid; pts2(:, i2 + 1:end)];
+% pts1 = [pts1(:, 1:i1)  mid  pts1(:, i1 + 1:end)];
+% pts2 = [pts2(:, 1:i2)  mid  pts2(:, i2 + 1:end)];
 end

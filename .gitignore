@@ -11,6 +11,6 @@ tmpos.dat
 *.vtk
 00Result.txt
 aResult.txt
-Graph41.input
+# Graph41.input
 
 dirConfig.h

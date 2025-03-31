@@ -34,7 +34,8 @@ struct InterfaceGraphFactory {
                             int numPetal = 3);
   static auto markSegment(Segment<DIM> seg, Real hL);
   template <int Order>
-  static auto markCurve(const Curve<DIM, Order>& crv, Real hL);
+  static auto markCurve(const Curve<DIM, Order>& crv, Real hL, Real lo = 1,
+                        Real hi = -1);
 };
 
 #ifdef OPTNONE
@@ -142,37 +143,49 @@ template <int Order>
 #ifdef OPTNONE
 __attribute__((optnone))
 #endif  // OPTNONE
-auto InterfaceGraphFactory::markCurve(const Curve<DIM, Order>& crv, Real hL) {
-  Real knotRange = crv.getKnots().back() - crv.getKnots().front();
-  auto eValue = [](auto& crv, Real t) {
-    return crv(t + crv.getKnots().front());
-  };
+auto InterfaceGraphFactory::markCurve(const Curve<DIM, Order>& crv, Real hL, Real lo, Real hi) {
+  if (lo > hi) {
+    lo = crv.getKnots().front();
+    hi = crv.getKnots().back();
+  }
+  auto startpoint = crv(lo);
+  auto endpoint = crv(hi);
+  Real knotRange = hi - lo;
+  auto eValue = [lo](auto& crv, Real t) { return crv(t + lo); };
   vector<Point> pts;
   vector<Real> ptsT;
-  Real localHL = 0.01;
+  Real localHL = hL;
   int num = std::ceil(knotRange / localHL) * 2UL;
   Real step = knotRange / num;
-  pts.push_back(crv.startpoint());
+  pts.push_back(startpoint);
   ptsT.push_back(0);
   for (int i = 0; i < num; i++) {
-    Real localStep = step;
-    Real angle = step * i + localStep;
-    Point local = eValue(crv, angle);
-    while (norm(pts.back() - local) > localHL) {
-      localStep /= 2;
-      angle = step * i + localStep;
-      local = eValue(crv, angle);
+    auto pi1 = eValue(crv, step * (i + 1));
+    while (true) {
+      if (norm(pi1 - pts.back()) < localHL) {
+        pts.push_back(pi1);
+        ptsT.push_back(step * (i + 1));
+        break;
+      }
+      Real localStep = step / 2;
+      Real angle = step * i + localStep;
+      Point local = eValue(crv, angle);
+      while (norm(pts.back() - local) > localHL) {
+        localStep /= 2;
+        angle = step * i + localStep;
+        local = eValue(crv, angle);
+      }
+      pts.push_back(local);
+      ptsT.push_back(angle);
     }
-    pts.push_back(local);
-    ptsT.push_back(angle);
   }
-  if (norm(crv.endpoint() - pts.back()) < distTol()) {
+  if (norm(endpoint - pts.back()) < distTol()) {
     pts.pop_back();
     ptsT.pop_back();
   }
-  pts.push_back(crv.endpoint());
-  ptsT.push_back(crv.getKnots().back() - crv.getKnots().front());
-  
+  pts.push_back(endpoint);
+  ptsT.push_back(knotRange);
+
   vector<Point> ptsNew;
   vector<Real> ptsTNew;
   while (localHL > hL) {
@@ -362,7 +375,7 @@ auto InterfaceGraphFactory::createGraph41(Real hL)
   vector<vector<size_t>> YinSetId(6);
   // read tangle curve from file
   auto root = std::string(ROOT_DIR);
-  std::ifstream infile(root + "/test/data1/Graph4_1.input");
+  std::ifstream infile(root + "/test/data1/Graph41.input");
   auto readPts = [](auto& infile) {
     int num;
     infile.read((char*)&num, sizeof(num));
@@ -375,39 +388,28 @@ auto InterfaceGraphFactory::createGraph41(Real hL)
     return pts;
   };
 
-  auto pts1 = readPts(infile);
-  auto pts2 = readPts(infile);
-  int k[4];
+  auto crv1 = Curve<2, 6>::load(infile);
+  auto crv2 = Curve<2, 6>::load(infile);
+  Real k[4];
   infile.read((char*)k, sizeof(k) * 4UL);
-  if (norm(pts1[k[0]] - pts2[k[3]]) > distTol() ||
-      norm(pts1[k[1]] - pts2[k[2]]) > distTol()) {
+  if (norm(crv1(k[0]) - crv2(k[3]), 2) > distTol() ||
+      norm(crv1(k[1]) - crv2(k[2]), 2) > distTol()) {
     throw std::runtime_error("Invalid input file");
   }
-  auto rotatePts = [](const auto& pts, const auto& m) {
-    vector<Point> res(pts.begin() + m, pts.end());
-    res.insert(res.end(), pts.begin() + 1, pts.begin() + m + 1);
-    return res;
-  };
-  pts1 = rotatePts(pts1, k[1]), k[0] += pts1.size() - 1 - k[1], k[1] = 0;
-  if (norm(pts1[k[0]] - pts2[k[3]]) > distTol() ||
-      norm(pts1[k[1]] - pts2[k[2]]) > distTol()) {
-    throw std::runtime_error("Invalid input file");
+  vector<Curve<2, 6>> splitRes;
+  auto checkp0 = crv1(k[0]);
+  k[0] = k[0] + crv1.getKnots().back() - crv1.getKnots().front();
+  crv1.split({k[1]}, splitRes, distTol(), true);
+  std::swap(crv1, splitRes[0]);
+  if (Real v = norm(crv1(k[0]) - checkp0, 2); v > distTol()) {
+    throw std::runtime_error("change k[0] fail.");
   }
-  auto crv1 = fitCurve<Order>(pts1, Curve<2, Order>::periodic);
-  auto crv2 = fitCurve<Order>(pts2, Curve<2, Order>::notAKnot);
-  vector<Curve<2, Order>> splitRes;
-  crv1.split(vector<Real>{crv1.getKnots()[k[1]], crv1.getKnots()[k[0]]},
-             splitRes, distTol());
-  edgeMarks[0] = markCurve(splitRes[0], hL);
-  edgeMarks[8] = markCurve(splitRes[1], hL);
-  splitRes.clear();
-  crv2.split(vector<Real>{crv2.getKnots()[0], crv2.getKnots()[k[2]],
-                          crv2.getKnots()[k[3]]},
-             splitRes, distTol());
-  edgeMarks[12] = markCurve(splitRes[0], hL);
-  edgeMarks[11] = markCurve(splitRes[1], hL);
-  edgeMarks[13] = markCurve(splitRes[2], hL);
-  splitRes.clear();
+
+  edgeMarks[0] = markCurve(crv1, hL, crv1.getKnots().front(), k[0]);
+  edgeMarks[8] = markCurve(crv1, hL, k[0], crv1.getKnots().back());
+  edgeMarks[12] = markCurve(crv2, hL, 0, k[2]);
+  edgeMarks[11] = markCurve(crv2, hL, k[2], k[3]);
+  edgeMarks[13] = markCurve(crv2, hL, k[3], crv2.getKnots().back());
 
   // Ellipse 1
   Point ell1Center{0.4, 0.575};
@@ -474,11 +476,11 @@ auto InterfaceGraphFactory::createGraph41(Real hL)
   cyclesEdgesId[8] = (vector<EdgeIndex>{10, 15});
   cyclesEdgesId[9] = (vector<EdgeIndex>{16, 11});
   cyclesEdgesId[10] = (vector<EdgeIndex>{-1, -13, -14});
-  // YinSetId[0] = (vector<size_t>{0});
-  // YinSetId[1] = (vector<size_t>{1});
-  // YinSetId[2] = (vector<size_t>{2});
-  // YinSetId[3] = (vector<size_t>{3, 4, 5, 6});
-  // YinSetId[4] = (vector<size_t>{7, 8, 9});
+  YinSetId[0] = (vector<size_t>{0});
+  YinSetId[1] = (vector<size_t>{1});
+  YinSetId[2] = (vector<size_t>{2});
+  YinSetId[3] = (vector<size_t>{3, 4, 5, 6});
+  YinSetId[4] = (vector<size_t>{7, 8, 9});
   YinSetId[5] = (vector<size_t>{10});
 
   return approxInterfaceGraph<Order>(std::move(edgeMarks), smoothConditions,

@@ -849,6 +849,7 @@ template class Curve<2, 1>;
 template class Curve<2, 2>;
 template class Curve<2, 3>;
 template class Curve<2, 4>;
+template class Curve<2, 6>;
 
 template Curve<2, 3> der(const Curve<2, 4> &);
 template Curve<2, 2> der(const Curve<2, 3> &);

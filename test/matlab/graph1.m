@@ -1,7 +1,8 @@
 close all 
 clc
+num = 1e6;
 % 参数设置
-theta = linspace(0, 2*pi, 1000); % 角度采样
+theta = linspace(0, 2*pi, num); % 角度采样
 r_base = [0.2, 0.25];       % 基础半径
 center = [0.3 0.5];
 
@@ -39,18 +40,17 @@ y = center(2) + r_base(2)*sin(theta) + (bump1 + bump2 + sharp_term) .* sin(theta
 
 % 可视化
 figure;
-plot(x, y, 'LineWidth', 2);
+plot(x, y, 'LineWidth', 1);
 axis equal;
 title('Asymmetric Double Bump Curve');
 xlabel('X'); ylabel('Y');
 grid on;
 hold on;
-plot(center(1), center(2), 'r+'); 
 hold on;
 
 
 % 曲线二
-theta = linspace(0, 2*pi, 1000); % 角度采样
+theta = linspace(0, 2*pi, num); % 角度采样
 r_base = [0.03 0.2];       % 基础半径
 center = [0.83 0.5];
 
@@ -61,7 +61,7 @@ k1_left = 20;     % 左侧衰减系数（值越小衰减越慢）
 k1_right = 4;    % 右侧衰减系数（值越大衰减越快）
 
 % 第二个凸起参数（左侧陡峭，右侧平缓）
-h2 = 0.13;
+h2 = 0.1352294955;
 theta2 = 0 + 2.5;
 k2_left = 10;
 k2_right = 20;
@@ -86,6 +86,6 @@ sharp_term = C * abs(delta_spike) .* exp(- ...
 x = center(1) + r_base(1)*cos(theta) + (bump1 + bump2 + sharp_term) .* cos(theta);
 y = center(2) + r_base(2)*sin(theta) + (bump1 + bump2 + sharp_term) .* sin(theta);
 
-plot(x, y, 'LineWidth', 2);
+plot(x, y, 'LineWidth', 1);
 
 axis([0 1 0 1]);
