@@ -25,8 +25,12 @@ void MARSn2D<Order, VelocityField>::plot(const IG &ig, int step,
                                          const PlotConfig &plotConfig) const {
   auto yinSets = ig.approxYinSet();
   std::string fileName = plotConfig.fName + "_Step" + std::to_string(step);
-  std::ofstream of(fileName + "_c.dat", std::ios_base::binary);
+  std::string tail = (plotConfig.output == NORMAL) ? "_f.dat": "_c.dat";
+  std::ofstream of(fileName + tail, std::ios_base::binary);
   int num = yinSets.size();
+  if (plotConfig.output == NORMAL) {
+    of.write((char *)&num, sizeof(num));
+  }
   for (int i = num - 1; i >= 0; i--) {
     auto& yinSet = yinSets[i];
     if (plotConfig.output == NORMAL) {

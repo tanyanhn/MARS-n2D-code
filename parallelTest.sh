@@ -1,7 +1,7 @@
 #!/bin/bash
 
 tests=${1:-"./build/test/TestMARSn2D"}
-condition=${2:-""}
+condition=${2:-"[Graph41]"}
 
 echo "提取的测试名称："
 test_list=$("$tests" --list-tests)
