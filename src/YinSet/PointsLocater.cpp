@@ -124,23 +124,25 @@ PointsLocater::operator()(const vector<OrientedJordanCurve<DIM, Order>> &ys,
     return {};
   }
   using Crv = Curve<DIM, Order>;
+  using localReal = long double;
+  using rVec = Vec<localReal, DIM>;
 
   // <distance, point, normal, direction>
-  std::vector<std::tuple<Real, rVec, rVec, Crv>> closest_points;
+  std::vector<std::tuple<localReal, rVec, rVec, Crv>> closest_points;
   closest_points.resize(queries.size(),
-                        std::make_tuple(std::numeric_limits<Real>::max(),
+                        std::make_tuple(std::numeric_limits<localReal>::max(),
                                         rVec{0, 0}, rVec{0, 0}, Crv()));
   const int ix = 0;
   const int iy = 1;
-  VecCompare<Real, 2> vcmp(tol);
+  // VecCompare<localReal, 2> vcmp(tol);
 
   for (const auto &crv : ys) {
-    auto monotonicCurve = crv.makeMonotonic(tol);
+    auto monotonicCurve = crv.makeMonotonic(0);
     auto &polys = monotonicCurve.getPolys();
     auto &knots = monotonicCurve.getKnots();
     for (int i = 0; i < polys.size(); ++i) {
       auto &poly = polys[i];
-      auto xPoly = getComp(poly, ix);
+      Polynomial<Order, localReal> xPoly(getComp(poly, ix));
       auto p0 = poly[0];
       auto p1 = poly(knots[i + 1] - knots[i]);
       Crv localCrv(poly, knots[i + 1] - knots[i]);
@@ -148,13 +150,13 @@ PointsLocater::operator()(const vector<OrientedJordanCurve<DIM, Order>> &ys,
 
       for (int j = 0; j < queries.size(); ++j) {
         const auto &q = queries[j];
-        Real x = q[ix];
+        localReal x = q[ix];
         if (x < p0[ix] - tol || x > p1[ix] + tol) continue;
         if (norm(p0[iy] - q[iy]) > std::get<0>(closest_points[j]) &&
             norm(p1[iy] - q[iy]) > std::get<0>(closest_points[j]))
           continue;
 
-        Real brk = -1;
+        localReal brk = -1;
         if (x < p0[ix]) {
           brk = 0;
         } else if (x > p1[ix]) {
@@ -206,7 +208,7 @@ PointsLocater::operator()(const vector<OrientedJordanCurve<DIM, Order>> &ys,
   ret.resize(queries.size());
   for (int i = 0; i < queries.size(); ++i) {
     auto &cp = closest_points[i];
-    if (std::get<0>(cp) == std::numeric_limits<Real>::max()) {
+    if (std::get<0>(cp) == std::numeric_limits<localReal>::max()) {
       ret[i] = bounded ? -1 : 1;
     } else if (std::get<0>(cp) > tol) {
       ret[i] = dot(std::get<2>(cp), std::get<1>(cp) - queries[i]) > 0 ? 1 : -1;

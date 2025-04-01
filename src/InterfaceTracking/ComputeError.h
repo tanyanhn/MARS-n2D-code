@@ -287,8 +287,8 @@ cutCellError(const vector<Marsn2D::approxInterfaceGraph<Order>> &lhss,
       ret[numYinsets][0][2 * grid] += L1;
       ret[numYinsets][1][2 * grid] =
           std::max(ret[numYinsets][1][2 * grid], LInf);
-      saveErrorToVTK(localVolumes, visitFile + "_g" + std::to_string(grid) +
-                                       "_i" + std::to_string(i) + ".vtk");
+      // saveErrorToVTK(localVolumes, visitFile + "_g" + std::to_string(grid) +
+      //                                  "_i" + std::to_string(i) + ".vtk");
     }
     rhsVolumes = coarseVolumes(rhsVolumes);
   }

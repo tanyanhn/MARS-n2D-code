@@ -324,9 +324,8 @@ fzero<Polynomial<4, long double>, Polynomial<3, long double>>(
       localFx = f(localX0);
       div *= 2;
       if (whileCount++ > newtonSubCount()) {
-        // fzero<Polynomial<4, Real>, Polynomial<3, Real>>(hf, hdf, hx0,
-        // maxIter,
-        //                                                 tol);
+        fzero<Polynomial<4, long double>, Polynomial<3, long double>>(
+            hf, hdf, hx0, maxIter, tol);
         std::cout << std::format(
             "long double version, whileCount: Newton iteration may not "
             "converge, f(x) = "

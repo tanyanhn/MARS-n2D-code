@@ -190,15 +190,15 @@ Curve<Dim, Order> Curve<Dim, Order>::makeMonotonic(Real tol) const {
     // find out all the monotonic pieces by first locating the extrema
     for (int d = 0; d < Dim; d++) {
       auto rp = getComp(polyi, d);
-      // extrema<localReal>(rp, std::back_inserter(ex), tol);
-      std::vector<localReal> localEx;
-      extrema<localReal>(rp, std::back_inserter(localEx), tol);
-      localReal bound[2] = {rp(0), rp(knots[i + 1] - knots[i])};
-      if (bound[0] > bound[1]) std::swap(bound[0], bound[1]);
-      for (auto& t : localEx) {
-        auto v = rp(t);
-        if (v < bound[0] - tol || v > bound[1] + tol) ex.push_back(t);
-      }
+      extrema<localReal>(rp, std::back_inserter(ex), tol);
+      // std::vector<localReal> localEx;
+      // extrema<localReal>(rp, std::back_inserter(localEx), tol);
+      // localReal bound[2] = {rp(0), rp(knots[i + 1] - knots[i])};
+      // if (bound[0] > bound[1]) std::swap(bound[0], bound[1]);
+      // for (auto& t : localEx) {
+      //   auto v = rp(t);
+      //   if (v < bound[0] - tol || v > bound[1] + tol) ex.push_back(t);
+      // }
     }
     // filter out the extrema out of domain
     // note that polys[i] is expressed in the variable (t-knots[i])
