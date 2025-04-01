@@ -45,7 +45,7 @@ class OrientedJordanCurve : public Curve<Dim, Order> {
   void define(const std::vector<Vec<Real, Dim>>& points,
               const vector<Vertex>& indexes);
 
-  void makeSelfMonotonic(Real tol) { *this = this->makeMonotonic(tol); }
+  void makeSelfMonotonic(Real tol) { *this = this->makeMonotonic(tol).first; }
 
   // locate the point in the OrientedJordanCurve.
   enum class LocateResult {

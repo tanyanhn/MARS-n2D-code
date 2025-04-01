@@ -149,7 +149,8 @@ class Curve {
      Return a copy of this curve,
      so that each piece is monotonic in both x and y direction.
    */
-  Curve<Dim, Order> makeMonotonic(Real tol) const;
+  std::pair<Curve<Dim, Order>, vector<long double>> makeMonotonic(
+      Real tol) const;
   ///
   /**
      Report the number of proper intersections with the line x_d=c.

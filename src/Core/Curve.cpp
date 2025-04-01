@@ -183,9 +183,11 @@ template <int Dim, int Order>
 #ifdef OPTNONE
 __attribute__((optnone))
 #endif  // OPTNONE
-Curve<Dim, Order> Curve<Dim, Order>::makeMonotonic(Real tol) const {
+std::pair<Curve<Dim, Order>, std::vector<long double>>
+Curve<Dim, Order>::makeMonotonic(Real tol) const {
   using localReal = long double;
   Curve<Dim, Order> res;
+  std::vector<localReal> newKnotsDist; // for high precision
   int np = knots.size() - 1;
   for (int i = 0; i < np; i++) {
     // auto p0 = polys[i](0);
@@ -232,13 +234,15 @@ Curve<Dim, Order> Curve<Dim, Order>::makeMonotonic(Real tol) const {
       for (std::size_t j = 0; j < ex.size() - 1; j++) {
         T_Polynomial polyj(polyi.translate(ex[j]));
         res.concat(polyj, ex[j + 1] - ex[j]);
+        newKnotsDist.push_back(ex[j + 1] - ex[j]);
       }
     } else {
       // just copy if it is already mono
       res.concat(polys[i], knots[i + 1] - knots[i]);
+      newKnotsDist.push_back(knots[i + 1] - knots[i]);
     }
   }
-  return res;
+  return {res, newKnotsDist};
 }
 
 template <int Dim, int Order>

@@ -137,15 +137,15 @@ PointsLocater::operator()(const vector<OrientedJordanCurve<DIM, Order>> &ys,
   // VecCompare<localReal, 2> vcmp(tol);
 
   for (const auto &crv : ys) {
-    auto monotonicCurve = crv.makeMonotonic(distTol());
+    auto [monotonicCurve, monotonicKnotsDist] = crv.makeMonotonic(0);
     auto &polys = monotonicCurve.getPolys();
-    auto &knots = monotonicCurve.getKnots();
+    // auto &knots = monotonicCurve.getKnots();
     for (int i = 0; i < polys.size(); ++i) {
       auto &poly = polys[i];
       Polynomial<Order, localReal> xPoly(getComp(poly, ix));
       auto p0 = poly[0];
-      auto p1 = poly(knots[i + 1] - knots[i]);
-      Crv localCrv(poly, knots[i + 1] - knots[i]);
+      auto p1 = poly(monotonicKnotsDist[i]);
+      Crv localCrv(poly, monotonicKnotsDist[i]);
       if (p0[ix] > p1[ix]) std::swap(p0, p1);
 
       for (int j = 0; j < queries.size(); ++j) {
@@ -160,29 +160,29 @@ PointsLocater::operator()(const vector<OrientedJordanCurve<DIM, Order>> &ys,
         if (x < p0[ix]) {
           brk = 0;
         } else if (x > p1[ix]) {
-          brk = knots[i + 1] - knots[i];
+          brk = monotonicKnotsDist[i];
         } else {
-          brk = root(xPoly - x, (knots[i + 1] - knots[i]) / 2, tol,
+          brk = root(xPoly - x, monotonicKnotsDist[i] / 2, tol,
                      newtonMaxIter());
         }
-        if (brk < tol || brk > knots[i + 1] - knots[i] - tol) {
+        if (brk < tol || brk > monotonicKnotsDist[i] - tol) {
           if (brk < tol && brk > -tol)
             brk = 0;
-          else if (brk > knots[i + 1] - knots[i] - tol &&
-                   brk < knots[i + 1] - knots[i] + tol)
-            brk = knots[i + 1] - knots[i];
+          else if (brk > monotonicKnotsDist[i] - tol &&
+                   brk < monotonicKnotsDist[i] + tol)
+            brk = monotonicKnotsDist[i];
           else {
             if (brk < -tol)
               brk = root(xPoly - x, tol, tol, newtonMaxIter());
-            else if (brk > knots[i + 1] - knots[i] + tol)
-              brk = root(xPoly - x, knots[i + 1] - knots[i] - tol, tol,
+            else if (brk > monotonicKnotsDist[i] + tol)
+              brk = root(xPoly - x, monotonicKnotsDist[i] - tol, tol,
                          newtonMaxIter());
 
             if (brk <= tol && brk >= -tol)
               brk = 0;
-            else if (brk >= knots[i + 1] - knots[i] - tol &&
-                     brk <= knots[i + 1] - knots[i] + tol)
-              brk = knots[i + 1] - knots[i];
+            else if (brk >= monotonicKnotsDist[i] - tol &&
+                     brk <= monotonicKnotsDist[i] + tol)
+              brk = monotonicKnotsDist[i];
             else
               throw std::runtime_error("root not found");
           }

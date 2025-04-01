@@ -55,8 +55,7 @@ auto CutCellHelper<Order>::intersectGridLine(
   for (const auto &jordanCrv : orientedJordanCurves) {
     intersections.emplace_back();
     auto &intersectionsForCurve = intersections.back();
-    auto monotonicCrv = jordanCrv.makeMonotonic(distTol());
-    auto knots = monotonicCrv.getKnots();
+    auto [monotonicCrv, monotonicKnotsDist] = jordanCrv.makeMonotonic(0);
     auto polys = monotonicCrv.getPolys();
     auto numPolys = polys.size();
     using localReal = long double;
@@ -64,14 +63,14 @@ auto CutCellHelper<Order>::intersectGridLine(
       // lambda for xRow and yCol
       auto intersect = [tol](int k, localReal lo, const auto &xPoly,
                              localReal h, localReal knotStart,
-                             localReal knotsEnd, auto &intersectionsForCurve,
+                             localReal knotsDist, auto &intersectionsForCurve,
                              int newtonMaxIter)
 #ifdef OPTNONE
           __attribute__((optnone))
 #endif  // OPTNONE
       {
         localReal p0 = xPoly[0];
-        localReal p1 = xPoly(knotsEnd - knotStart);
+        localReal p1 = xPoly(knotsDist);
         bool swapped = false;
         if (p0 > p1) {
           std::swap(p0, p1);
@@ -80,13 +79,13 @@ auto CutCellHelper<Order>::intersectGridLine(
         int startRow = std::ceil((p0 - lo - tol) / h);
         int endRow = std::floor((p1 - lo + tol) / h);
         if (std::fabs(p0 - (lo + h * startRow)) <= tol) {
-          auto value = !swapped ? knotStart : knotsEnd;
+          auto value = knotStart + (!swapped ? 0 : knotsDist);
           intersectionsForCurve.insert(value);
           // auto p = xPoly(value);
           ++startRow;
         }
         if (std::fabs(p1 - (lo + h * endRow)) <= tol) {
-          auto value = !swapped ? knotsEnd : knotStart;
+          auto value = knotStart + (!swapped ? knotsDist : 0);
           intersectionsForCurve.insert(value);
           // auto p = xPoly(value);
           --endRow;
@@ -95,8 +94,8 @@ auto CutCellHelper<Order>::intersectGridLine(
         for (int r = startRow; r <= endRow; ++r) {
           localReal row = lo + r * h;
           auto intersection =
-              root(xPoly - row, (knotsEnd - knotStart) / 2, tol, newtonMaxIter);
-          if (intersection > 0 && intersection < knotsEnd - knotStart) {
+              root(xPoly - row, knotsDist / 2, tol, newtonMaxIter);
+          if (intersection > 0 && intersection < knotsDist) {
             intersectionsForCurve.insert(intersection + knotStart);
             // auto p = xPoly(intersection);
             // auto k = (p - row);
@@ -106,8 +105,9 @@ auto CutCellHelper<Order>::intersectGridLine(
 
       for (int k = 0; k < DIM; ++k) {
         Polynomial<Order, localReal> xPoly(getComp(polys[i], k));
-        intersect(k, lo[k], xPoly, h[k], knots[i], knots[i + 1],
-                  intersectionsForCurve, newtonMaxIter());
+        intersect(k, lo[k], xPoly, h[k], monotonicCrv.getKnots()[i],
+                  monotonicKnotsDist[i], intersectionsForCurve,
+                  newtonMaxIter());
       }
     }
   }
