@@ -221,16 +221,16 @@ struct _PolynomialRoots<CoefType, 3> {
   template <class Inserter>
   static Inserter roots(const Polynomial<3, CoefType> &poly, Inserter rts,
                         Real tol) {
-    const Real &a = poly[2];
-    const Real &b = poly[1];
-    const Real &c = poly[0];
-    Real delta = b * b - 4 * a * c;
+    const CoefType &a = poly[2];
+    const CoefType &b = poly[1];
+    const CoefType &c = poly[0];
+    CoefType delta = b * b - 4 * a * c;
     if (delta < -tol) return rts;
     if (delta < tol) {
       *rts++ = -b / (2 * a);
       return rts;
     }
-    Real dsqrt = sqrt(delta);
+    CoefType dsqrt = sqrt(delta);
     *rts++ = (-b - dsqrt) / (2 * a);
     *rts++ = (-b + dsqrt) / (2 * a);
     return rts;
@@ -244,7 +244,7 @@ inline Inserter roots(const Polynomial<Order, CoefType> &poly, Inserter rts,
 };
 
 template <class CoefType, int Order>
-inline Real root(const Polynomial<Order, CoefType> &poly, Real x0, Real tol,
+inline CoefType root(const Polynomial<Order, CoefType> &poly, Real x0, Real tol,
                  int maxIter) {
   auto q = poly.der();
   return fzero(poly, q, x0, maxIter, tol);
@@ -324,13 +324,13 @@ fzero<Polynomial<4, long double>, Polynomial<3, long double>>(
       localFx = f(localX0);
       div *= 2;
       if (whileCount++ > newtonSubCount()) {
-        fzero<Polynomial<4, long double>, Polynomial<3, long double>>(
-            hf, hdf, hx0, maxIter, tol);
         std::cout << std::format(
             "long double version, whileCount: Newton iteration may not "
             "converge, f(x) = "
             "{}, dx = {} \n",
             fx, dx / div);
+        fzero<Polynomial<4, long double>, Polynomial<3, long double>>(
+            hf, hdf, hx0, maxIter, tol);
         break;
       }
     }

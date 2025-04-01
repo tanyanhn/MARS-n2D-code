@@ -180,11 +180,16 @@ Curve<Dim, Order>::split(const vector<Real> &brks,
 }
 
 template <int Dim, int Order>
+#ifdef OPTNONE
+__attribute__((optnone))
+#endif  // OPTNONE
 Curve<Dim, Order> Curve<Dim, Order>::makeMonotonic(Real tol) const {
-  using localReal = double;
+  using localReal = long double;
   Curve<Dim, Order> res;
   int np = knots.size() - 1;
   for (int i = 0; i < np; i++) {
+    // auto p0 = polys[i](0);
+    // auto p1 = polys[i](knots[i + 1] - knots[i]);
     Polynomial<Order, Vec<localReal, Dim>> polyi(polys[i]);
     std::vector<localReal> ex;
     // find out all the monotonic pieces by first locating the extrema

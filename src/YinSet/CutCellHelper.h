@@ -55,7 +55,7 @@ auto CutCellHelper<Order>::intersectGridLine(
   for (const auto &jordanCrv : orientedJordanCurves) {
     intersections.emplace_back();
     auto &intersectionsForCurve = intersections.back();
-    auto monotonicCrv = jordanCrv.makeMonotonic(tol);
+    auto monotonicCrv = jordanCrv.makeMonotonic(distTol());
     auto knots = monotonicCrv.getKnots();
     auto polys = monotonicCrv.getPolys();
     auto numPolys = polys.size();

@@ -137,7 +137,7 @@ PointsLocater::operator()(const vector<OrientedJordanCurve<DIM, Order>> &ys,
   // VecCompare<localReal, 2> vcmp(tol);
 
   for (const auto &crv : ys) {
-    auto monotonicCurve = crv.makeMonotonic(0);
+    auto monotonicCurve = crv.makeMonotonic(distTol());
     auto &polys = monotonicCurve.getPolys();
     auto &knots = monotonicCurve.getKnots();
     for (int i = 0; i < polys.size(); ++i) {
