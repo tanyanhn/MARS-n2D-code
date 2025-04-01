@@ -40,14 +40,14 @@ BEGIN {
 }
 /^      \[/ {
     name = $1
-    matched = 0
+    matched = 1
     for (i in conds) {
-        if (conds[i] != "" && index(name, conds[i]) > 0) {
-            matched = 1
+        if (conds[i] != "" && index(name, conds[i]) == 0) {
+            matched = 0
             break
         }
     }
-    if (length(conds) == 0 || matched) {
+    if (matched) {
         print name
     }
 }' | parallel -j "$physical_cores" "$tests {}" 1>&1
