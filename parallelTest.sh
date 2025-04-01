@@ -6,7 +6,7 @@ conditions=("$@")
 
 # 默认多条件配置
 if [ ${#conditions[@]} -eq 0 ]; then
-    conditions=("[Order4]" )  # AND逻辑需同时满足的默认条件
+    conditions=("[Order4]" "[Graph41]")  # AND逻辑需同时满足的默认条件
 fi
 
 cond_str="${conditions[*]}"
