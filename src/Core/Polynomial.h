@@ -200,7 +200,8 @@ inline auto getComp(const Polynomial<Order, CoefType> &poly, int comp) {
 template <class CoefType, int Order>
 struct _PolynomialRoots {
   template <class Inserter>
-  static Inserter roots(const Polynomial<Order, CoefType> &, Inserter rts, Real) {
+  static Inserter roots(const Polynomial<Order, CoefType> &, Inserter rts,
+                        Real) {
     return rts;
   }
 };
@@ -208,7 +209,8 @@ struct _PolynomialRoots {
 template <class CoefType>
 struct _PolynomialRoots<CoefType, 2> {
   template <class Inserter>
-  static Inserter roots(const Polynomial<2, CoefType> &poly, Inserter rts, Real tol) {
+  static Inserter roots(const Polynomial<2, CoefType> &poly, Inserter rts,
+                        Real tol) {
     *rts++ = poly[0] / poly[1];
     return rts;
   }
@@ -217,7 +219,8 @@ struct _PolynomialRoots<CoefType, 2> {
 template <class CoefType>
 struct _PolynomialRoots<CoefType, 3> {
   template <class Inserter>
-  static Inserter roots(const Polynomial<3, CoefType> &poly, Inserter rts, Real tol) {
+  static Inserter roots(const Polynomial<3, CoefType> &poly, Inserter rts,
+                        Real tol) {
     const Real &a = poly[2];
     const Real &b = poly[1];
     const Real &c = poly[0];
@@ -300,10 +303,9 @@ template <>
 __attribute__((optnone))
 #endif  // OPTNONE
 inline Real
-fzero<Polynomial<4, Real>, Polynomial<3, Real>>(const Polynomial<4, Real> &hf,
-                                                const Polynomial<3, Real> &hdf,
-                                                Real hx0, int maxIter,
-                                                Real tol) {
+fzero<Polynomial<4, long double>, Polynomial<3, long double>>(
+    const Polynomial<4, long double> &hf, const Polynomial<3, long double> &hdf,
+    Real hx0, int maxIter, Real tol) {
   using localReal = long double;
   Polynomial<4, localReal> f(hf);
   auto df = f.der();
@@ -321,7 +323,7 @@ fzero<Polynomial<4, Real>, Polynomial<3, Real>>(const Polynomial<4, Real> &hf,
       localX0 = x0 - dx / div;
       localFx = f(localX0);
       div *= 2;
-      if (whileCount++ > 100) {
+      if (whileCount++ > newtonSubCount()) {
         // fzero<Polynomial<4, Real>, Polynomial<3, Real>>(hf, hdf, hx0,
         // maxIter,
         //                                                 tol);
@@ -345,7 +347,6 @@ fzero<Polynomial<4, Real>, Polynomial<3, Real>>(const Polynomial<4, Real> &hf,
         fx, dx / div);
   return x0;
 }
-
 
 // template <> struct _PolynomialRoots<Real, 2>;
 // template <> struct _PolynomialRoots<long double, 2>;
