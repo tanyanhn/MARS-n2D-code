@@ -11,9 +11,9 @@
           "request": "launch",
           "program": "${workspaceFolder}/build/test/${fileBasenameNoExtension}",
           "args": [
-            "[Disk5][Deformation][T4][Order4] ",
-            // "[Disk4][Vortex][T8][Order6] ",
-            // "[Graph41][Vortex][T16][Order4]",
+            // "[Disk5][Deformation][T4][Order4] ",
+            // "[Disk4][Vortex][T12][Order4] ",
+            "[Graph41][Vortex][T8][Order4]",
             // "--rng-seed 634119452"
           ],
           "cwd": "${workspaceFolder}",
