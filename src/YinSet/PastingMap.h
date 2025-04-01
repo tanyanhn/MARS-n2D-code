@@ -154,6 +154,7 @@ void PastingMap<Order, Num, Selector>::addCellEdge(T_Crv&& newEdgeIn, Num start,
       if ((leftS && leftE) || (!leftS && !leftE)) continue;
       Real startTDist = std::fabs(start - rhsEnd);
       Real endTDist = std::fabs(end - rhsStart);
+      if (startTDist < tol || endTDist < tol) continue;
       if (startTDist < endTDist && startTDist < tContact) {
         tContact = startTDist;
         contactId = rhsId;
