@@ -217,14 +217,14 @@ auto CutCellHelper<Order>::pastCells(
           throw std::runtime_error("endpoint can't attach to cell.");
         }
       }
-      pasting.addCellEdge(crv, *(++brks.rbegin()), brks.back(), true);
+      pasting.addCellEdge(std::move(crv), *(++brks.rbegin()), brks.back(), true);
     }
     std::sort(brks.begin(), brks.end());
     std::vector<Crv> rectCrvs;
     rect.split(brks, rectCrvs, tol, true);
-    for (auto &crv : rectCrvs) {
+    for (auto &&crv : rectCrvs) {
       if (!crv.empty())
-        pasting.addCellEdge(crv, crv.getKnots()[0], crv.getKnots().back(),
+        pasting.addCellEdge(std::move(crv), crv.getKnots()[0], crv.getKnots().back(),
                             false);
     }
 
