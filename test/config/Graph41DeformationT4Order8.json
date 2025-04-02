@@ -19,13 +19,13 @@
       "lo": [0.0, 0.0],
       "hi": [1.0, 1.0],
       "aimOrder": 8,
-      "hLCoefficient": 7.5,
+      "hLCoefficient": 10,
       "rTiny": 0.05,
       "nGrid": 3
   },
   "curvature_adaption": {
       "curvUsed": true,
-      "rCMin": 0.1,
+      "rCMin": 0.01,
       "rhoMin": 1.0,
       "rhoMax": 10000.0
   },

@@ -25,7 +25,7 @@
   },
   "curvature_adaption": {
       "curvUsed": true,
-      "rCMin": 0.2,
+      "rCMin": 0.1,
       "rhoMin": 1.0,
       "rhoMax": 10000.0
   },

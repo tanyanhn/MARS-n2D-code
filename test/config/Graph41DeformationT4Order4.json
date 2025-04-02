@@ -25,9 +25,9 @@
   },
   "curvature_adaption": {
       "curvUsed": true,
-      "rCMin": 0.05,
+      "rCMin": 0.01,
       "rhoMin": 1.0,
-      "rhoMax": 10000.0
+      "rhoMax": 1e5
   },
   "plot": {
       "plotOutput": 2,
