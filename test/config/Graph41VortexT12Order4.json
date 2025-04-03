@@ -20,7 +20,7 @@
       "hi": [1.0, 1.0],
       "aimOrder": 4,
       "hLCoefficient": 0.2,
-      "rTiny": 0.05,
+      "rTiny": 0.1,
       "nGrid": 3
   },
   "curvature_adaption": {
@@ -30,8 +30,8 @@
       "rhoMax": 10000.0
   },
   "plot": {
-      "plotOutput": 2,
-      "plotInner": false,
+      "plotOutput": 0,
+      "plotInner": true,
       "plotStride": 4,
       "printDetail": false
   },

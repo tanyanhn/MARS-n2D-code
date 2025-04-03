@@ -2,7 +2,7 @@ function plotYinSet(sf, lineColor, fillColor, lineWidth, offset)
     if numel(sf) == 0
         return;
     end
-    minesVolume = -1e-16;
+    minesVolume = -1e-10;
     
     if nargin < 5
         offset = [0 0];

@@ -37,14 +37,14 @@ void trackInterfaceTest(const string& testName,
     }
     popLogStage();
     pushLogStage("CheckResult");
-    std::ofstream of(dir + "00test.dat");
-    for (auto& domain : vecDomain) {
-      auto yinSets = domain.approxYinSet();
-      int num = yinSets.size();
-      of.write((char*)&num, sizeof(int));
-      for (auto& yin : yinSets) yin.dump(of);
-      of.close();
-    }
+    // std::ofstream of(dir + "00test.dat");
+    // for (auto& domain : vecDomain) {
+    //   auto yinSets = domain.approxYinSet();
+    //   int num = yinSets.size();
+    //   of.write((char*)&num, sizeof(int));
+    //   for (auto& yin : yinSets) yin.dump(of);
+    //   of.close();
+    // }
     auto errors =
         cutCellError(vecDomain, exactDomain, vecBox, plotConfig.range, te != T);
     std::string resultFileName = dir + "00Result.txt";
@@ -96,7 +96,7 @@ TEST_CASE("Disk 4 vortex T = 16, Order = 8", "[Disk4][Vortex][T16][Order8]") {
 }
 
 TEST_CASE("Disk 5 deformation T = 2, Order = 4",
-          "[Disk5][Deformation][T2][Order4][Compare]") {
+          "[Disk5][Deformation][T2][Order4][Compare][origin]") {
   trackInterfaceTest("Disk5DeformationT2Order4");
 }
 TEST_CASE("Disk 5 deformation T = 2, Order = 4, Compare hL",
@@ -175,14 +175,14 @@ TEST_CASE("Graph 4.1, vortex T = 16, Order = 4",
           "[Graph41][Vortex][T16][Order4]") {
   trackInterfaceTest("Graph41VortexT16Order4");
 }
-// TEST_CASE("Graph 4.1, vortex T = 16, Order = 6",
-//           "[Graph41][Vortex][T16][Order6]") {
-//   trackInterfaceTest("Graph41VortexT16Order6");
-// }
-// TEST_CASE("Graph 4.1, vortex T = 16, Order = 8",
-//           "[Graph41][Vortex][T16][Order8]") {
-//   trackInterfaceTest("Graph41VortexT16Order8");
-// }
+TEST_CASE("Graph 4.1, vortex T = 16, Order = 6",
+          "[Graph41][Vortex][T16][Order6]") {
+  trackInterfaceTest("Graph41VortexT16Order6");
+}
+TEST_CASE("Graph 4.1, vortex T = 16, Order = 8",
+          "[Graph41][Vortex][T16][Order8]") {
+  trackInterfaceTest("Graph41VortexT16Order8");
+}
 
 TEST_CASE("Graph 4.1, Deformation T = 2, Order = 4",
           "[Graph41][Deformation][T2][Order4]") {
@@ -192,11 +192,11 @@ TEST_CASE("Graph 4.1, Deformation T = 4, Order = 4",
           "[Graph41][Deformation][T4][Order4]") {
   trackInterfaceTest("Graph41DeformationT4Order4");
 }
-// TEST_CASE("Graph 4.1, Deformation T = 4, Order = 6",
-//           "[Graph41][Deformation][T4][Order6]") {
-//   trackInterfaceTest("Graph41DeformationT4Order6");
-// }
-// TEST_CASE("Graph 4.1, Deformation T = 4, Order = 8",
-//           "[Graph41][Deformation][T4][Order8]") {
-//   trackInterfaceTest("Graph41DeformationT4Order8");
-// }
+TEST_CASE("Graph 4.1, Deformation T = 4, Order = 6",
+          "[Graph41][Deformation][T4][Order6]") {
+  trackInterfaceTest("Graph41DeformationT4Order6");
+}
+TEST_CASE("Graph 4.1, Deformation T = 4, Order = 8",
+          "[Graph41][Deformation][T4][Order8]") {
+  trackInterfaceTest("Graph41DeformationT4Order8");
+}

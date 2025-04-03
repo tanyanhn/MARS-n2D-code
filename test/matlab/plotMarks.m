@@ -1,7 +1,7 @@
 close all
 
-% filedir = "../../results/TrackInterface/Disk5Deformation4/";
-filedir = "../../results/TrackInterface/Graph41VortexT4Order4/";
+filedir = "../../results/TrackInterface/Disk5DeformationT4Order4/";
+% filedir = "../../results/TrackInterface/Graph41VortexT4Order4/";
 filename1 = "00marksHistory.dat";
 filename2 = "00LengthHistory.dat";
 
@@ -19,7 +19,9 @@ B = fread(hd2, [rows2, cols2], "double");
 A = A ./ A(:, 1);
 B = B ./ B(:, 1);
 
+% fillColor = 'kmgrcb';
 fillColor = getColor();
+fillColor{rows1} = 'k';
 t = linspace(0, 1, cols1);
 figure
 for i = 1:rows1
