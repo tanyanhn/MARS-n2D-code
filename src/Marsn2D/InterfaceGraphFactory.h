@@ -520,7 +520,7 @@ auto diskTEST(const std::string& jsonFile) {
     timeIntegrator =
         make_shared<ERK<DIM, RK::PrinceDormand8, VectorFunction>>();
   }
-  const Real T = te;
+  const Real T = params.field.T;
   const auto velocityPtr = params.field.velocity;
 
   // curvature-based adaption
@@ -593,7 +593,7 @@ auto diskTEST(const std::string& jsonFile) {
 
     return make_tuple(vecDomain, exactDomain, radius, exactArea, exactLength,
                       vecBox, vecN, aimOrder, vecHL, rTiny, nGrid, curvConfig,
-                      plotConfig, printDetail, t0, vecDt, te, timeIntegrator,
+                      plotConfig, printDetail, t0, vecDt, te, T, timeIntegrator,
                       velocityPtr);
   }
   // if (params.domain.name == "Graph41") {
@@ -601,7 +601,7 @@ auto diskTEST(const std::string& jsonFile) {
 
   return make_tuple(vecDomain, exactDomain, radius, exactArea, exactLength,
                     vecBox, vecN, aimOrder, vecHL, rTiny, nGrid, curvConfig,
-                    plotConfig, printDetail, t0, vecDt, te, timeIntegrator,
+                    plotConfig, printDetail, t0, vecDt, te, T, timeIntegrator,
                     velocityPtr);
   // }
 }

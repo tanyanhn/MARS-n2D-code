@@ -32,6 +32,7 @@ struct SimulationParams {
   struct {
     std::shared_ptr<VectorFunction<2>> velocity;
     std::string name;
+    Real T;
     ParamWrapper pars;
   } field;
 
@@ -91,15 +92,17 @@ inline void from_json(const nlohmann::json& j, SimulationParams& params) {
 
   const auto& field = j.at("field");
   params.field.name = field.at("velocityName");
-  auto constructPars = [](Real te, const nlohmann::json& j) {
-    if (j.empty()) return ParamWrapper(te);
+  params.field.T = params.time.te;
+  if (field.contains("T")) params.field.T = field.at("T");
+  auto constructPars = [](Real T, const nlohmann::json& j) {
+    if (j.empty()) return ParamWrapper(T);
     if (j.is_array() && j[0].is_number_integer())
-      return ParamWrapper(te, j[0].get<int>());  // Deformation
+      return ParamWrapper(T, j[0].get<int>());  // Deformation
     if (j.is_array() && j[0].is_number_float())
-      return ParamWrapper(te, j[0].get<Real>());  // Vortex
-    return ParamWrapper(te);                      // unknow default;
+      return ParamWrapper(T, j[0].get<Real>());  // Vortex
+    return ParamWrapper(T);                      // unknow default;
   };
-  params.field.pars = constructPars(params.time.te, field.at("pars"));
+  params.field.pars = constructPars(params.field.T, field.at("pars"));
   params.field.velocity.reset(Vector2DFactory::getInstance().create(
       params.field.name, params.field.pars));
 

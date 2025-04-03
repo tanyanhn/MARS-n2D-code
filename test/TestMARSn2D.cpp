@@ -20,7 +20,7 @@ void trackInterfaceTest(const string& testName,
     pushLogStage("Initialize");
     auto [vecDomain, exactDomain, radius, exactArea, exactLength, vecBox, vecN,
           aimOrder, vecHL, rTiny, nGrid, curvConfig, plotConfig, printDetail,
-          t0, vecDt, te, timeIntegrator, velocityPtr] =
+          t0, vecDt, te, T, timeIntegrator, velocityPtr] =
         diskTEST<Order>(rootDir + "/test/config/" + testName + ".json");
     popLogStage();
     pushLogStage("TrackInterface");
@@ -46,7 +46,7 @@ void trackInterfaceTest(const string& testName,
       of.close();
     }
     auto errors =
-        cutCellError(vecDomain, exactDomain, vecBox, plotConfig.range);
+        cutCellError(vecDomain, exactDomain, vecBox, plotConfig.range, te != T);
     std::string resultFileName = dir + "00Result.txt";
     printCellError(errors, resultFileName);
   }
