@@ -27,7 +27,7 @@
       "curvUsed": true,
       "rCMin": 0.1,
       "rhoMin": 1.0,
-      "rhoMax": 10000.0
+      "rhoMax": 1e5
   },
   "plot": {
       "plotOutput": 2,
