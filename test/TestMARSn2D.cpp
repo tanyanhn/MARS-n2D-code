@@ -96,8 +96,20 @@ TEST_CASE("Disk 4 vortex T = 16, Order = 8", "[Disk4][Vortex][T16][Order8]") {
 }
 
 TEST_CASE("Disk 5 deformation T = 2, Order = 4",
-          "[Disk5][Deformation][T2][Order4]") {
+          "[Disk5][Deformation][T2][Order4][Compare]") {
   trackInterfaceTest("Disk5DeformationT2Order4");
+}
+TEST_CASE("Disk 5 deformation T = 2, Order = 4, Compare hL",
+          "[Disk5][Deformation][T2][Order4][Compare][hL]") {
+  trackInterfaceTest("Disk5DeformationT2Order4HL");
+}
+TEST_CASE("Disk 5 deformation T = 2, Order = 4, Compare k = h",
+          "[Disk5][Deformation][T2][Order4][Compare][k=h]") {
+  trackInterfaceTest("Disk5DeformationT2Order4K=h");
+}
+TEST_CASE("Disk 5 deformation T = 2, Order = 4, Compare Richardson",
+          "[Disk5][Deformation][T2][Order4][Compare][Richardson]") {
+  trackInterfaceTest("Disk5DeformationT2Order4Richard");
 }
 TEST_CASE("Disk 5 deformation T = 2, Order = 6",
           "[Disk5][Deformation][T2][Order6]") {

@@ -1,10 +1,11 @@
 {
   "tolerance": {
-    "distTol": 1.0e-14,
+    "distTol": 1.0e-11,
     "newtonTol": 2.0e-18,
     "newtonMaxIter": 200
   },
   "time": {
+      "T" : 4.0,
       "te": 4.0,
       "t0": 0.0,
       "Cr": 0.125,
@@ -25,9 +26,9 @@
   },
   "curvature_adaption": {
       "curvUsed": true,
-      "rCMin": 0.1,
-      "rhoMin": 1.0,
-      "rhoMax": 10000.0
+      "rCMin": 0.05,
+      "rhoMin": 1e0,
+      "rhoMax": 1e5
   },
   "plot": {
       "plotOutput": 2,

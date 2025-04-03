@@ -1,32 +1,33 @@
 {
   "tolerance": {
-    "distTol": 3.0e-15,
+    "distTol": 1.0e-14,
     "newtonTol": 2.0e-20,
     "newtonMaxIter": 200
   },
   "time": {
-      "te": 16.0,
+      "te": 1.0,
       "t0": 0.0,
       "Cr": 0.125,
       "uM": 1.0
   },
   "field": {
-      "velocityName" : "Vortex",
-      "pars" : [-1.0]
+      "T":  2.0,
+      "velocityName" : "Deformation",
+      "pars" : [4]
   },
   "grid": {
-      "N0": 32,
+      "N0": 16,
       "lo": [0.0, 0.0],
       "hi": [1.0, 1.0],
-      "aimOrder": 8,
-      "hLCoefficient": 10,
-      "rTiny": 0.1,
-      "nGrid": 3
+      "aimOrder": 4,
+      "hLCoefficient": 0.2,
+      "rTiny": 0.05,
+      "nGrid": 4
   },
   "curvature_adaption": {
       "curvUsed": true,
-      "rCMin": 0.005,
-      "rhoMin": 5.0,
+      "rCMin": 0.1,
+      "rhoMin": 1.0,
       "rhoMax": 10000.0
   },
   "plot": {
@@ -37,8 +38,8 @@
   },
   "domain_disk": {             
       "name" : "Disk",
-      "center": [0.5, 0.75],
+      "center": [0.5, 0.5],
       "radius": [0.15, 0.15],
-      "parts": [0.0, 0.25, 0.5, 0.75]
+      "parts": [0.05, 0.25, 0.45, 0.65, 0.85]
   }
 }
