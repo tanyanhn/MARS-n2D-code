@@ -150,16 +150,6 @@ TEST_CASE("Disk 0 vortex T = 12, Order = 4", "[Disk0][Vortex][T12][Order4]") {
 
 TEST_CASE("Graph 4.1, vortex T = 4, Order = 4",
           "[Graph41][Vortex][T4][Order4]") {
-  // constexpr int Order = 4;
-  // auto dir = rootDir + "/results/TrackInterface/Graph41VortexT4Order4/";
-  // mkdir(dir.c_str(), 0755);
-  // auto graph = InterfaceGraphFactory::createGraph41<Order>(0.001);
-  // auto yinsets = graph.approxYinSet();
-  // std::ofstream of(rootDir + "/results/TrackInterface/Graph41VortexT4Order4/"
-  //                  "test.dat");
-  //                  int num = yinsets.size();
-  // of.write((char*)&num, sizeof(int));
-  // for (int i = 0; i < yinsets.size(); ++i) yinsets[num - i - 1].dump(of);
   trackInterfaceTest("Graph41VortexT4Order4");
 }
 TEST_CASE("Graph 4.1, vortex T = 4, Order = 6",
