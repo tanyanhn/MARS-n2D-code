@@ -1,13 +1,12 @@
-# Boolean Algebra for Yin Sets
+# MARS for multi YinSet in 2D
 
-Prerequisite : cmake, libcppunit-dev, liblapacke-dev. 
+Prerequisite : cmake, pkgconfig, vcpkg. 
 
 ## Unit Testing
 
 ```bash
-mkdir cmake-build-debug
-cd cmake-build-debug
-cmake -DCMAKE_BUILD_TYPE=Debug ../
-make -j4
-ctest --verbose
+source init.sh
+source releaseconfigure.sh
+source compile.sh
+source parallelTest.sh
 ```
