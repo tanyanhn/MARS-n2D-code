@@ -1,6 +1,6 @@
 # MARS for multi YinSet in 2D
 
-Prerequisite : cmake, pkgconfig, vcpkg. 
+Prerequisite : cmake, ninja-build, pkgconfig, vcpkg. 
 
 ## Unit Testing
 
