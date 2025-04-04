@@ -1,6 +1,6 @@
 {
   "tolerance": {
-    "distTol": 1.0e-15,
+    "distTol": 1.0e-14,
     "newtonTol": 2.0e-20,
     "newtonMaxIter": 200
   },
@@ -30,9 +30,9 @@
       "rhoMax": 1e5
   },
   "plot": {
-      "plotOutput": 0,
+      "plotOutput": 2,
       "plotInner": true,
-      "plotStride": 4,
+      "plotStride": 8,
       "printDetail": false
   },
   "domain_disk": {             

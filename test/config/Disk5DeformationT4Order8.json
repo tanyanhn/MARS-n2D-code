@@ -1,17 +1,17 @@
 {
   "tolerance": {
     "distTol": 1.0e-11,
-    "newtonTol": 2.0e-18,
+    "newtonTol": 2.0e-16,
     "newtonMaxIter": 200
   },
   "time": {
-      "T" : 4.0,
       "te": 4.0,
       "t0": 0.0,
       "Cr": 0.125,
       "uM": 1.0
   },
   "field": {
+      "T": 4.0,
       "velocityName" : "Deformation",
       "pars" : [4]
   },
