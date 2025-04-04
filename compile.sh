@@ -1,2 +1,2 @@
 #!/bin/bash
-cmake --build build/ -- -j32
+cmake --build build/ -- 
