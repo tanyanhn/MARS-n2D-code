@@ -357,7 +357,7 @@ Real area(const Curve<2, Order> &gon, Real tol) {
   if (gon.empty()) return a;
   if (!gon.isClosed(tol)) {
     gon.isClosed(tol);
-    throw std::runtime_error("unclosed Curve calculate area.");
+    throw std::runtime_error("unclosed Curve calculate area. may enlarge Tol value.");
   }
   const auto &knots = gon.getKnots();
   auto pts = gon.getKnotPoints();

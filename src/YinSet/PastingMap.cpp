@@ -105,10 +105,10 @@ void PastingMap<Order, Num, Selector>::formCellClosedLoops(vector<OrientedJordan
       if (iter == cellGraph.end()) iter = cellGraph.find(oldtail - period);
       if (iter == cellGraph.end()) iter = cellGraph.find(oldtail + period);
       if (iter == cellGraph.end()) 
-        throw std::runtime_error("oldtail candidates");
+        throw std::runtime_error("oldtail candidates, may enlarge Tol value.");
       cands = iter;
       if (cands->second.empty()) 
-        throw std::runtime_error("cands candidates");
+        throw std::runtime_error("cands candidates, may enlarge Tol value.");
       outEdge = std::min_element(cands->second.cbegin(), cands->second.cend(),
                                  Selector(tol, jordan, allCrvs));
       tmp = *outEdge;
