@@ -3,12 +3,10 @@ SHELL := /bin/bash   # 确保使用 Bash
 .PHONY: clean run
 .SUFFIXES: .o .cpp .ex .hpp
 
-
-$(TARGET): $(SRCS)
-	$(CC) -o $@ $^ $(CPPFLAGS)
+TARGET = build/test/TestMARSn2D
 
 run: 
-	. init.sh && . releaseconfigure.sh gcc && . compile.sh && . parallelTest.sh
+	. init.sh && . releaseconfigure.sh gcc && . compile.sh && ./$(TARGET)
 
 clean:
 	source clear.sh

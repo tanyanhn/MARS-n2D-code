@@ -30,9 +30,9 @@
       "rhoMax": 1e5
   },
   "plot": {
-      "plotOutput": 2,
+      "plotOutput": 0,
       "plotInner": true,
-      "plotStride": 8,
+      "plotStride": 4,
       "printDetail": false
   },
   "domain_disk": {             

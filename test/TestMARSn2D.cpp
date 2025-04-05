@@ -26,8 +26,8 @@ void trackInterfaceTest(const string& testName,
     pushLogStage("TrackInterface");
     for (uint i = 0; i < nGrid; ++i) {
       auto localPlotConfig = plotConfig;
-      localPlotConfig.fName =
-          to_string(Order) + "Circle" + "_grid" + to_string(vecN[i]);
+      localPlotConfig.fName = std::string("1Order") + to_string(Order) +
+                              "_grid" + to_string(vecN[i]);
       localPlotConfig.fName = dir + localPlotConfig.fName;
       localPlotConfig.box = vecBox[i];
       MARSn2D<Order, VectorFunction> CM(timeIntegrator, vecHL[i], rTiny,

@@ -24,14 +24,14 @@ using EdgePtr = std::shared_ptr<Edge<Order>>;
 
 using EdgeMarkPtr = std::shared_ptr<EdgeMark>;
 
-template <int Order>
-using Trial = Curve<DIM, Order>;
+// template <int Order>
+// using Trial = Curve<DIM, Order>;
 
-template <int Order>
-using Circuit = Curve<DIM, Order>;
+// template <int Order>
+// using Circuit = Curve<DIM, Order>;
 
-template <int Order>
-using Cycle = Curve<DIM, Order>;
+// template <int Order>
+// using Cycle = Curve<DIM, Order>;
 
 // template <int Order>
 // using SmoothnessIndicator = std::pair<EdgePtr<Order>, EdgePtr<Order>>;

@@ -3,7 +3,9 @@
 .history/
 .cache/
 build/
+results/
 vcpkg_installed/
+test/matlab/png/
 
 *.dat
 *.asv

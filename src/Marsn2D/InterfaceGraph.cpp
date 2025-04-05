@@ -148,8 +148,8 @@ void approxInterfaceGraph<Order>::updateCurve() {
 
 template <int Order>
 auto approxInterfaceGraph<Order>::approxJordanCurves() const
-    -> vector<OrientedJordanCurve> {
-  vector<OrientedJordanCurve> ret;
+    -> vector<OrientedJordanCurve2D> {
+  vector<OrientedJordanCurve2D> ret;
 
   for (const auto& cycle : cyclesEdgesId_) {
     Edge edge;
@@ -176,7 +176,7 @@ auto approxInterfaceGraph<Order>::approxYinSet() const
   auto jordanCurves = approxJordanCurves();
 
   for (const auto& vecId : yinSetId_) {
-    std::vector<OrientedJordanCurve> boundary;
+    std::vector<OrientedJordanCurve2D> boundary;
     boundary.reserve(vecId.size());
     for (auto id : vecId) {
       boundary.emplace_back(std::move(jordanCurves[id]));

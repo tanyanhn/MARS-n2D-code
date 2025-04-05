@@ -45,10 +45,10 @@ class approxInterfaceGraph {
  public:
   template <typename T>
   using vector = InterfaceGraph::vector<T>;
-  using OrientedJordanCurve = OrientedJordanCurve<DIM, Order>;
-  using Trial = Trial<Order>;
-  using Circuit = Circuit<Order>;
-  using Edge = Edge<Order>;
+  using OrientedJordanCurve2D = OrientedJordanCurve<DIM, Order>;
+  using Trial = Curve<DIM, Order>;
+  using Circuit = Curve<DIM, Order>;
+  using Edge = Curve<DIM, Order>;
   using EdgeIndex = InterfaceGraph::EdgeIndex;
   using SmoothnessIndicator = InterfaceGraph::SmoothnessIndicator;
 
@@ -58,7 +58,7 @@ class approxInterfaceGraph {
                        vector<vector<size_t>>&& YinSetId = {},
                        Real tol = distTol());
 
-  auto approxJordanCurves() const -> vector<OrientedJordanCurve>;
+  auto approxJordanCurves() const -> vector<OrientedJordanCurve2D>;
 
   auto approxYinSet() const -> vector<YinSet<DIM, Order>>;
 

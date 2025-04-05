@@ -11,14 +11,15 @@ Shape = "Graph";
 part = 41;
 % vel = "Vortex";
 vel = "Deformation";
-T = 4;
+T = 2;
 Order = 4;
 filedir = dir + Shape + num2str(part) + vel + "T" + num2str(T) + "Order" + num2str(Order) + "/";
 grid = 32;
-plotT = 1 / 4;
+plotT = 0 / 4;
 step = T * grid * 8 * plotT;
 type = "_c.dat";
 filename = "4Circle_grid" + num2str(grid) + "_Step" + num2str(step) + type;
+% filename = "1Order4_grid" + num2str(grid) + "_Step" + num2str(step) + type;
 if part == 41
     part = 5;
 end
