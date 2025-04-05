@@ -8,10 +8,7 @@ $(TARGET): $(SRCS)
 	$(CC) -o $@ $^ $(CPPFLAGS)
 
 run: 
-	. init.sh
-	. releaseconfigure.sh gcc
-	. compile.sh
-	. parallelTest.sh
+	. init.sh && . releaseconfigure.sh gcc && . compile.sh && . parallelTest.sh
 
 clean:
 	source clear.sh
