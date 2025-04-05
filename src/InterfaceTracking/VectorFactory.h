@@ -66,3 +66,4 @@ ParamWrapper parseParams(const nlohmann::json& j) {
 #define REGISTER_CLASS(CLASS, ...) \
   inline bool CLASS##_registered = \
       Vector2DFactory::getInstance().registerClass<CLASS, __VA_ARGS__>();
+// 注册VectorFunction的子类

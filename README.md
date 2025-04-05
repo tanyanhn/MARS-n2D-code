@@ -9,8 +9,7 @@ Front Tracking method for multi phases Interface Tracking problems in 2D space.
 ### Essential Environment
 - Ubuntu 22.04 LTS (other Linux distributions may require dependency adjustments)
 - C++20 compatible compilers:
-  - GCC 11+ or
-  - Clang 14+
+  - GCC 11+
 
 ### Dependency Installation
 ```bash

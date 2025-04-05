@@ -2,7 +2,7 @@
 
 #include <cassert>
 #include <cmath>
-#include <fstream>
+#include <sstream>
 #include <string>
 
 #include "Core/Curve.h"
