@@ -857,7 +857,7 @@ void checkFitCurve(const Curve<2, Order> &crv,
     }
   }
 
-  std::cout << std::format(
+  std::cout << fmt::v11::format(
       "max error of position: {}, velocity: {}, acceleration: {}, endpoint: "
       "{}\n",
       ret[0], ret[1], ret[2], ret[3]);

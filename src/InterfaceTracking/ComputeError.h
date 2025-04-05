@@ -238,7 +238,7 @@ cutCellError(const vector<Marsn2D::approxInterfaceGraph<Order>> &lhss,
           sum += volume[i][j];
         }
         // if (norm(sum - fullCell) > 1e-12) {
-        //   std::cout << std::format("i = {}, j = {}, sum = {} \n", i, j, sum);
+        //   std::cout << fmt::v11::format("i = {}, j = {}, sum = {} \n", i, j, sum);
         // }
       }
     }
@@ -282,7 +282,7 @@ cutCellError(const vector<Marsn2D::approxInterfaceGraph<Order>> &lhss,
         L1 += localDiff;
         LInf = std::max(LInf, localDiff / h);
         // if (localVolumes[i0][i1] > 5e-9) {
-        //   std::cout << std::format("i = {}, j = {}, LInf = {}", i0, i1,
+        //   std::cout << fmt::v11::format("i = {}, j = {}, LInf = {}", i0, i1,
         //   LInf);
         // }
       }
@@ -322,9 +322,9 @@ std::string join(const Range &range) {
   for (const auto &elem : range) {
     if (!first) oss << ' ';
     if (++count % 2)
-      oss << std::format("{:.2e} & ", elem);
+      oss << fmt::v11::format("{:.2e} & ", elem);
     else
-      oss << std::format("{:.2f} & ", elem);
+      oss << fmt::v11::format("{:.2f} & ", elem);
     first = false;
   }
   return oss.str();
@@ -336,10 +336,10 @@ inline void printCellError(const Vector<Vector<Vector<Real>>> &errors,
     int count = 0;
     for (const auto &i : errors) {
       if (count < errors.size() - 1) {
-        of << std::format("YinSet-{} L1    : {}\n         Linfty: {}\n\n",
+        of << fmt::v11::format("YinSet-{} L1    : {}\n         Linfty: {}\n\n",
                           count++, join(i[0]), join(i[1]));
       } else {
-        of << std::format("Total    L1    : {}\n         Linfty: {}\n\n",
+        of << fmt::v11::format("Total    L1    : {}\n         Linfty: {}\n\n",
                           join(i[0]), join(i[1]));
       }
     }

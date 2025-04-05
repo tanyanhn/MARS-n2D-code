@@ -282,7 +282,7 @@ fzero(const T_Func &hf, const T_Der &hdf, Real hx0, int maxIter, Real tol) {
       localFx = f(localX0);
       if (whileCount++ > newtonSubCount())
         throw std::runtime_error(
-            std::format("whileCount: Newton iteration may not converge, f(x) = "
+            fmt::v11::format("whileCount: Newton iteration may not converge, f(x) = "
                         "{}, dx = {} \n",
                         fx, dx));
       dx /= 2;
@@ -292,7 +292,7 @@ fzero(const T_Func &hf, const T_Der &hdf, Real hx0, int maxIter, Real tol) {
     fx = localFx;
   }
   if (maxIter < 0 && (std::abs(fx) > tol))
-    throw std::runtime_error(std::format(
+    throw std::runtime_error(fmt::v11::format(
         "maxIter: Newton iteration may not converge, f(x) = {}, dx = {} \n", fx,
         dx));
   return x0;
@@ -324,7 +324,7 @@ fzero<Polynomial<4, long double>, Polynomial<3, long double>>(
       localFx = f(localX0);
       div *= 2;
       if (whileCount++ > newtonSubCount()) {
-        std::cout << std::format(
+        std::cout << fmt::v11::format(
             "long double version, whileCount: Newton iteration may not "
             "converge, f(x) = "
             "{}, dx = {} \n",
@@ -340,7 +340,7 @@ fzero<Polynomial<4, long double>, Polynomial<3, long double>>(
     fx = localFx;
   }
   if (maxIter < 0 && (std::abs(fx) > tol))
-    std::cout << std::format(
+    std::cout << fmt::v11::format(
         "long double version, maxIter: Newton iteration may not converge, f(x) "
         "= {}, dx = {} \n",
         fx, dx / div);

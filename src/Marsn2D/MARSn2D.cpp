@@ -348,7 +348,7 @@ void MARSn2D<Order, VelocityField>::timeStep(const VelocityField<DIM> &v,
     removeCount = 0;
     stepCrv(*edgeIter, *markIter);
     if (printDetail) {
-      std::cout << std::format("Insert: {}, Remove: {}. \n", insertCount,
+      std::cout << fmt::v11::format("Insert: {}, Remove: {}. \n", insertCount,
                                removeCount);
     }
   }
