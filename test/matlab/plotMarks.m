@@ -24,20 +24,19 @@ fillColor = getColor();
 fillColor{rows1} = 'k';
 t = linspace(0, 1, cols1);
 figure
-% ax = axes('FontSize', 14); % 创建坐标轴时直接指定属性
-% hold(ax, 'on');
+ax1 = axes('FontSize', 14); % 创建坐标轴时直接指定属性
+hold(ax1, 'on');
 for i = 1:rows1
-    plot(t, A(i, :), 'Color', fillColor{i}, 'LineWidth', 5); hold on;
+    plot(ax1, t, A(i, :), 'Color', fillColor{i}, 'LineWidth', 5); hold on;
 end
-    ax = gca;
-    ax.FontSize = 14;
-    hold off;
+hold(ax1, 'off');
 figure
+ax2 = axes('FontSize', 14); % 创建坐标轴时直接指定属性
+hold(ax2, 'on');
 for i = 1:rows2
-    plot(t, B(i, :), 'Color', fillColor{i}, 'LineWidth', 5); hold on;
+    plot(ax2, t, B(i, :), 'Color', fillColor{i}, 'LineWidth', 5); hold on;
 end
-ax = gca;
-ax.FontSize = 14;
+hold(ax2, 'off');
 
 fclose(hd1);
 fclose(hd2);
