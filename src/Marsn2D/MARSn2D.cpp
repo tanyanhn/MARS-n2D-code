@@ -25,14 +25,14 @@ void MARSn2D<Order, VelocityField>::plot(const IG &ig, int step,
                                          const PlotConfig &plotConfig) const {
   auto yinSets = ig.approxYinSet();
   std::string fileName = plotConfig.fName + "_Step" + std::to_string(step);
-  std::string tail = (plotConfig.output == NORMAL) ? "_f.dat": "_c.dat";
+  std::string tail = (plotConfig.output == NORMAL) ? "_f.dat" : "_c.dat";
   std::ofstream of(fileName + tail, std::ios_base::binary);
   int num = yinSets.size();
   if (plotConfig.output == NORMAL) {
     of.write((char *)&num, sizeof(num));
   }
   for (int i = num - 1; i >= 0; i--) {
-    auto& yinSet = yinSets[i];
+    auto &yinSet = yinSets[i];
     if (plotConfig.output == NORMAL) {
       yinSet.dump(of);
     } else if (plotConfig.output == CUTCELL) {
@@ -86,17 +86,19 @@ void MARSn2D<Order, VelocityField>::trackInterface(
   if (plotConfig.output != NONE) {
     plot(ig, step, plotConfig);
     auto dir = getExportDir();
-    std::ofstream of1(dir + "00marksHistory.dat", std::ios_base::binary);
-    std::ofstream of2(dir + "00LengthHistory.dat", std::ios_base::binary);
+    std::ofstream of1(dir + "00marksHistory_" + plotConfig.fName + ".dat",
+                      std::ios_base::binary);
+    std::ofstream of2(dir + "00LengthHistory_" + plotConfig.fName + ".dat",
+                      std::ios_base::binary);
     int rows = marksHistory[0].size();
     int cols = marksHistory.size();
-    of1.write((char*)&rows, sizeof(int));
-    of1.write((char*)&cols, sizeof(int));
-    of2.write((char*)&rows, sizeof(int));
-    of2.write((char*)&cols, sizeof(int));
+    of1.write((char *)&rows, sizeof(int));
+    of1.write((char *)&cols, sizeof(int));
+    of2.write((char *)&rows, sizeof(int));
+    of2.write((char *)&cols, sizeof(int));
     for (size_t i = 0; i < marksHistory.size(); i++) {
-      of1.write((char*)marksHistory[i].data(), rows * sizeof(int));
-      of2.write((char*)lengthHistory[i].data(), rows * sizeof(Real));
+      of1.write((char *)marksHistory[i].data(), rows * sizeof(int));
+      of2.write((char *)lengthHistory[i].data(), rows * sizeof(Real));
     }
   }
 }
@@ -349,7 +351,7 @@ void MARSn2D<Order, VelocityField>::timeStep(const VelocityField<DIM> &v,
     stepCrv(*edgeIter, *markIter);
     if (printDetail) {
       std::cout << fmt::v11::format("Insert: {}, Remove: {}. \n", insertCount,
-                               removeCount);
+                                    removeCount);
     }
   }
   // #pragma omp critical
