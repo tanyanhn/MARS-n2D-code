@@ -1,7 +1,7 @@
 close all
 
-filedir = "../../results/TrackInterface/Disk5DeformationT4Order4/";
-% filedir = "../../results/TrackInterface/Graph41VortexT4Order4/";
+% filedir = "../../results/TrackInterface/Disk5DeformationT4Order4/";
+filedir = "../../results/TrackInterface/Graph41DeformationT4Order4/";
 filename1 = "00marksHistory.dat";
 filename2 = "00LengthHistory.dat";
 
@@ -24,13 +24,20 @@ fillColor = getColor();
 fillColor{rows1} = 'k';
 t = linspace(0, 1, cols1);
 figure
+% ax = axes('FontSize', 14); % 创建坐标轴时直接指定属性
+% hold(ax, 'on');
 for i = 1:rows1
     plot(t, A(i, :), 'Color', fillColor{i}, 'LineWidth', 5); hold on;
 end
+    ax = gca;
+    ax.FontSize = 14;
+    hold off;
 figure
 for i = 1:rows2
     plot(t, B(i, :), 'Color', fillColor{i}, 'LineWidth', 5); hold on;
 end
+ax = gca;
+ax.FontSize = 14;
 
 fclose(hd1);
 fclose(hd2);

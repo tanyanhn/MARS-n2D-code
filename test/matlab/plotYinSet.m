@@ -66,6 +66,7 @@ end
 function setAxisProperties()
     axis equal tight;
     ax = gca;
+    ax.FontSize = 14;
     % ax.XColor = ax.Color;
     % ax.YColor = ax.Color;
     % ax.XTick = [];

@@ -9,19 +9,19 @@ Front Tracking method for multi phases Interface Tracking problems in 2D space.
 ### Essential Environment
 - Ubuntu 22.04 LTS (other Linux distributions may require dependency adjustments)
 - C++20 compatible compilers:
-  - GCC 11+
+  - GCC, G++ 11+
 
 ### Dependency Installation
 ```bash
 # Base build tools
 sudo apt update && sudo apt install -y \
     cmake ninja-build pkg-config \
-    git curl autoconf libtool
+    git curl autoconf libtool g++
 
 # Development libraries
 sudo apt install -y \
     liblapacke-dev \
-    libomp-dev  # For Clang users: libomp-dev
+    libomp-dev 
 ```
 
 ## 🛠️ Build Guide
