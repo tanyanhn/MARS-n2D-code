@@ -43,5 +43,5 @@ source compile.sh
 ## 🧪 Test Verification
 ```bash
 # Run full test suite
-source parallelTest.sh
+source test.sh
 ```

@@ -62,7 +62,7 @@ add_executable(
   TestOrientedJordanCurve.cpp)
 target_link_libraries(UnitTest ${CppUnit_LIBRARY} ${MAIN_LIB} fmt::fmt)
 
-add_test(
-  NAME UnitTest
-  COMMAND UnitTest
-  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/test)
+# add_test(
+#   NAME UnitTest
+#   COMMAND UnitTest
+#   WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/test)
