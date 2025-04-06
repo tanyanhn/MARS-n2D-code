@@ -14,14 +14,11 @@ Front Tracking method for multi phases Interface Tracking problems in 2D space.
 ### Dependency Installation
 ```bash
 # Base build tools
-sudo apt update && sudo apt install -y \
-    cmake ninja-build pkg-config \
-    git curl autoconf libtool g++
-
-# Development libraries
+sudo apt update
 sudo apt install -y \
-    liblapacke-dev \
-    libomp-dev 
+    cmake ninja-build pkg-config \
+    git curl autoconf libtool g++ \
+    liblapacke-dev libomp-dev 
 ```
 
 ## 🛠️ Build Guide
