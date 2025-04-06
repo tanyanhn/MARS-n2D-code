@@ -1,9 +1,10 @@
 close all
 
-% filedir = "../../results/TrackInterface/Disk5DeformationT4Order4/";
-filedir = "../../results/TrackInterface/Graph41DeformationT4Order4/";
-filename1 = "00marksHistory.dat";
-filename2 = "00LengthHistory.dat";
+filedir = "../../results/TrackInterface/Disk5DeformationT4Order4/";
+% filedir = "../../results/TrackInterface/Graph41DeformationT4Order4/";
+% filedir = "../../results/TrackInterface/Graph41VortexT16Order4/";
+filename1 = "1Order4_grid32_00marksHistory.dat";
+filename2 = "1Order4_grid32_00LengthHistory.dat";
 
 hd1 = fopen(filedir + filename1);
 hd2 = fopen(filedir + filename2);

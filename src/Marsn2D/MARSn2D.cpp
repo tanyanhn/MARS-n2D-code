@@ -31,7 +31,7 @@ void MARSn2D<Order, VelocityField>::plot(const IG &ig, int step,
   if (plotConfig.output == NORMAL) {
     of.write((char *)&num, sizeof(num));
   }
-  for (int i = num - 1; i >= 0; i--) {
+  for (int i = 0; i <= num - 1; i++) {
     auto &yinSet = yinSets[i];
     if (plotConfig.output == NORMAL) {
       yinSet.dump(of);
@@ -57,8 +57,8 @@ void MARSn2D<Order, VelocityField>::trackInterface(
   int polyStep = stages / plotConfig.opStride;
   vector<vector<int>> marksHistory;
   vector<vector<Real>> lengthHistory;
-  marksHistory.push_back(ig.countMarks());
-  lengthHistory.push_back(ig.countLengths());
+  // marksHistory.push_back(ig.countMarks());
+  // lengthHistory.push_back(ig.countLengths());
   ProgressBar bar(stages, "Tracking...");
   while (step < stages) {
     // if (plotConfig.output != NONE && (step + 40) % polyStep == 0) {
@@ -86,9 +86,9 @@ void MARSn2D<Order, VelocityField>::trackInterface(
   if (plotConfig.output != NONE) {
     plot(ig, step, plotConfig);
     auto dir = getExportDir();
-    std::ofstream of1(dir + "00marksHistory_" + plotConfig.fName + ".dat",
+    std::ofstream of1(plotConfig.fName + "_00marksHistory" +  ".dat",
                       std::ios_base::binary);
-    std::ofstream of2(dir + "00LengthHistory_" + plotConfig.fName + ".dat",
+    std::ofstream of2(plotConfig.fName + "_00LengthHistory" + ".dat",
                       std::ios_base::binary);
     int rows = marksHistory[0].size();
     int cols = marksHistory.size();

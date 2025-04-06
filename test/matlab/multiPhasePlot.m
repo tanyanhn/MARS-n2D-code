@@ -6,20 +6,21 @@ figure
 lineColor = '';
 fillColor = getColor();
 dir = "../../results/TrackInterface/";
-% Shape = "Disk";
-Shape = "Graph";
-part = 41;
+Shape = "Disk";
+% Shape = "Graph";
+part = 5;
 % vel = "Vortex";
 vel = "Deformation";
-T = 2;
+T = 4;
 Order = 4;
 filedir = dir + Shape + num2str(part) + vel + "T" + num2str(T) + "Order" + num2str(Order) + "/";
 grid = 32;
-plotT = 0 / 4;
+plotT = 2 / 4;
 step = T * grid * 8 * plotT;
 type = "_c.dat";
-filename = "4Circle_grid" + num2str(grid) + "_Step" + num2str(step) + type;
-% filename = "1Order4_grid" + num2str(grid) + "_Step" + num2str(step) + type;
+% type = "_f.dat";
+% filename = "4Circle_grid" + num2str(grid) + "_Step" + num2str(step) + type;
+filename = "1Order4_grid" + num2str(grid) + "_Step" + num2str(step) + type;
 if part == 41
     part = 5;
 end
@@ -49,7 +50,7 @@ volume = false;
 if volume
     dat = readCellVolume(hd);
 else
-    for k = (part + 1):-1:1
+    for k = 1:1:(part + 1)
 
         if ~tensor
             sf = readYinSet(hd);
