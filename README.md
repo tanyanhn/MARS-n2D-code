@@ -18,7 +18,7 @@ sudo apt update
 sudo apt install -y \
     cmake ninja-build pkg-config \
     git curl autoconf libtool g++ \
-    liblapacke-dev libomp-dev 
+    liblapacke-dev libomp-dev parallel
 ```
 
 ## 🛠️ Build Guide
@@ -40,5 +40,5 @@ source compile.sh
 ## 🧪 Test Verification
 ```bash
 # Run full test suite
-source test.sh
+source parallelTest.sh
 ```
