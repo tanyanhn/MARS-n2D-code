@@ -11,7 +11,7 @@
           "request": "launch",
           "program": "${workspaceFolder}/build/test/${fileBasenameNoExtension}",
           "args": [
-            "[Disk5][Deformation][T4][Order8] ",
+            "[Disk5][Deformation][T2][Order4][Richardson] ",
             // "[Disk4][Vortex][T12][Order4] ",
             // "[Graph41][Vortex][T8][Order4]",
             // "--rng-seed 634119452"
