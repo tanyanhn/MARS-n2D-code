@@ -11,9 +11,7 @@ Eigen::VectorXd solveSystem(int n, const Eigen::SparseMatrix<double>& A,
                             const Eigen::VectorXd& rhs, Real tol = newtonTol(),
                             int maxDirectSize = 2000, int maxIter = 1000);
 
-#ifdef OPTNONE
-__attribute__((optnone))
-#endif  // OPTNONE
+OPTNONE_FUNC
 inline Curve<2, 4>
 fitCurveEigen(const std::vector<Vec<Real, 2>>& points,
               typename Curve<2, 4>::BCType type, Real tol = newtonTol()) {

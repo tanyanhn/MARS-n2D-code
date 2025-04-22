@@ -29,9 +29,7 @@ bool checkIsBounded(const T &iterator, Real tol) {
   std::sort(
       edges.begin(), edges.end(),
       [ topmost, vcmp ](const Segment<2> &lhs, const Segment<2> &rhs)
-#ifdef OPTNONE
-          __attribute__((optnone))
-#endif  // OPTNONE
+      OPTNONE_FUNC
       {
         auto d1 = normalize(lhs.p[1] - lhs.p[0]);
         if (vcmp.compare(lhs.p[0], topmost) != 0) d1 = d1 * -1;

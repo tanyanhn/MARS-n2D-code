@@ -37,9 +37,7 @@ YinSet<2, Order>::YinSet(const SRS &segmentedSpadjor, Real tol) {
 // template YinSet<2, 4>::YinSet(const SRS& segmentedSpadjor, Real tol);
 
 template <int Order>
-#ifdef OPTNONE
-__attribute__((optnone))
-#endif  // OPTNONE
+OPTNONE_FUNC
 void YinSet<2, Order>::buildHasse(Real tol) {
   // step 1 : construct the inclusion matrix
   const int numCurves = orientedJordanCurves.size();
@@ -333,9 +331,7 @@ vector<Curve<2, Order>> YinSet<2, Order>::getSmoothCurves(Real tol) const {
 }
 
 template <int Order>
-#ifdef OPTNONE
-__attribute__((optnone))
-#endif  // OPTNONE
+OPTNONE_FUNC
 auto YinSet<2, Order>::cutCell(const Box<Dim> &box, const Interval<Dim> &range,
                                bool addInner) const
     -> std::tuple<vector<vector<YinSetPtr>>,

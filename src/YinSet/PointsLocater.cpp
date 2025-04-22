@@ -113,9 +113,7 @@ auto PointsLocater::compute(const vector<Segment<2>> &segs,
 }
 
 template <int Order>
-#ifdef OPTNONE
-__attribute__((optnone))
-#endif  // OPTNONE
+OPTNONE_FUNC
 vector<int>
 PointsLocater::operator()(const vector<OrientedJordanCurve<DIM, Order>> &ys,
                           const vector<rVec> &queries, bool bounded) {

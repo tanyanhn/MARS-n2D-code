@@ -38,9 +38,7 @@ struct InterfaceGraphFactory {
                         Real hi = -1);
 };
 
-#ifdef OPTNONE
-__attribute__((optnone))
-#endif  // OPTNONE
+OPTNONE_FUNC
 inline auto
 InterfaceGraphFactory::markRoseCurve(Point center, Real a, Real hL, rVec range,
                                      int numPetal) {
@@ -140,9 +138,7 @@ inline auto InterfaceGraphFactory::markSegment(Segment<DIM> seg, Real hL) {
 }
 
 template <int Order>
-#ifdef OPTNONE
-__attribute__((optnone))
-#endif  // OPTNONE
+OPTNONE_FUNC
 auto InterfaceGraphFactory::markCurve(const Curve<DIM, Order>& crv, Real hL, Real lo, Real hi) {
   if (lo > hi) {
     lo = crv.getKnots().front();
@@ -364,9 +360,7 @@ auto InterfaceGraphFactory::createRoseGraph(Point center, Real a, Real hL,
 }
 
 template <int Order>
-#ifdef OPTNONE
-__attribute__((optnone))
-#endif  // OPTNONE
+OPTNONE_FUNC
 auto InterfaceGraphFactory::createGraph41(Real hL)
     -> approxInterfaceGraph<Order> {
   vector<EdgeMark> edgeMarks(16);
@@ -489,9 +483,7 @@ auto InterfaceGraphFactory::createGraph41(Real hL)
 }
 
 template <int Order>
-#ifdef OPTNONE
-__attribute__((optnone))
-#endif  // OPTNONE
+OPTNONE_FUNC
 auto diskTEST(const std::string& jsonFile) {
   using namespace std;
   auto params = read_config(jsonFile);

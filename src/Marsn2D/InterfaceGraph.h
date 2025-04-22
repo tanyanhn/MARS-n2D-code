@@ -33,7 +33,6 @@ class InterfaceGraph {
       const vector<EdgeMark>& edges, vector<vector<EdgeIndex>>& trials,
       vector<vector<EdgeIndex>>& circuits);
 
-
   vector<vector<EdgeIndex>> trials_;
   vector<vector<EdgeIndex>> circuits_;
   vector<EdgeMark> edges_;
@@ -62,16 +61,24 @@ class approxInterfaceGraph {
 
   auto approxYinSet() const -> vector<YinSet<DIM, Order>>;
 
-  auto accessEdges() -> vector<std::pair<typename vector<Edge>::iterator,
-                                         typename vector<EdgeMark>::iterator>>;
+  auto accessEdges()
+      -> vector<std::tuple<typename vector<Edge>::iterator,
+                           typename vector<EdgeMark>::iterator, int>>;
 
   void updateCurve();
   auto countMarks() const -> vector<int>;
   auto countLengths() const -> vector<Real>;
 
+  enum notAKnotBoundaryLocation {
+    None = 0b00,
+    Left = 0b01,
+    Right = 0b10,
+  };
+
  private:
   InterfaceGraph undirectGraph_;
   vector<Edge> edges_;
+  vector<int> notaKnotBoundary_;
   // vector<Edge> reverseEdges_;
   // edges[abs(index) - 1], abs(index) starting from 1,
   // and -index imply edges[-index - 1]->reverse()

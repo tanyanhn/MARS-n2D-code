@@ -18,11 +18,8 @@ void MARSn2D<Order, VelocityField>::discreteFlowMap(const VectorFunction<2> &v,
 }
 
 template <int Order, template <int> class VelocityField>
-#ifdef OPTNONE
-__attribute__((optnone))
-#endif  // OPTNONE
-void MARSn2D<Order, VelocityField>::plot(const IG &ig, int step,
-                                         const PlotConfig &plotConfig) const {
+OPTNONE_FUNC void MARSn2D<Order, VelocityField>::plot(
+    const IG &ig, int step, const PlotConfig &plotConfig) const {
   auto yinSets = ig.approxYinSet();
   std::string fileName = plotConfig.fName + "_Step" + std::to_string(step);
   std::string tail = (plotConfig.output == NORMAL) ? "_f.dat" : "_c.dat";
@@ -44,12 +41,9 @@ void MARSn2D<Order, VelocityField>::plot(const IG &ig, int step,
 }
 
 template <int Order, template <int> class VelocityField>
-#ifdef OPTNONE
-__attribute__((optnone))
-#endif  // OPTNONE
-void MARSn2D<Order, VelocityField>::trackInterface(
+OPTNONE_FUNC void MARSn2D<Order, VelocityField>::trackInterface(
     const VelocityField<DIM> &v, IG &ig, Real StartTime, Real dt, Real EndTime,
-    const PlotConfig& plotConfig) const {
+    const PlotConfig &plotConfig) const {
   Real tn = StartTime;
   int stages = ceil(abs(EndTime - StartTime) / abs(dt));
   Real k = (EndTime - StartTime) / stages;
@@ -86,12 +80,12 @@ void MARSn2D<Order, VelocityField>::trackInterface(
   if (plotConfig.output != NONE) {
     plot(ig, step, plotConfig);
     auto dir = getExportDir();
-    std::ofstream of1(plotConfig.fName + "_00marksHistory" +  ".dat",
+    std::ofstream of1(plotConfig.fName + "_00marksHistory" + ".dat",
                       std::ios_base::binary);
     std::ofstream of2(plotConfig.fName + "_00LengthHistory" + ".dat",
                       std::ios_base::binary);
-    int rows = marksHistory[0].size();
-    int cols = marksHistory.size();
+    int rows = (int)marksHistory[0].size();
+    int cols = (int)marksHistory.size();
     of1.write((char *)&rows, sizeof(int));
     of1.write((char *)&cols, sizeof(int));
     of2.write((char *)&rows, sizeof(int));
@@ -114,7 +108,7 @@ void MARSn2D<Order, VelocityField>::locateLongEdges(
     // insert when both side curv not satisfy condition.
     Real constrain = efficientOfHL * std::max(hL[i], hL[i + 1]);
     if (length > constrain) {
-      unsigned int num = ceil(length / constrain) * 2;
+      unsigned int num = (int)std::ceil(length / constrain) * 2;
       indices2Num.emplace_back(i, num);
     }
   }
@@ -154,7 +148,8 @@ template <int Order, template <int> class VelocityField>
 void MARSn2D<Order, VelocityField>::insertMarks(
     const VelocityField<2> &v, Real preT, Real dt,
     const vector<std::pair<unsigned int, unsigned int>> &indices2Num,
-    EdgeMark &marks, Edge &preEdge, vector<Real> &curv) const {
+    EdgeMark &marks, Edge &preEdge, vector<Real> &curv,
+    vector<Real> &para) const {
   const auto &polys = preEdge.getPolys();
   const auto &knots = preEdge.getKnots();
   EdgeMark newMarks;
@@ -202,16 +197,18 @@ void MARSn2D<Order, VelocityField>::insertMarks(
     newCurv.push_back(Edge::curvature(getComp(newPolys.back(), 0),
                                       getComp(newPolys.back(), 1), t));
   marks = std::move(newMarks);
+  para = newKnots;
   preEdge = std::move(Edge(std::move(newKnots), std::move(newPolys)));
   if (curvConfig_.used) curv = std::move(newCurv);
 }
 
 template <int Order, template <int> class VelocityField>
 void MARSn2D<Order, VelocityField>::removeMarks(
-    const vector<unsigned int> &indices, EdgeMark &marks,
-    vector<Real> &curv) const {
+    const vector<unsigned int> &indices, EdgeMark &marks, vector<Real> &curv,
+    vector<Real> &para) const {
   EdgeMark newMarks;
   vector<Real> newCurv;
+  vector<Real> newPara;
   newMarks.reserve(marks.size() - indices.size());
   if (curvConfig_.used) newCurv.reserve(curv.size() - indices.size());
   size_t numMarks = marks.size();
@@ -220,11 +217,13 @@ void MARSn2D<Order, VelocityField>::removeMarks(
   for (size_t i = 0; i < numMarks; i++) {
     if (index == indices.size() || i != indices[index]) {
       newMarks.push_back(marks[i]);
+      newPara.push_back(para[i]);
       if (curvConfig_.used) newCurv.push_back(curv[i]);
       continueFlag = false;
     } else {
       if (continueFlag) {
         newMarks.push_back(marks[i]);
+        newPara.push_back(para[i]);
         if (curvConfig_.used) newCurv.push_back(curv[i]);
         continueFlag = false;
       } else {
@@ -234,6 +233,7 @@ void MARSn2D<Order, VelocityField>::removeMarks(
     }
   }
   marks = std::move(newMarks);
+  para = std::move(newPara);
   if (curvConfig_.used) curv = std::move(newCurv);
 }
 
@@ -270,19 +270,113 @@ void MARSn2D<Order, VelocityField>::updateHL(const vector<Real> &curv,
 }
 
 template <int Order, template <int> class VelocityField>
+OPTNONE_FUNC void MARSn2D<Order, VelocityField>::averageSplit(
+    const VelocityField<2> &v, Real preT, Real dt, EdgeMark &marks,
+    const Edge &preEdge, vector<Real> &hL, vector<Real> &para,
+    Real efficientOfHL, int notaKnotLocation) const {
+  Timer timer("averageSplit()");
+  auto locateSplit = [&v, &preEdge, preT, dt, this](auto &p0, auto &p1, auto hL,
+                                                    auto t0,
+                                                    auto t1) OPTNONE_FUNC {
+    Real localT0 = t0;
+    Real localT1 = t1;
+    auto midT = (localT0 + localT1) / 2;
+    auto midP = EdgeMark{preEdge(midT)};
+    discreteFlowMap(v, midP, preT, dt);
+    int whileCount = 20;
+    Real d0 = norm(midP[0] - p0);
+    Real d1 = norm(midP[0] - p1);
+    Real tmp;
+    while (d0 > d1 || d0 < hL) {
+      tmp = midT;
+      if (d0 > d1) {
+        midT = (localT0 + midT) / 2;
+        localT1 = tmp;
+      } else if (d0 < hL) {
+        midT = (midT + localT1) / 2;
+        localT0 = tmp;
+      } else {
+        throw std::runtime_error("averageSplit unable find mid point.");
+      }
+      midP[0] = preEdge(midT);
+      discreteFlowMap(v, midP, preT, dt);
+      d0 = norm(midP[0] - p0);
+      d1 = norm(midP[0] - p1);
+      if (--whileCount <= 0) {
+        throw std::runtime_error("averageSplit overloop.");
+      }
+    }
+    return midP[0];
+  };
+  std::unordered_map<int, Vertex> splitVertexes;
+  if (notaKnotLocation &
+      approxInterfaceGraph<Order>::notAKnotBoundaryLocation::Left) {
+    auto p0 = marks[0];
+    auto p1 = marks[1];
+    auto p2 = marks[2];
+    if (norm(p1 - p0) > norm(p2 - p1)) {
+      Real localHL = efficientOfHL * std::min(hL[0], hL[1]);
+      // try {
+        auto splitVertex = locateSplit(p0, p1, localHL, para[0], para[1]);
+        splitVertexes.insert({-1, Vertex(splitVertex)});
+      // } catch (std::runtime_error &e) {
+      //   auto splitVertex = locateSplit(p0, p1, localHL, para[0], para[1]);
+      // }
+    }
+  }
+  if (notaKnotLocation &
+      approxInterfaceGraph<Order>::notAKnotBoundaryLocation::Right) {
+    auto p0 = marks[marks.size() - 1];
+    auto p1 = marks[marks.size() - 2];
+    auto p2 = marks[marks.size() - 3];
+    if (norm(p1 - p0) > norm(p2 - p1)) {
+      Real localHL =
+          efficientOfHL * std::min(hL[marks.size() - 1], hL[marks.size() - 2]);
+      // try {
+        auto splitVertex = locateSplit(p0, p1, localHL, para[marks.size() - 1],
+                                       para[marks.size() - 2]);
+        splitVertexes.insert({1, Vertex(splitVertex)});
+      // } catch (std::runtime_error &e) {
+      //   auto splitVertex = locateSplit(p0, p1, localHL, para[marks.size() - 1],
+      //                                  para[marks.size() - 2]);
+      // }
+    }
+  }
+  if (splitVertexes.empty()) return;
+  vector<Vertex> newMarks;
+  vector<Real> newHL;
+  newMarks.push_back(marks[0]);
+  newHL.push_back(hL[0]);
+  if (splitVertexes.contains(-1)) {
+    newMarks.push_back(splitVertexes.at(-1));
+    newHL.push_back(std::min(hL[0], hL[1]));
+  }
+  newMarks.insert(newMarks.end(), marks.begin() + 1, marks.end() - 1);
+  newHL.insert(newHL.end(), hL.begin() + 1, hL.end() - 1);
+  if (splitVertexes.contains(1)) {
+    newMarks.push_back(splitVertexes.at(1));
+    newHL.push_back(std::min(hL[hL.size() - 2], hL.back()));
+  }
+  newMarks.push_back(marks.back());
+  newHL.push_back(hL.back());
+  marks = std::move(newMarks);
+  hL = std::move(newHL);
+}
+
+template <int Order, template <int> class VelocityField>
 void MARSn2D<Order, VelocityField>::timeStep(const VelocityField<DIM> &v,
                                              IG &ig, Real tn, Real dt) const {
   Timer t("timeStep");
   int insertCount = 0;
   int removeCount = 0;
-  auto stepCrv = [ this, &v, tn, dt, &insertCount, &
-                   removeCount ](Edge & preEdge, EdgeMark & marks)
-#ifdef OPTNONE
-      __attribute__((optnone))
-#endif  // OPTNONE
-  {
+  auto stepCrv = [this, &v, tn, dt, &insertCount, &removeCount](
+                     Edge &preEdge, EdgeMark &marks,
+                     int notaKnotLocation) OPTNONE_FUNC {
     vector<Real> curv;
+    vector<Real> para = preEdge.getKnots();
     vector<Real> hL;
+    Real ARMSDist = 1 * rTiny_;
+    Real splitDist = ARMSDist * 2/3.0;
     discreteFlowMap(v, marks, tn, dt);
 
     if (curvConfig_.used) {
@@ -303,13 +397,13 @@ void MARSn2D<Order, VelocityField>::timeStep(const VelocityField<DIM> &v,
       updateHL(curv, marks, hL);
       vector<std::pair<unsigned int, unsigned int>> indices2Num;
       /** TODO(ytan) need efficientOfHL = 1 - 2 * rTiny_ fill hL upper bound,
-       *  since one can delete | rTiny | 1 | rTiny|rightend make 1 + 2 * rTiny_
-       *  edge.
+       *  since one can delete | rTiny | 1 | rTiny|rightend make 1 + 2 *
+       *rTiny_ edge.
        **/
-      locateLongEdges(marks, hL, indices2Num, 1 - rTiny_);
+      locateLongEdges(marks, hL, indices2Num, 1 - ARMSDist);
       inserted = !indices2Num.empty();
       if (inserted) {
-        insertMarks(v, tn, dt, indices2Num, marks, preEdge, curv);
+        insertMarks(v, tn, dt, indices2Num, marks, preEdge, curv, para);
         insertCount++;
         if (insertCount >= insertTimesMax)
           throw std::runtime_error("insertCount >= insertTimesMax");
@@ -320,20 +414,20 @@ void MARSn2D<Order, VelocityField>::timeStep(const VelocityField<DIM> &v,
     while (removed && removeCount < removeTimesMax && marks.size() > 2) {
       updateHL(curv, marks, hL);
       vector<unsigned int> indices;
-      locateTinyEdges(marks, hL, indices, rTiny_);
+      locateTinyEdges(marks, hL, indices, ARMSDist);
       removed = !indices.empty();
       if (removed) {
-        // if (indices.back() == marks.size() - 2) {
-        //   indices.pop_back();
-        //   if (indices.empty() || indices.back() != marks.size() - 3)
-        //     indices.push_back(marks.size() - 3);
-        // }
-        removeMarks(indices, marks, curv);
+        removeMarks(indices, marks, curv, para);
         removeCount++;
         if (removeCount >= removeTimesMax)
           throw std::runtime_error("removeCount >= removeTimesMax");
       }
     }
+
+    // split boundary edge for not-a-knot splines.
+    updateHL(curv, marks, hL);
+    averageSplit(v, tn, dt, marks, preEdge, hL, para, splitDist,
+                 notaKnotLocation);
 
 #ifndef NDEBUG
     if (!checkMarks(marks, hL)) {
@@ -345,10 +439,10 @@ void MARSn2D<Order, VelocityField>::timeStep(const VelocityField<DIM> &v,
 
   auto mark_edge = ig.accessEdges();
   // #pragma omp parallel for default(shared) schedule(static)
-  for (auto [edgeIter, markIter] : mark_edge) {
+  for (auto [edgeIter, markIter, notaKnotLocation] : mark_edge) {
     insertCount = 0;
     removeCount = 0;
-    stepCrv(*edgeIter, *markIter);
+    stepCrv(*edgeIter, *markIter, notaKnotLocation);
     if (printDetail) {
       std::cout << fmt::v11::format("Insert: {}, Remove: {}. \n", insertCount,
                                     removeCount);

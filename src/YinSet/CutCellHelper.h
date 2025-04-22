@@ -42,9 +42,7 @@ struct CutCellHelper {
 };
 
 template <int Order>
-#ifdef OPTNONE
-__attribute__((optnone))
-#endif  // OPTNONE
+OPTNONE_FUNC
 auto CutCellHelper<Order>::intersectGridLine(
     const Vec<Real, 2> &lo, const Vec<Real, 2> &hi, const Vec<Real, 2> &h,
     const std::vector<OrientedJordanCurve<2, Order>> &orientedJordanCurves,
@@ -65,9 +63,7 @@ auto CutCellHelper<Order>::intersectGridLine(
                              localReal h, localReal knotStart,
                              localReal knotsDist, auto &intersectionsForCurve,
                              int newtonMaxIter)
-#ifdef OPTNONE
-          __attribute__((optnone))
-#endif  // OPTNONE
+OPTNONE_FUNC
       {
         localReal p0 = xPoly[0];
         localReal p1 = xPoly(knotsDist);
@@ -116,9 +112,7 @@ auto CutCellHelper<Order>::intersectGridLine(
 }
 
 template <int Order>
-#ifdef OPTNONE
-__attribute__((optnone))
-#endif  // OPTNONE
+OPTNONE_FUNC
 auto CutCellHelper<Order>::splitCurves(
     rVec lo, rVec h, std::vector<set<Real>> &intersections,
     const std::vector<OrientedJordanCurve<2, Order>> &orientedJordanCurves,
@@ -155,9 +149,7 @@ auto CutCellHelper<Order>::splitCurves(
 }
 
 template <int Order>
-#ifdef OPTNONE
-__attribute__((optnone))
-#endif  // OPTNONE
+OPTNONE_FUNC
 auto CutCellHelper<Order>::pastCells(
     rVec lo, rVec h, Box<DIM> box,
     const vector<vector<vector<Curve<2, Order>>>> &gridCurves,
@@ -252,9 +244,7 @@ auto CutCellHelper<Order>::pastCells(
 }
 
 template <int Order>
-#ifdef OPTNONE
-__attribute__((optnone))
-#endif  // OPTNONE
+OPTNONE_FUNC
 auto CutCellHelper<Order>::fillInner(
     rVec lo, rVec h, Box<DIM> box, const SRS &srs,
     const vector<vector<vector<Curve<2, Order>>>> &gridCurves,

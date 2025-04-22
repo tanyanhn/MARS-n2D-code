@@ -104,9 +104,7 @@ Curve<Dim, Order>::extract(Real lo, Real hi, Real tol) const
 */
 
 template <int Dim, int Order>
-#ifdef OPTNONE
-__attribute__((optnone))
-#endif  // OPTNONE
+OPTNONE_FUNC
 Curve<Dim, Order>
 Curve<Dim, Order>::extract(Real lo, Real hi, Real tol, bool exact) const {
   if (hi <= lo) return Curve<Dim, Order>();
@@ -150,9 +148,7 @@ Curve<Dim, Order>::extract(Real lo, Real hi, Real tol, bool exact) const {
 }
 
 template <int Dim, int Order>
-#ifdef OPTNONE
-__attribute__((optnone))
-#endif  // OPTNONE
+OPTNONE_FUNC
 inline void
 Curve<Dim, Order>::split(const vector<Real> &brks,
                          vector<Curve<Dim, Order>> &out, Real tol,
@@ -180,9 +176,7 @@ Curve<Dim, Order>::split(const vector<Real> &brks,
 }
 
 template <int Dim, int Order>
-#ifdef OPTNONE
-__attribute__((optnone))
-#endif  // OPTNONE
+OPTNONE_FUNC
 std::pair<Curve<Dim, Order>, std::vector<long double>>
 Curve<Dim, Order>::makeMonotonic(Real tol) const {
   using localReal = long double;
@@ -349,9 +343,7 @@ Curve<2, Order> createRect(const Vec<Real, 2> &lo, const Vec<Real, 2> &hi) {
 }
 
 template <int Order>
-#ifdef OPTNONE
-__attribute__((optnone))
-#endif  // OPTNONE
+OPTNONE_FUNC
 Real area(const Curve<2, Order> &gon, Real tol) {
   Real a = 0.0;
   if (gon.empty()) return a;
@@ -732,9 +724,7 @@ int Curve<Dim, Order>::compare(const Curve &rhs, const rVec &p, int ix, int iy,
 }
 
 template <int Dim, int Order>
-#ifdef OPTNONE
-__attribute__((optnone))
-#endif  // OPTNONE
+OPTNONE_FUNC
 auto Curve<Dim, Order>::getComparablePoint(Real tol, int type) const
     -> rVec {
   if (type == 0) {
@@ -759,9 +749,7 @@ auto Curve<Dim, Order>::getComparablePoint(Real tol, int type) const
 }
 
 template <int Dim, int Order>
-#ifdef OPTNONE
-__attribute__((optnone))
-#endif  // OPTNONE
+OPTNONE_FUNC
 bool Curve<Dim, Order>::equal(const Curve &rhs, Real tol) const {
   // auto d1 = this->getComparablePoint(tol, 0);
   // auto d2 = rhs.getComparablePoint(tol, 0);
@@ -813,9 +801,7 @@ Real Curve<Dim, Order>::curvature(const Polynomial<Order, Real> &xPoly,
 }
 
 template <int Order>
-#ifdef OPTNONE
-  __attribute__((optnone))
-#endif  // OPTNONE
+OPTNONE_FUNC
 void checkFitCurve(const Curve<2, Order> &crv,
                    typename Curve<2, Order>::BCType type,
                    const Vec<Real, 2> &start, const Vec<Real, 2> &end) {

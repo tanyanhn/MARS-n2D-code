@@ -61,6 +61,7 @@ void InterfaceGraph::decomposeEdgeSet(
 }
 
 template <int Order>
+OPTNONE_FUNC
 approxInterfaceGraph<Order>::approxInterfaceGraph(
     vector<EdgeMark>&& edgeMarks,
     const vector<SmoothnessIndicator>& smoothConditions,
@@ -70,13 +71,16 @@ approxInterfaceGraph<Order>::approxInterfaceGraph(
       cyclesEdgesId_(std::move(cyclesEdgesId)),
       yinSetId_(std::move(YinSetId)),
       tol_(tol) {
+  notaKnotBoundary_.resize(undirectGraph_.edges_.size(), None);
+  for (const auto& trial : undirectGraph_.trials_) {
+    notaKnotBoundary_[trial.front()] |= notAKnotBoundaryLocation::Left;
+    notaKnotBoundary_[trial.back()] |= notAKnotBoundaryLocation::Right;
+  }
   updateCurve();
 }
 
 template <int Order>
-#ifdef OPTNONE
-  __attribute__((optnone))
-#endif  // OPTNONE
+OPTNONE_FUNC
 void approxInterfaceGraph<Order>::updateCurve() {
   auto& marks_ = undirectGraph_.edges_;
   auto& trials_ = undirectGraph_.trials_;
@@ -189,18 +193,19 @@ auto approxInterfaceGraph<Order>::approxYinSet() const
 
 template <int Order>
 auto approxInterfaceGraph<Order>::accessEdges()
-    -> vector<std::pair<typename vector<Edge>::iterator,
-                        typename vector<EdgeMark>::iterator>> {
+    -> vector<std::tuple<typename vector<Edge>::iterator,
+                        typename vector<EdgeMark>::iterator, int>> {
   using std::vector;
-  vector<std::pair<typename vector<Edge>::iterator,
-                   typename vector<EdgeMark>::iterator>>
+  vector<std::tuple<typename vector<Edge>::iterator,
+                   typename vector<EdgeMark>::iterator, int>>
       ret;
 
   auto& marks = undirectGraph_.edges_;
   auto iterMarks = marks.begin();
   auto iterEdges = edges_.begin();
+  auto iterNotaKnot = notaKnotBoundary_.begin();
   for (; iterMarks != marks.cend(); ++iterMarks, ++iterEdges) {
-    ret.emplace_back(iterEdges, iterMarks);
+    ret.emplace_back(iterEdges, iterMarks, *iterNotaKnot);
   }
 
   return ret;

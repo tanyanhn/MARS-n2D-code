@@ -5,9 +5,7 @@
 #include "Recorder/Timer.h"
 #include "testHeader.h"
 
-#ifdef OPTNONE
-__attribute__((optnone))
-#endif  // OPTNONE
+OPTNONE_FUNC
 void trackInterfaceTest(const string& testName,
                         DebugLevel debugLevel = DebugLevel::OFF) {
   mkdir((rootDir + "/results").c_str(), 0755);
@@ -15,6 +13,7 @@ void trackInterfaceTest(const string& testName,
   auto dir = rootDir + "/results/TrackInterface/" + testName + "/";
   mkdir(dir.c_str(), 0755);
   RecorderInitialize(RecorderInfo{debugLevel, dir});
+  ::Timer::initial();
   SECTION("4-th order") {
     constexpr int Order = 4;
     pushLogStage("Initialize");

@@ -63,9 +63,7 @@ class ERK<Dim, Type, VectorFunction>
     }
     return result;
   }
-// #ifdef OPTNONE
-//   __attribute__((optnone))
-// #endif  // OPTNONE
+  // OPTNONE_FUNC
   void
   timeStep(const VectorFunction<Dim> &v, Vector<Point> &pts, Real tn, Real dt) {
     using Array = VectorFunction<2>::Array;

@@ -11,9 +11,7 @@ void PastingMap<Order, Num, Selector>::removeEdge(const rVec &oldtail, auto &rep
 }
 
 template <int Order, typename Num, class Selector>
-#ifdef OPTNONE
-__attribute__((optnone))
-#endif  // OPTNONE
+OPTNONE_FUNC
 void PastingMap<Order, Num, Selector>::formClosedLoops(vector<OrientedJordanCurve<DIM, Order>> &outCont) {
   if (useCellGraph) return formCellClosedLoops(outCont);
   Crv jordan;
@@ -69,9 +67,7 @@ void PastingMap<Order, Num, Selector>::formClosedLoops(vector<OrientedJordanCurv
 }
 
 template <int Order, typename Num, class Selector>
-#ifdef OPTNONE
-__attribute__((optnone))
-#endif  // OPTNONE
+OPTNONE_FUNC
 void PastingMap<Order, Num, Selector>::formCellClosedLoops(vector<OrientedJordanCurve<DIM, Order>> &outCont) {
   Crv jordan;
   Num oldtail;
@@ -143,9 +139,7 @@ bool OutEdgeSelectorByKnots<Order, Num>::operator()(const size_t &lhsId,
   return compare(lhsId, rhsId) == -1;
 }
 template <int Order, typename Num>
-#ifdef OPTNONE
-__attribute__((optnone))
-#endif  // OPTNONE
+OPTNONE_FUNC
 int OutEdgeSelectorByKnots<Order, Num>::compare(const size_t &lhsId,
                                            const size_t &rhsId) const {
   const auto &lhs = allCrvs[lhsId];

@@ -175,7 +175,7 @@ class Vortex : public VectorFunction<2> {
   }
 
   void operator()(const Array &pts, Real t, Array &output) const override {
-    Timer timer("vectorFunction::operator()");
+    // Timer timer("vectorFunction::operator()");
     // const long N = pts.cols();
 
     const double scale = speed_ * cos(M_PI * t / T_);
@@ -234,7 +234,7 @@ class Deformation : public VectorFunction<2> {
   }
 
   void operator()(const Array &pts, Real t, Array &output) const override {
-    Timer timer("vectorFunction::operator()");
+    // Timer timer("vectorFunction::operator()");
     using namespace Eigen;
 
     const long double scale = cos(M_PI * t / T);

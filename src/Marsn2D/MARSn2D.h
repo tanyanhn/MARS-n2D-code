@@ -66,11 +66,18 @@ class MARSn2D {
   void insertMarks(
       const VelocityField<2> &v, Real preT, Real dt,
       const vector<std::pair<unsigned int, unsigned int>> &indices2Num,
-      EdgeMark &marks, Edge &preEdge, vector<Real> &curv) const;
+      EdgeMark &marks, Edge &preEdge,
+      vector<Real> &curv, vector<Real> &para) const;
   // delete i-th edge by remove i+1-th mark.
   // won't constitute delete mark.
   void removeMarks(const vector<unsigned int> &indices, EdgeMark &marks,
-                   vector<Real> &curv) const;
+                   vector<Real> &curv, vector<Real> &para) const;
+
+  // average split boundary edge ofr not-a-knot spline.
+  void averageSplit(const VelocityField<2> &v, Real preT, Real dt,
+                    EdgeMark &marks, const Edge &preEdge,
+                    vector<Real> &hL, vector<Real> &para,
+                    Real efficientOfHL, int notaKnotLocation) const;
 
   // update hL
   void updateHL(const vector<Real> &curv, const EdgeMark &marks,

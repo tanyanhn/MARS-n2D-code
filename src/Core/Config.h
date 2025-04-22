@@ -90,4 +90,17 @@ inline int newtonMaxIter(int num = -1) noexcept {
 
 inline int defaultHighPrecision = 128;
 
+
+#if defined(OPTNONE)
+#  if defined(__clang__)
+#    define OPTNONE_FUNC __attribute__((optnone))
+#  elif defined(__GNUC__) || defined(__GNUG__)
+#    define OPTNONE_FUNC __attribute__((optimize("O0")))
+#  else
+#    define OPTNONE_FUNC  // 其他编译器忽略
+#  endif
+#else
+#  define OPTNONE_FUNC    // 未定义 OPTNONE 时留空
+#endif
+
 #endif  // CONFIG_H

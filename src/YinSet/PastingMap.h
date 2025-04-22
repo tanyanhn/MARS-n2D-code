@@ -71,9 +71,7 @@ class PastingMap {
 
 template <int Order, typename Num, class Selector>
 template <class T_Crv>
-#ifdef OPTNONE
-__attribute__((optnone))
-#endif  // OPTNONE
+OPTNONE_FUNC
 void PastingMap<Order, Num, Selector>::addEdge(T_Crv&& newEdge, bool necessary) {
   rVec start = newEdge.startpoint();
   auto iter = graph.find(start);
@@ -109,9 +107,7 @@ void PastingMap<Order, Num, Selector>::addEdge(T_Crv&& newEdge, bool necessary) 
 
 template <int Order, typename Num, class Selector>
 template <class T_Crv>
-#ifdef OPTNONE
-__attribute__((optnone))
-#endif  // OPTNONE
+OPTNONE_FUNC
 void PastingMap<Order, Num, Selector>::addCellEdge(T_Crv&& newEdgeIn, Num start, Num end, bool necessary) {
   auto newEdge = newEdgeIn;
   useCellGraph = true;

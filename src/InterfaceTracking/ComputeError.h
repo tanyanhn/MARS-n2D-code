@@ -164,9 +164,7 @@ inline void saveErrorToVTK(const std::vector<std::vector<double>> &error,
 
 // return: each yinset - 2(L^2 and L^\infty) - each grid
 template <int Order>
-#ifdef OPTNONE
-__attribute__((optnone))
-#endif  // OPTNONE
+OPTNONE_FUNC
 Vector<Vector<Vector<Real>>>
 cutCellError(const vector<Marsn2D::approxInterfaceGraph<Order>> &lhss,
              const Marsn2D::approxInterfaceGraph<Order> &rhs, auto &boxs,
@@ -221,9 +219,7 @@ cutCellError(const vector<Marsn2D::approxInterfaceGraph<Order>> &lhss,
     return ret;
   };
   auto checkCellVolume = [range](Vector<Vector<Vector<Real>>> volumes)
-#ifdef OPTNONE
-      __attribute__((optnone))
-#endif  // OPTNONE
+OPTNONE_FUNC
   {
     const size_t Nx = volumes[0].size();
     const size_t Ny = volumes[0][0].size();

@@ -34,7 +34,7 @@ class VectorFunction {
 
   virtual const Vector<Point> operator()(const Vector<Point>& pts,
                                          Real t = 0) const {
-    Timer timer("VectorFunction::operator()");
+    // Timer timer("VectorFunction::operator()");
     int num = pts.size();
     Vector<Point> vel(num);
     for (int i = 0; i < num; i++) {

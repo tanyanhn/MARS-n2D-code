@@ -7,8 +7,8 @@
 class Timer {
  public:
   // 构造函数，初始化计时器名称并记录开始时间
-  explicit Timer(std::string name_)
-      : name_(std::move(name_)), start_(std::chrono::steady_clock::now()) {
+  explicit Timer(std::string name)
+      : name_(std::move(name)), start_(std::chrono::steady_clock::now()) {
     if (!initialized_) return;
     auto iter = accumulatedTimes_.insert({this->name_, {0.0, 0}});
     if (iter.second) names_.push_back(name_);

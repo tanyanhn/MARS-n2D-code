@@ -59,9 +59,7 @@ class Curve {
   // helpers
   int locatePiece(Real t) const;
 
-#ifdef OPTNONE
-  __attribute__((optnone))
-#endif  // OPTNONE
+OPTNONE_FUNC
   rVec
   operator()(Real t) const {
     int p = locatePiece(t);
@@ -87,9 +85,7 @@ class Curve {
     return (*this)(0.5 * (knots.front() + knots.back()));
   }
 
-#ifdef OPTNONE
-  __attribute__((optnone))
-#endif  // OPTNONE
+OPTNONE_FUNC
   bool
   isClosed(Real tol) const {
     auto poly = polys.back() - polys.front()[0];

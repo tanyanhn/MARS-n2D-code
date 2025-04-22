@@ -45,9 +45,7 @@ class Polynomial {
      Evaluate the polynomial at x.
    */
   template <class T2>
-#ifdef OPTNONE
-  __attribute__((optnone))
-#endif  // OPTNONE
+OPTNONE_FUNC
   CoefType
   operator()(const T2 &x) const {
     CoefType val = 0;
@@ -258,9 +256,7 @@ inline Inserter extrema(const Polynomial<Order, CoefType> &poly, Inserter rts,
 }
 
 template <class T_Func, class T_Der>
-#ifdef OPTNONE
-__attribute__((optnone))
-#endif  // OPTNONE
+OPTNONE_FUNC
 inline Real
 fzero(const T_Func &hf, const T_Der &hdf, Real hx0, int maxIter, Real tol) {
   using localReal = Real;
@@ -299,9 +295,7 @@ fzero(const T_Func &hf, const T_Der &hdf, Real hx0, int maxIter, Real tol) {
 }
 
 template <>
-#ifdef OPTNONE
-__attribute__((optnone))
-#endif  // OPTNONE
+OPTNONE_FUNC
 inline Real
 fzero<Polynomial<4, long double>, Polynomial<3, long double>>(
     const Polynomial<4, long double> &hf, const Polynomial<3, long double> &hdf,
