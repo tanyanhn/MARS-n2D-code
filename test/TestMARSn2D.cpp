@@ -13,7 +13,7 @@ void trackInterfaceTest(const string& testName,
   auto dir = rootDir + "/results/TrackInterface/" + testName + "/";
   mkdir(dir.c_str(), 0755);
   RecorderInitialize(RecorderInfo{debugLevel, dir});
-  ::Timer::initial();
+  // ::Timer::initial();
   SECTION("4-th order") {
     constexpr int Order = 4;
     pushLogStage("Initialize");

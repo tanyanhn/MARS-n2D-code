@@ -376,7 +376,7 @@ void MARSn2D<Order, VelocityField>::timeStep(const VelocityField<DIM> &v,
     vector<Real> para = preEdge.getKnots();
     vector<Real> hL;
     Real ARMSDist = 1 * rTiny_;
-    Real splitDist = ARMSDist * 2/3.0;
+    Real splitDist = ARMSDist * 1/3.0;
     discreteFlowMap(v, marks, tn, dt);
 
     if (curvConfig_.used) {
