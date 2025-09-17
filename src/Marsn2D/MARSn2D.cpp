@@ -275,6 +275,7 @@ OPTNONE_FUNC void MARSn2D<Order, VelocityField>::averageSplit(
     const Edge &preEdge, vector<Real> &hL, vector<Real> &para,
     Real efficientOfHL, int notaKnotLocation) const {
   Timer timer("averageSplit()");
+  //TODO(ytan): need more split on pp_1 to prevent >hL edge.
   auto locateSplit = [&v, &preEdge, preT, dt, this](auto &p0, auto &p1, auto hL,
                                                     auto t0,
                                                     auto t1) OPTNONE_FUNC {
@@ -400,7 +401,8 @@ void MARSn2D<Order, VelocityField>::timeStep(const VelocityField<DIM> &v,
        *  since one can delete | rTiny | 1 | rTiny|rightend make 1 + 2 *
        *rTiny_ edge.
        **/
-      locateLongEdges(marks, hL, indices2Num, 1 - ARMSDist);
+      // locateLongEdges(marks, hL, indices2Num, 1 - 2 * ARMSDist);
+      locateLongEdges(marks, hL, indices2Num, 1 - 2 * ARMSDist);
       inserted = !indices2Num.empty();
       if (inserted) {
         insertMarks(v, tn, dt, indices2Num, marks, preEdge, curv, para);
