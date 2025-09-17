@@ -25,14 +25,14 @@ fillColor = getColor();
 fillColor{rows1} = 'k';
 t = linspace(0, 1, cols1);
 figure
-ax1 = axes('FontSize', 14); % 创建坐标轴时直接指定属性
+ax1 = axes('FontSize', 23); % 创建坐标轴时直接指定属性
 hold(ax1, 'on');
 for i = 1:rows1
     plot(ax1, t, A(i, :), 'Color', fillColor{i}, 'LineWidth', 5); hold on;
 end
 hold(ax1, 'off');
 figure
-ax2 = axes('FontSize', 14); % 创建坐标轴时直接指定属性
+ax2 = axes('FontSize', 23); % 创建坐标轴时直接指定属性
 hold(ax2, 'on');
 for i = 1:rows2
     plot(ax2, t, B(i, :), 'Color', fillColor{i}, 'LineWidth', 5); hold on;
