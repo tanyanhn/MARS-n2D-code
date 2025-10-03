@@ -1,4 +1,4 @@
-function saveFiguresAsFrames(outputDir, figHandles, varargin)
+function saveFiguresAsFrames(outputDir, figHandles, ks, varargin)
 %SAVEFIGURESASFRAMES 将一组 figure 保存为有序 PNG 帧图像
 %
 % 用法：
@@ -56,7 +56,7 @@ function saveFiguresAsFrames(outputDir, figHandles, varargin)
         end
 
         % 构造文件名
-        filename = fullfile(outputDir, sprintf('%s%03d.png', prefix, k));
+        filename = fullfile(outputDir, sprintf('%s%03d.png', prefix, k + ks));
 
         % 保存图像
         if verLessThan('matlab', '9.8') % R2020a 之前
