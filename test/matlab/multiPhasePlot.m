@@ -1,5 +1,6 @@
 %% MARS plot
 close all
+fclose('all')
 % clear
 % hold on
 lineColor = '';
@@ -9,21 +10,21 @@ dir = "results/";
 Shape = "Graph";
 % part = 5;
 part = 41;
-% vel = 'Vortex';
-vel = "Deformation";
+vel = 'Vortex';
+% vel = 'Deformation';
 dynamic = "Dynamic";
-T = 4;
-sh = 256;
+T = 16;
 Order = 4;
 filedir = dir + Shape + num2str(part) + vel + "T" + num2str(T) + "Order" + num2str(Order)+ dynamic + "/";
 grid = 32;
-steps = 32;
+steps = 31;
+stepSize = 132;
 type = "_c.dat";
 % type = "_f.dat";
 figHandles = [];
 for plotI = 0:1:steps
 %     step = T * grid * steps * plotT;
-    step = T * sh * plotI / steps;
+    step = plotI * stepSize;
     filename = "1Order4_grid" + num2str(grid) + "_Step" + num2str(step) + type;
     f = figure;
     figHandles = [figHandles f];
