@@ -25,6 +25,9 @@ figHandles = [];
 for plotI = 0:1:steps
 %     step = T * grid * steps * plotT;
     step = plotI * stepSize;
+    if plotI == steps
+        step = T * 256;
+    end
     filename = "1Order4_grid" + num2str(grid) + "_Step" + num2str(step) + type;
     f = figure;
     figHandles = [figHandles f];
