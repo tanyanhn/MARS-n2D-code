@@ -32,7 +32,7 @@
   "plot": {
       "plotOutput": 2,
       "plotInner": true,
-      "plotStride": 32,
+      "plotStride": 127,
       "printDetail": false
   },
   "domain_disk": {             
