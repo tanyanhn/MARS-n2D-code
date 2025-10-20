@@ -1,36 +1,36 @@
 %% MARS plot
 close all
-fclose('all')
+fclose('all');
 % clear
 % hold on
 lineColor = '';
-fillColor = getColor();
+% fillColor = getColor();
+fillColor = {'g','b','r','g','c'};
 dir = "results/";
-% Shape = "Disk";
-Shape = "Graph";
-% part = 5;
-part = 41;
+Shape = "Disk";
+% Shape = "Graph";
+part = 4;
+% part = 41;
 vel = 'Vortex';
 % vel = 'Deformation';
 dynamic = "Dynamic";
-T = 16;
+T = 4;
 Order = 4;
 filedir = dir + Shape + num2str(part) + vel + "T" + num2str(T) + "Order" + num2str(Order)+ dynamic + "/";
 grid = 32;
-steps = 31;
-stepSize = 132;
-type = "_c.dat";
-% type = "_f.dat";
+steps = 4;
+stepSize = 512;
+% type = "_c.dat"; plotF = false;
+type = "_f.dat"; plotF = true;
 figHandles = [];
 for plotI = 0:1:steps
-%     step = T * grid * steps * plotT;
+%     plotI = 1;
     step = plotI * stepSize;
     if plotI == steps
         step = T * 256;
     end
     filename = "1Order4_grid" + num2str(grid) + "_Step" + num2str(step) + type;
     f = figure;
-    figHandles = [figHandles f];
     if part == 41
         part = 5;
     end
@@ -65,17 +65,26 @@ for plotI = 0:1:steps
             if ~tensor
                 sf = readYinSet(hd);
                 plotYinSet(sf, lineColor, fillColor{k}); hold on
+                clear sf;
             else
                 vecSf = readVecYinSet(hd);
                 if k == part + 1
                     continue;
                 end
-                for i=1:1:length(vecSf)
-                    plotYinSet(vecSf{i}, lineColor, fillColor{k}); hold on
+                if plotF 
+                    for i=length(vecSf)-1:-1:1
+                        plotYinSet(vecSf{i}, lineColor, fillColor{i}); hold on
+                    end
+                else 
+                    for i=1:1:length(vecSf)
+                        plotYinSet(vecSf{i}, lineColor, fillColor{k}); hold on
+                    end
                 end
+                clear vecSf;
             end
         end
     end
+    saveFiguresAsFrames(vel, [f], plotI);
+    close(f);
     fclose(hd);
 end
-saveFiguresAsFrames(vel, figHandles);

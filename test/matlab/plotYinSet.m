@@ -3,6 +3,8 @@ function plotYinSet(sf, lineColor, fillColor, lineWidth, offset)
         return;
     end
     minesVolume = -1e-8;
+    plotMarks = false;
+    plotMarks = true;
     
     if nargin < 5
         offset = [0 0];
@@ -29,11 +31,14 @@ function plotYinSet(sf, lineColor, fillColor, lineWidth, offset)
         if abs(a(c)) > abs(amax), amax = a(c); end
         if a(c) > 0
             fillcolor{c} = fillColor;
-            linestyle{c} = '-';
+            linestyle{c} = '.';
             fillAlpha{c} = 0.7;
+            if plotMarks
+                lineColor = 'b';
+            end
         elseif a(c) < minesVolume
             fillcolor{c} = 'w';
-            linestyle{c} = ':';
+            linestyle{c} = '.';
             fillAlpha{c} = 1;
         end
     end
@@ -46,11 +51,18 @@ function plotYinSet(sf, lineColor, fillColor, lineWidth, offset)
     
     % plot the boundary or fill the interior
     for c=1:numel(sf)
-        verts = linearizeSpline(sf{c}, 2)';
+        subdiv=100;
+        verts = linearizeSpline(sf{c}, subdiv)';
         verts = verts + offset;
         if filled && abs(a(c)) > -minesVolume
             fill(verts(:,1),verts(:,2), fillcolor{c}, ...
                 'EdgeColor', 'k', 'FaceAlpha', fillAlpha{c});
+            if plotMarks
+                plot(verts(1:subdiv:end,1),verts(1:subdiv:end,2), ...
+                    [lineColor,linestyle{c}], ...
+                    'LineWidth', lineWidth, ...
+                    'MarkerSize', 30);
+            end
         else
             plot(verts(:,1),verts(:,2), ...
                 [lineColor,linestyle{c}], ...

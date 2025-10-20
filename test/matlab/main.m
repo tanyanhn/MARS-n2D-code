@@ -11,8 +11,9 @@ filedir = "results/InterfaceGraph/";
 % filename = "spadjor-13.input.dat";
 Order = 2;
 N = 512;
-Shape = "Circle";
+% Shape = "Circle";
 % Shape = "Rectangle";
+Shape = "Graph41";
 filename = num2str(Order) + Shape + num2str(N) + ".dat";
 
 hd = fopen(filedir + filename);
