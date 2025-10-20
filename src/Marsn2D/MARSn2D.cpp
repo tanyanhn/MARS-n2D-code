@@ -444,6 +444,7 @@ void MARSn2D<Order, VelocityField>::timeStep(const VelocityField<DIM> &v,
   for (auto [edgeIter, markIter, notaKnotLocation] : mark_edge) {
     insertCount = 0;
     removeCount = 0;
+    // discreteFlowMap(v, *markIter, tn, dt);
     stepCrv(*edgeIter, *markIter, notaKnotLocation);
     if (printDetail) {
       std::cout << fmt::v11::format("Insert: {}, Remove: {}. \n", insertCount,

@@ -54,6 +54,9 @@ void trackInterfaceTest(const string& testName,
   RecorderFinalize();
 }
 
+TEST_CASE("Dynamic Disk 4 vortex T = 4, Order = 4", "[Disk4][Vortex][T4][Order4][Dynamic]") {
+  trackInterfaceTest("Disk4VortexT4Order4Dynamic");
+}
 TEST_CASE("Dynamic Disk 5 deformation T = 2, Order = 4",
           "[Disk5][Deformation][T2][Order4][Dynamic]") {
   trackInterfaceTest("Disk5DeformationT2Order4Dynamic");
