@@ -1,5 +1,6 @@
 %% MARS plot
 close all
+<<<<<<< Updated upstream
 fclose('all');
 % clear
 % hold on
@@ -7,21 +8,43 @@ lineColor = '';
 % fillColor = getColor();
 fillColor = {'g','b','r','g','c'};
 dir = "results/";
+=======
+fclose('all')
+clear
+addpath 'export_fig-3.54'
+% hold on
+lineColor = '';
+fillColor = getColor();
+% dir = "results/";
+dir = "../../results/TrackInterface/";
+>>>>>>> Stashed changes
 Shape = "Disk";
 % Shape = "Graph";
 part = 4;
 % part = 41;
 vel = 'Vortex';
 % vel = 'Deformation';
+<<<<<<< Updated upstream
 dynamic = "Dynamic";
 T = 4;
+=======
+dynamic = "";
+% dynamic = "Dynamic";
+T = 16;
+>>>>>>> Stashed changes
 Order = 4;
 filedir = dir + Shape + num2str(part) + vel + "T" + num2str(T) + "Order" + num2str(Order)+ dynamic + "/";
 grid = 32;
 steps = 4;
+<<<<<<< Updated upstream
 stepSize = 512;
 % type = "_c.dat"; plotF = false;
 type = "_f.dat"; plotF = true;
+=======
+stepSize = 1024;
+type = "_c.dat";
+% type = "_f.dat";
+>>>>>>> Stashed changes
 figHandles = [];
 for plotI = 0:1:steps
 %     plotI = 1;
@@ -88,3 +111,8 @@ for plotI = 0:1:steps
     close(f);
     fclose(hd);
 end
+<<<<<<< Updated upstream
+=======
+saveFiguresAsFrames(vel, figHandles, 0, 'Tight', 1);
+
+>>>>>>> Stashed changes

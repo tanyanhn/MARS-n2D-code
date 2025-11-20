@@ -17,13 +17,15 @@ function saveFiguresAsFrames(outputDir, figHandles, ks, varargin)
     p = inputParser;
     addRequired(p, 'outputDir', @ischar);
     addRequired(p, 'figHandles', @(x) isvector(x) && all(isvalid(x)) && all(strcmp({x.Type}, 'figure')));
+    addParameter(p, 'Tight', 0, @(x) isnumeric(x));
     addParameter(p, 'XLim', [0 1], @(x) isempty(x) || (isnumeric(x) && numel(x)==2));
     addParameter(p, 'YLim', [0 1], @(x) isempty(x) || (isnumeric(x) && numel(x)==2));
     addParameter(p, 'Resolution', 150, @(x) isnumeric(x) && x > 0);
     addParameter(p, 'BackgroundColor', 'white', @ischar);
     addParameter(p, 'Prefix', 'frame', @ischar);
     parse(p, outputDir, figHandles, varargin{:});
-
+    
+    tight = p.Results.Tight;
     xlim_range = p.Results.XLim;
     ylim_range = p.Results.YLim;
     resolution = p.Results.Resolution;
@@ -44,29 +46,34 @@ function saveFiguresAsFrames(outputDir, figHandles, ks, varargin)
         fig.Color = bg_color;
         
         % 获取第一个 axes（如有）
-        axList = findobj(fig, 'Type', 'axes');
-        if ~isempty(axList)
-            ax = axList(1); % 取第一个坐标轴
-            if ~isempty(xlim_range)
-                xlim(ax, xlim_range);
+        if ~tight
+            axList = findobj(fig, 'Type', 'axes');
+            if ~isempty(axList)
+                ax = axList(1); % 取第一个坐标轴
+                if ~isempty(xlim_range)
+                    xlim(ax, xlim_range);
+                end
+                if ~isempty(ylim_range)
+                    ylim(ax, ylim_range);
+                end
             end
-            if ~isempty(ylim_range)
-                ylim(ax, ylim_range);
-            end
+        else 
+            axis equal tight;
         end
 
         % 构造文件名
         filename = fullfile(outputDir, sprintf('%s%03d.png', prefix, k + ks));
 
         % 保存图像
-        if verLessThan('matlab', '9.8') % R2020a 之前
-            print(fig, '-dpng', ['-r' num2str(resolution)], filename);
-        else
-            exportgraphics(fig, filename, ...
-                'Resolution', resolution, ...
-                'ContentType', 'auto', ...
-                'BackgroundColor', bg_color);
-        end
+        % if verLessThan('matlab', '9.8') % R2020a 之前
+        %     print(fig, '-dpng', ['-r' num2str(resolution)], filename);
+        % else
+        %     exportgraphics(fig, filename, ...
+        %         'Resolution', resolution, ...
+        %         'ContentType', 'auto', ...
+        %         'BackgroundColor', bg_color);
+        % end
+        export_fig('-q101', '-m10', fig, filename);
 
         fprintf('Saved: %s\n', filename);
     end
