@@ -17,7 +17,7 @@ function saveFiguresAsFrames(outputDir, figHandles, ks, varargin)
     p = inputParser;
     addRequired(p, 'outputDir', @ischar);
     addRequired(p, 'figHandles', @(x) isvector(x) && all(isvalid(x)) && all(strcmp({x.Type}, 'figure')));
-    addParameter(p, 'Tight', 0, @(x) isnumeric(x));
+    addParameter(p, 'Tight', 1, @(x) isnumeric(x));
     addParameter(p, 'XLim', [0 1], @(x) isempty(x) || (isnumeric(x) && numel(x)==2));
     addParameter(p, 'YLim', [0 1], @(x) isempty(x) || (isnumeric(x) && numel(x)==2));
     addParameter(p, 'Resolution', 150, @(x) isnumeric(x) && x > 0);
@@ -62,7 +62,7 @@ function saveFiguresAsFrames(outputDir, figHandles, ks, varargin)
         end
 
         % 构造文件名
-        filename = fullfile(outputDir, sprintf('%s%03d.png', prefix, k + ks));
+        filename = fullfile(outputDir, sprintf('%s%03d', prefix, k + ks));
 
         % 保存图像
         % if verLessThan('matlab', '9.8') % R2020a 之前
@@ -73,7 +73,8 @@ function saveFiguresAsFrames(outputDir, figHandles, ks, varargin)
         %         'ContentType', 'auto', ...
         %         'BackgroundColor', bg_color);
         % end
-        export_fig('-q101', '-m10', fig, filename);
+        export_fig(fig, filename, '-png', '-q101', '-m7');
+        % export_fig(fig, filename, '-eps', '-q101', '-m10');
 
         fprintf('Saved: %s\n', filename);
     end

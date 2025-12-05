@@ -4,13 +4,13 @@ function plotYinSet(sf, lineColor, fillColor, lineWidth, offset)
     end
     minesVolume = -1e-8;
     plotMarks = false;
-    plotMarks = true;
+    % plotMarks = true;
     
     if nargin < 5
         offset = [0 0];
     end
     if nargin < 4
-        lineWidth = 1;
+        lineWidth = 0.5;
     end
     if nargin < 2
         fillColor = 'y';
@@ -29,10 +29,10 @@ function plotYinSet(sf, lineColor, fillColor, lineWidth, offset)
     for c=1:numel(sf)
         a(c) = signedArea(linearizeSpline(sf{c})');
         if abs(a(c)) > abs(amax), amax = a(c); end
-        if a(c) > 0
+        if a(c) >= minesVolume
             fillcolor{c} = fillColor;
             linestyle{c} = '.';
-            fillAlpha{c} = 0.7;
+            fillAlpha{c} = 1;
             if plotMarks
                 lineColor = 'b';
             end
@@ -56,7 +56,8 @@ function plotYinSet(sf, lineColor, fillColor, lineWidth, offset)
         verts = verts + offset;
         if filled && abs(a(c)) > -minesVolume
             fill(verts(:,1),verts(:,2), fillcolor{c}, ...
-                'EdgeColor', 'k', 'FaceAlpha', fillAlpha{c});
+                'EdgeColor', 'k', 'FaceAlpha', fillAlpha{c}, ...
+                'LineStyle', '-'); %, 'LineWidth', 0.1
             if plotMarks
                 plot(verts(1:subdiv:end,1),verts(1:subdiv:end,2), ...
                     [lineColor,linestyle{c}], ...
@@ -64,10 +65,13 @@ function plotYinSet(sf, lineColor, fillColor, lineWidth, offset)
                     'MarkerSize', 30);
             end
         else
-            plot(verts(:,1),verts(:,2), ...
-                [lineColor,linestyle{c}], ...
-                'LineWidth', lineWidth, ...
-                'MarkerSize', 10);
+            fill(verts(:,1),verts(:,2), fillcolor{c}, ...
+                'EdgeColor', 'k', 'FaceAlpha', fillAlpha{c}, ...
+                'LineStyle', '-'); %, 'LineWidth', 0.1
+            % plot(verts(:,1),verts(:,2), ...
+            %     [lineColor,linestyle{c}], ...
+            %     'LineWidth', lineWidth, ...
+            %     'MarkerSize', 30);
         end
     end
     

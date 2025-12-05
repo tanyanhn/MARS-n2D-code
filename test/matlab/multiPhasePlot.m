@@ -1,8 +1,8 @@
 %% MARS plot
 close all
-fclose('all')
+fclose('all');
 clear
-addpath 'export_fig-3.54'
+addpath 'export_fig-3.54';
 % hold on
 lineColor = '';
 fillColor = getColor();
@@ -16,14 +16,14 @@ vel = 'Vortex';
 % vel = 'Deformation';
 dynamic = "";
 % dynamic = "Dynamic";
-T = 16;
+T = 4;
 Order = 4;
 filedir = dir + Shape + num2str(part) + vel + "T" + num2str(T) + "Order" + num2str(Order)+ dynamic + "/";
 grid = 32;
 steps = 4;
-stepSize = 512;
-% type = "_c.dat"; plotF = false;
-type = "_f.dat"; plotF = true;
+stepSize = 256;
+type = "_c.dat"; plotF = false;
+% type = "_f.dat"; plotF = true;
 figHandles = [];
 for plotI = 0:1:steps
 %     plotI = 1;
@@ -90,5 +90,5 @@ for plotI = 0:1:steps
     close(f);
     fclose(hd);
 end
-saveFiguresAsFrames(vel, figHandles, 0, 'Tight', 1);
+% saveFiguresAsFrames(vel, figHandles, 0, 'Tight', 1);
 
