@@ -36,4 +36,5 @@
       "stod",
       "Verner"
     ],
+    "chatgpt.commentCodeLensEnabled": true,
 }
