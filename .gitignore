@@ -11,6 +11,7 @@ test/matlab/png/
 *.asv
 tmpos.dat
 *.vtk
+*.mat
 00Result.txt
 aResult.txt
 # Graph41.input

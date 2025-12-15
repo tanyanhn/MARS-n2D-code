@@ -24,6 +24,7 @@ end
 
 % 生成累积距离参数t (从0开始)
 t = [0, cumsum(d)];
+t = t / t(end);
 knots = aptknt(t,k);
 spline_x = spapi(knots, t, points(1,:));
 spline_y = spapi(knots, t, points(2,:));

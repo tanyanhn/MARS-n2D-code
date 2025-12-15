@@ -99,7 +99,7 @@ function curves = constructSmoothCurves(V, E, S, opts)
                 break;
             end
             visited(nEdge + 1) = true;
-            nDir = flag_to_dir(nFlag);
+            nDir = flag_to_dir(1 - nFlag);
             [edgeList, ctrlList] = prepend_edge(edgeList, ctrlList, E, nEdge, nDir);
             currEdge = nEdge; currDir = nDir;
         end
@@ -115,13 +115,14 @@ function curves = constructSmoothCurves(V, E, S, opts)
         tailDir = edgeList(end).dir; tailId = edgeList(end).edgeId;
         headFlag = (headDir == 1) * 0 + (headDir == -1) * 1;
         tailFlag = (tailDir == 1) * 1 + (tailDir == -1) * 0;
-        isClosed = ~forwardOpen && ~backwardOpen;
-        if isClosed
-            % 严格检查首尾连通
-            nf1 = nextEdge(headId + 1, headFlag + 1);
-            nf2 = nextEdge(tailId + 1, tailFlag + 1);
-            isClosed = ~isnan(nf1) && ~isnan(nf2);
-        end
+        isClosed = (size(samples, 1) > 1 && norm(samples(end, :) - samples(1, :)) < 1e-9);
+        % isClosed = ~forwardOpen && ~backwardOpen;
+        % if isClosed
+        %     % 严格检查首尾连通
+        %     nf1 = nextEdge(headId + 1, headFlag + 1);
+        %     nf2 = nextEdge(tailId + 1, tailFlag + 1);
+        %     isClosed = ~isnan(nf1) && ~isnan(nf2);
+        % end
 
         c = struct( ...
             'edges', edgeList, ...
@@ -201,15 +202,16 @@ function [samples, breaks] = sample_chain(ctrlList, maxStep, minSamples)
             startIdx = size(samples, 1) + 1;
             if ~isempty(samples)
                 segPts = segPts(2:end, :); % 去掉重复端点
+                startIdx = startIdx - 1;
             end
             samples = [samples; segPts]; %#ok<AGROW>
             breaks(segCounter, 1) = startIdx;
         end
     end
     % 闭合时去掉重复首尾
-    if size(samples, 1) > 1 && norm(samples(end, :) - samples(1, :)) < 1e-9
-        samples = samples(1:end-1, :);
-    end
+    % if size(samples, 1) > 1 && norm(samples(end, :) - samples(1, :)) < 1e-9
+    %     samples = samples(1:end-1, :);
+    % end
 end
 
 function pts = sample_bezier(p, maxStep, minSamples)

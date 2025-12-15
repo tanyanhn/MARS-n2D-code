@@ -4,6 +4,8 @@
 #include "Marsn2D/InterfaceGraph.h"
 #include "Marsn2D/MARSReadJson.hpp"
 #include "Recorder/Recorder.h"
+#include <tuple>
+#include <fstream>
 
 namespace Marsn2D {
 
@@ -36,6 +38,29 @@ struct InterfaceGraphFactory {
   template <int Order>
   static auto markCurve(const Curve<DIM, Order>& crv, Real hL, Real lo = 1,
                         Real hi = -1);
+  struct SplineCurvePP {
+    uint32_t order{};
+    std::vector<Real> breaks;
+    std::vector<Real> coefsX;
+    std::vector<Real> coefsY;
+  };
+  struct SplineEdgeRef {
+    int v1{}, v2{}, idx{};
+    int curveId{-1};
+    int dir{0};   // +1 v1->v2, -1 reverse
+    Real t0{0}, t1{0};
+  };
+  struct BoundaryEdge {
+    int edgeId{};
+    int dir{};  // +1 v1->v2, -1 reverse
+  };
+  struct SmoothPair {
+    int eA{}, fA{}, eB{}, fB{};
+  };
+  static auto inputFromSVG(const std::string& binPath)
+      -> std::tuple<vector<Point>, vector<SplineEdgeRef>, vector<SplineCurvePP>,
+                    vector<vector<SmoothPair>>,
+                    vector<vector<vector<BoundaryEdge>>>>;
 };
 
 OPTNONE_FUNC
@@ -588,14 +613,144 @@ auto diskTEST(const std::string& jsonFile) {
                       plotConfig, printDetail, t0, vecDt, te, T, timeIntegrator,
                       velocityPtr);
   }
-  // if (params.domain.name == "Graph41") {
-  auto exactDomain = InterfaceGraphFactory::createGraph41<Order>(initialDist);
+  if (params.domain.name == "Graph41") {
+    auto exactDomain = InterfaceGraphFactory::createGraph41<Order>(initialDist);
 
-  return make_tuple(vecDomain, exactDomain, radius, exactArea, exactLength,
-                    vecBox, vecN, aimOrder, vecHL, rTiny, nGrid, curvConfig,
-                    plotConfig, printDetail, t0, vecDt, te, T, timeIntegrator,
-                    velocityPtr);
-  // }
+    return make_tuple(vecDomain, exactDomain, radius, exactArea, exactLength,
+                      vecBox, vecN, aimOrder, vecHL, rTiny, nGrid, curvConfig,
+                      plotConfig, printDetail, t0, vecDt, te, T, timeIntegrator,
+                      velocityPtr);
+  }
+}
+
+inline auto InterfaceGraphFactory::inputFromSVG(
+    const std::string& binPath)
+    -> std::tuple<vector<Point>, vector<SplineEdgeRef>, vector<SplineCurvePP>, vector<vector<SmoothPair>>,
+    vector<vector<vector<BoundaryEdge>>>> {
+  std::ifstream in(binPath, std::ios::binary);
+  if (!in) {
+    throw std::runtime_error("Failed to open file: " + binPath);
+  }
+
+  auto readBytes = [&](auto& val) {
+    using T = std::decay_t<decltype(val)>;
+    in.read(reinterpret_cast<char*>(&val), sizeof(T));
+    if (!in) throw std::runtime_error("Unexpected EOF in " + binPath);
+  };
+
+  auto readVec = [&](auto& vec, size_t n) {
+    using T = typename std::decay_t<decltype(vec)>::value_type;
+    vec.resize(n);
+    if (n == 0) return;
+    in.read(reinterpret_cast<char*>(vec.data()), sizeof(T) * n);
+    if (!in) throw std::runtime_error("Unexpected EOF in " + binPath);
+  };
+
+  // header
+  char magic[4];
+  in.read(magic, 4);
+  if (std::string(magic, 4) != "GEOB") {
+    throw std::runtime_error("Invalid magic in " + binPath);
+  }
+  uint32_t version;
+  readBytes(version);
+  if (version != 1) {
+    throw std::runtime_error("Unsupported version in " + binPath);
+  }
+
+  uint32_t numV, numE, numCurves;
+  readBytes(numV);
+  readBytes(numE);
+  readBytes(numCurves);
+  uint32_t numRegions = 0;
+  if (version >= 2) {
+    readBytes(numRegions);
+  }
+
+  // V
+  std::vector<Real> vbuf(2 * numV);
+  readVec(vbuf, vbuf.size());
+  vector<Point> V(numV);
+  for (uint32_t i = 0; i < numV; ++i) {
+    V[i] = Point{vbuf[i], vbuf[numV + i]};
+  }
+
+  // Edges meta
+  vector<SplineEdgeRef> edges(numE);
+  for (uint32_t i = 0; i < numE; ++i) {
+    int32_t v1, v2, idx, curveId;
+    int8_t dir;
+    Real t0, t1;
+    readBytes(v1);
+    readBytes(v2);
+    readBytes(idx);
+    readBytes(curveId);
+    readBytes(dir);
+    readBytes(t0);
+    readBytes(t1);
+    edges[i] = {v1, v2, idx, curveId, static_cast<int>(dir), t0, t1};
+  }
+
+  // Curves spline
+  vector<SplineCurvePP> splines(numCurves);
+  for (uint32_t ci = 0; ci < numCurves; ++ci) {
+    uint32_t order, nSeg;
+    readBytes(order);
+    readBytes(nSeg);
+    SplineCurvePP sc;
+    sc.order = order;
+    readVec(sc.breaks, nSeg + 1);
+    size_t coefCount = static_cast<size_t>(nSeg) * order;
+    readVec(sc.coefsX, coefCount);
+    readVec(sc.coefsY, coefCount);
+    splines[ci] = std::move(sc);
+  }
+
+  // Smoothness
+  vector<vector<SmoothPair>> smooth(numV);
+  for (uint32_t vi = 0; vi < numV; ++vi) {
+    uint32_t pairCount;
+    readBytes(pairCount);
+    if (pairCount == 0) continue;
+    vector<int32_t> ebuf(2 * pairCount);
+    vector<int8_t> fbuf(2 * pairCount);
+    in.read(reinterpret_cast<char*>(ebuf.data()),
+            sizeof(int32_t) * ebuf.size());
+    in.read(reinterpret_cast<char*>(fbuf.data()),
+            sizeof(int8_t) * fbuf.size());
+    if (!in) throw std::runtime_error("Unexpected EOF in " + binPath);
+    for (uint32_t k = 0; k < pairCount; ++k) {
+      smooth[vi].push_back(
+          SmoothPair{ebuf[2 * k + 0], fbuf[2 * k + 0], ebuf[2 * k + 1],
+                     fbuf[2 * k + 1]});
+    }
+  }
+
+  // Regions / boundaries (version >= 2)
+  vector<vector<vector<BoundaryEdge>>> regions;
+  if (numRegions > 0) {
+    regions.resize(numRegions);
+    for (uint32_t ri = 0; ri < numRegions; ++ri) {
+      uint32_t numB;
+      readBytes(numB);
+      regions[ri].resize(numB);
+      for (uint32_t bi = 0; bi < numB; ++bi) {
+        uint32_t edgeCount;
+        readBytes(edgeCount);
+        regions[ri][bi].resize(edgeCount);
+        for (uint32_t ej = 0; ej < edgeCount; ++ej) {
+          int32_t edgeId;
+          int8_t dir;
+          readBytes(edgeId);
+          readBytes(dir);
+          regions[ri][bi][ej] = BoundaryEdge{edgeId, dir};
+        }
+      }
+    }
+  }
+
+  return {std::move(V), std::move(edges), std::move(splines),
+          std::move(smooth), std::move(regions)};
 }
 
 }  // namespace Marsn2D
