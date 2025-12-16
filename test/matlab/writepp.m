@@ -1,5 +1,5 @@
 function writepp(handle, xsp, ysp)
-    tmp = [xsp.dim, xsp.order, xsp.pieces];
+    tmp = [xsp.dim + ysp.dim, xsp.order, xsp.pieces];
     fwrite(handle, tmp, 'int');
     fwrite(handle, xsp.breaks, 'double');
     xco = xsp.coefs';

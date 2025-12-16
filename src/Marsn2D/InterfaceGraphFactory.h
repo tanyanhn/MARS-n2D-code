@@ -6,6 +6,7 @@
 #include "Recorder/Recorder.h"
 #include <tuple>
 #include <fstream>
+#include <algorithm>
 
 namespace Marsn2D {
 
@@ -54,13 +55,16 @@ struct InterfaceGraphFactory {
     int edgeId{};
     int dir{};  // +1 v1->v2, -1 reverse
   };
+  struct BoundaryLoop {
+    std::array<int, 3> color{};
+    vector<BoundaryEdge> edges;
+  };
   struct SmoothPair {
     int eA{}, fA{}, eB{}, fB{};
   };
-  static auto inputFromSVG(const std::string& binPath)
-      -> std::tuple<vector<Point>, vector<SplineEdgeRef>, vector<SplineCurvePP>,
-                    vector<vector<SmoothPair>>,
-                    vector<vector<vector<BoundaryEdge>>>>;
+  template <int Order>
+  static auto inputFromSVG(const std::string& binPath, Real hL = 1e-3)
+      -> approxInterfaceGraph<Order>;
 };
 
 OPTNONE_FUNC
@@ -182,21 +186,23 @@ auto InterfaceGraphFactory::markCurve(const Curve<DIM, Order>& crv, Real hL, Rea
   ptsT.push_back(0);
   for (int i = 0; i < num; i++) {
     auto pi1 = eValue(crv, step * (i + 1));
+    Real remain = step;
     while (true) {
       if (norm(pi1 - pts.back()) < localHL) {
         pts.push_back(pi1);
         ptsT.push_back(step * (i + 1));
         break;
       }
-      Real localStep = step / 2;
-      Real angle = step * i + localStep;
+      Real localStep = remain / 2;
+      Real angle = step * (i + 1) - remain + localStep;
       Point local = eValue(crv, angle);
       while (norm(pts.back() - local) > localHL) {
         localStep /= 2;
-        angle = step * i + localStep;
+        angle = step * (i + 1) - remain + localStep;
         local = eValue(crv, angle);
       }
       pts.push_back(local);
+      remain -= localStep;
       ptsT.push_back(angle);
     }
   }
@@ -395,17 +401,17 @@ auto InterfaceGraphFactory::createGraph41(Real hL)
   // read tangle curve from file
   auto root = std::string(ROOT_DIR);
   std::ifstream infile(root + "/test/data1/Graph41.input");
-  auto readPts = [](auto& infile) {
-    int num;
-    infile.read((char*)&num, sizeof(num));
-    vector<Real> xy(2UL * num);
-    infile.read((char*)xy.data(), 2UL * num * sizeof(Real));
-    vector<Point> pts;
-    for (int i = 0; i < num; i++) {
-      pts.push_back(Point{xy[2UL * i], xy[2UL * i + 1]});
-    }
-    return pts;
-  };
+  // auto readPts = [](auto& infile) {
+  //   int num;
+  //   infile.read((char*)&num, sizeof(num));
+  //   vector<Real> xy(2UL * num);
+  //   infile.read((char*)xy.data(), 2UL * num * sizeof(Real));
+  //   vector<Point> pts;
+  //   for (int i = 0; i < num; i++) {
+  //     pts.push_back(Point{xy[2UL * i], xy[2UL * i + 1]});
+  //   }
+  //   return pts;
+  // };
 
   auto crv1 = Curve<2, 6>::load(infile);
   auto crv2 = Curve<2, 6>::load(infile);
@@ -592,6 +598,9 @@ auto diskTEST(const std::string& jsonFile) {
       vecDomain.emplace_back(std::move(disk));
     } else if (params.domain.name == "Graph41") {
       vecDomain.emplace_back(InterfaceGraphFactory::createGraph41<Order>(initialDist));
+    } else if (params.domain.name == "raccoon") {
+      string path = std::string(ROOT_DIR) + "/test/data1/Raccoon.input";
+      vecDomain.emplace_back(InterfaceGraphFactory::inputFromSVG<Order>(path,  initialDist));
     }
     vecN.emplace_back(N);
     vecBox.emplace_back(0, N - 1);
@@ -621,12 +630,19 @@ auto diskTEST(const std::string& jsonFile) {
                       plotConfig, printDetail, t0, vecDt, te, T, timeIntegrator,
                       velocityPtr);
   }
+  // if (params.domain.name == "raccoon") {
+  auto exactDomain = InterfaceGraphFactory::createGraph41<Order>(initialDist);
+  return make_tuple(vecDomain, exactDomain, radius, exactArea, exactLength,
+                    vecBox, vecN, aimOrder, vecHL, rTiny, nGrid, curvConfig,
+                    plotConfig, printDetail, t0, vecDt, te, T, timeIntegrator,
+                    velocityPtr);
+  // }
 }
 
-inline auto InterfaceGraphFactory::inputFromSVG(
-    const std::string& binPath)
-    -> std::tuple<vector<Point>, vector<SplineEdgeRef>, vector<SplineCurvePP>, vector<vector<SmoothPair>>,
-    vector<vector<vector<BoundaryEdge>>>> {
+template <int Order>
+OPTNONE_FUNC
+inline auto InterfaceGraphFactory::inputFromSVG(const std::string& binPath,
+                                                Real hL) -> approxInterfaceGraph<Order> {
   std::ifstream in(binPath, std::ios::binary);
   if (!in) {
     throw std::runtime_error("Failed to open file: " + binPath);
@@ -654,25 +670,23 @@ inline auto InterfaceGraphFactory::inputFromSVG(
   }
   uint32_t version;
   readBytes(version);
-  if (version != 1) {
+  if (version != 4) {
     throw std::runtime_error("Unsupported version in " + binPath);
   }
 
-  uint32_t numV, numE, numCurves;
+  uint32_t numV, numE, numCurves, numNB, numYin;
   readBytes(numV);
   readBytes(numE);
   readBytes(numCurves);
-  uint32_t numRegions = 0;
-  if (version >= 2) {
-    readBytes(numRegions);
-  }
+  readBytes(numNB);
+  readBytes(numYin);
 
   // V
   std::vector<Real> vbuf(2 * numV);
   readVec(vbuf, vbuf.size());
   vector<Point> V(numV);
   for (uint32_t i = 0; i < numV; ++i) {
-    V[i] = Point{vbuf[i], vbuf[numV + i]};
+    V[i] = Point{vbuf[2 * i], vbuf[2 * i + 1]};
   }
 
   // Edges meta
@@ -691,19 +705,10 @@ inline auto InterfaceGraphFactory::inputFromSVG(
     edges[i] = {v1, v2, idx, curveId, static_cast<int>(dir), t0, t1};
   }
 
-  // Curves spline
-  vector<SplineCurvePP> splines(numCurves);
+  // Curves (Curve<2,Order>::load)
+  vector<Curve<2, Order + 2>> curves(numCurves);
   for (uint32_t ci = 0; ci < numCurves; ++ci) {
-    uint32_t order, nSeg;
-    readBytes(order);
-    readBytes(nSeg);
-    SplineCurvePP sc;
-    sc.order = order;
-    readVec(sc.breaks, nSeg + 1);
-    size_t coefCount = static_cast<size_t>(nSeg) * order;
-    readVec(sc.coefsX, coefCount);
-    readVec(sc.coefsY, coefCount);
-    splines[ci] = std::move(sc);
+    curves[ci] = Curve<2, Order + 2>::load(in);
   }
 
   // Smoothness
@@ -726,31 +731,77 @@ inline auto InterfaceGraphFactory::inputFromSVG(
     }
   }
 
-  // Regions / boundaries (version >= 2)
-  vector<vector<vector<BoundaryEdge>>> regions;
-  if (numRegions > 0) {
-    regions.resize(numRegions);
-    for (uint32_t ri = 0; ri < numRegions; ++ri) {
-      uint32_t numB;
-      readBytes(numB);
-      regions[ri].resize(numB);
-      for (uint32_t bi = 0; bi < numB; ++bi) {
-        uint32_t edgeCount;
-        readBytes(edgeCount);
-        regions[ri][bi].resize(edgeCount);
-        for (uint32_t ej = 0; ej < edgeCount; ++ej) {
-          int32_t edgeId;
-          int8_t dir;
-          readBytes(edgeId);
-          readBytes(dir);
-          regions[ri][bi][ej] = BoundaryEdge{edgeId, dir};
-        }
-      }
+  // newBoundaries
+  vector<BoundaryLoop> newBoundaries;
+  for (uint32_t bi = 0; bi < numNB; ++bi) {
+    uint8_t col[3];
+    in.read(reinterpret_cast<char*>(col), 3);
+    BoundaryLoop loop;
+    loop.color = {static_cast<int>(col[0]), static_cast<int>(col[1]),
+                  static_cast<int>(col[2])};
+    uint32_t edgeCount;
+    readBytes(edgeCount);
+    loop.edges.resize(edgeCount);
+    for (uint32_t ej = 0; ej < edgeCount; ++ej) {
+      int32_t edgeId;
+      int8_t dir;
+      readBytes(edgeId);
+      readBytes(dir);
+      loop.edges[ej] = BoundaryEdge{edgeId, dir};
+    }
+    newBoundaries.push_back(std::move(loop));
+  }
+  // YinSet boundary索引
+  vector<vector<size_t>> YinSetId;
+  YinSetId.resize(numYin);
+  for (uint32_t yi = 0; yi < numYin; ++yi) {
+    uint8_t col[3];
+    in.read(reinterpret_cast<char*>(col), 3);
+    uint32_t idxCount;
+    readBytes(idxCount);
+    vector<uint32_t> tmp(idxCount);
+    readVec(tmp, idxCount);
+    YinSetId[yi] = vector<size_t>(tmp.begin(), tmp.end());
+  }
+  if (YinSetId.empty()) {
+    YinSetId.push_back({});
+  }
+
+  // 采样样条生成 EdgeMark
+  vector<EdgeMark> edgeMarks(numE);
+  for (uint32_t ei = 0; ei < numE; ++ei) {
+    const auto& ref = edges[ei];
+    if (ref.curveId < 0 || ref.curveId >= (int)numCurves) continue;
+    const auto& crv = curves[ref.curveId];
+    double t0 = ref.t0;
+    double t1 = ref.t1;
+    if (ref.dir < 0) std::swap(t0, t1);
+    auto pts = markCurve(crv, hL, t0, t1);
+    if (ref.dir < 0) {
+      std::reverse(pts.begin(), pts.end());
+    }
+    edgeMarks[ei] = std::move(pts);
+  }
+
+  // cyclesEdgesId 来自 newBoundaries (若无则 regions)
+  vector<vector<EdgeIndex>> cyclesEdgesId(newBoundaries.size());
+  for (size_t i = 0; i < newBoundaries.size(); ++i) {
+    for (const auto& e : newBoundaries[i].edges) {
+      cyclesEdgesId[i].push_back((int)(e.edgeId + 1) * (e.dir >= 0 ? 1 : -1));
     }
   }
 
-  return {std::move(V), std::move(edges), std::move(splines),
-          std::move(smooth), std::move(regions)};
+  // smoothConditions (edge 下标 +1)
+  vector<SmoothnessIndicator> smoothConditions;
+  for (const auto& vlist : smooth) {
+    for (const auto& p : vlist) {
+      smoothConditions.emplace_back(p.eA + 1, p.eB + 1);
+    }
+  }
+
+  return approxInterfaceGraph<Order>(std::move(edgeMarks), smoothConditions,
+                                     std::move(cyclesEdgesId),
+                                     std::move(YinSetId), distTol());
 }
 
 }  // namespace Marsn2D

@@ -14,10 +14,11 @@ function containMat = boundary_contains(boundaries, V, sampleE)
     end
 
     polys = cell(1, n);
-    centers = zeros(n, 2);
+    centers = cell(1, n);
     for i = 1:n
         % 用 sampleE 上的采样点拼接多边形，方向按照 edge.dir 调整
         ptsAll = [];
+        ptsSearch = [];
         edgeLoop = boundaries{i}.edges;
         for k = 1:numel(edgeLoop)
             edgeId = edgeLoop(k).edgeId + 1;
@@ -28,6 +29,7 @@ function containMat = boundary_contains(boundaries, V, sampleE)
             if edgeLoop(k).dir == -1
                 pts = flipud(pts);
             end
+            ptsSearch = [ptsSearch; pts(1:2, :)];
             if isempty(ptsAll)
                 ptsAll = pts;
             else
@@ -50,7 +52,7 @@ function containMat = boundary_contains(boundaries, V, sampleE)
             p = polyshape(coords(1, :), coords(2, :));
         end
         polys{i} = p;
-        centers(i, :) = ptsAll(1, :);
+        centers{i} = ptsSearch(:, :);
     end
 
     for i = 1:n
@@ -59,8 +61,23 @@ function containMat = boundary_contains(boundaries, V, sampleE)
             if isempty(polys{i}) || isempty(polys{j})
                 continue;
             end
-            pt = centers(j, :);
-            containMat(i, j) = isinterior(polys{i}, pt(1), pt(2));
+            pts = centers{j};
+            containMat(i, j) = -1;
+            for k = 1:size(pts, 1)
+                pt = pts(k, :);
+                [in, on] = isinterior(polys{i}, pt(1), pt(2));
+                if on 
+                    continue;
+                end
+                containMat(i, j) = in;
+            end
+            if containMat(i, j) == -1
+                error("fail to search boundaries " + int2str(i) + " and " + int2str(j) + " relateion\n");
+            end
+            % containMat(i, j) = isinterior(polys{i}, pt(1), pt(2));
+            if (containMat(i, j) == 1 && containMat(j, i) == 1)
+                error("boundary i and j contain each other.");
+            end
         end
     end
 end

@@ -20,13 +20,13 @@ function [curvesOut, splineE] = interpolate_curves_spline(curves, E)
         end
 
         % 弦长参数 (0..1)
-        d = sqrt(sum(diff(pts, 1, 1).^2, 2));
-        if sum(d) < eps
-            tSamples = zeros(size(pts, 1), 1);
-        else
-            s = [0; cumsum(d)];
-            tSamples = s / s(end);
-        end
+        % d = sqrt(sum(diff(pts, 1, 1).^2, 2));
+        % if sum(d) < eps
+        %     tSamples = zeros(size(pts, 1), 1);
+        % else
+        %     s = [0; cumsum(d)];
+        %     tSamples = s / s(end);
+        % end
 
         % 五次样条插值（使用已有 quinticSpline）
         try
@@ -47,7 +47,7 @@ function [curvesOut, splineE] = interpolate_curves_spline(curves, E)
 
         % 按边切分到 splineE
         segStart = c.sampleBreaks(:)';   % 每段 Bezier 起始索引
-        segStart(end + 1) = size(pts, 1) + 1;
+        segStart(end + 1) = size(pts, 1);
         segIdx = 1;
 
         for ei = 1:numel(c.edges)
@@ -58,11 +58,11 @@ function [curvesOut, splineE] = interpolate_curves_spline(curves, E)
                 break;
             end
             sStart = segStart(segIdx);
-            sEnd   = segStart(segIdx + k) - 1;
+            sEnd   = segStart(segIdx + k);
             segIdx = segIdx + k;
 
-            t0 = tSamples(sStart);
-            t1 = tSamples(sEnd);
+            t0 = breaks(sStart);
+            t1 = breaks(sEnd);
             dir = eInfo.dir;
             if dir == -1
                 [t0, t1] = deal(t1, t0);

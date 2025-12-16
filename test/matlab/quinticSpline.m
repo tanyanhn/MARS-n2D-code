@@ -1,5 +1,11 @@
 function [xsp, ysp, breaks] = quinticSpline(pts)
 
+if abs(pts(:, 1) - pts(:, end)) > 1e-12
+    error("periodic spline pts not closed.");
+else 
+    pts(:, end) = pts(:, 1);
+end
+
 syms t;
 oneMinusT = 1 - t;
 onePlus3T = 1 + 3 * t;

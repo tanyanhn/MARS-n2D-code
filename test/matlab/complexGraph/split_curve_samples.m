@@ -13,7 +13,7 @@ function sampleE = split_curve_samples(curves, E)
         c = curves{ci};
         segStart = c.sampleBreaks; % 每段 Bezier 的起始索引
         segStart = segStart(:)';    % 行向量
-        segStart(end + 1) = size(c.samples, 1) + 1; % 便于取终点
+        segStart(end + 1) = size(c.samples, 1); % 便于取终点
 
         segIdx = 1; % 全局段索引
         for ei = 1:numel(c.edges)
@@ -26,7 +26,7 @@ function sampleE = split_curve_samples(curves, E)
 
             % 当前边覆盖的采样范围
             sStart = segStart(segIdx);
-            sEnd   = segStart(segIdx + k) - 1;
+            sEnd   = segStart(segIdx + k);
             segIdx = segIdx + k;
 
             pts = c.samples(sStart:sEnd, :);

@@ -233,9 +233,9 @@ OPTNONE_FUNC
         for (auto &volume : volumes) {
           sum += volume[i][j];
         }
-        // if (norm(sum - fullCell) > 1e-12) {
-        //   std::cout << fmt::v11::format("i = {}, j = {}, sum = {} \n", i, j, sum);
-        // }
+        if (norm(sum - fullCell) > 1e-12) {
+          std::cout << fmt::v11::format("i = {}, j = {}, sum = {} \n", i, j, sum);
+        }
       }
     }
   };

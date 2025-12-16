@@ -15,8 +15,8 @@ function parent = build_containment_tree(containMat)
         for a = 1:numel(candidates)
             for b = 1:numel(candidates)
                 if a == b, continue; end
-                if containMat(candidates(b), candidates(a))
-                    isMinimal(b) = false;
+                if containMat(candidates(a), candidates(b))
+                    isMinimal(a) = false;
                     break;
                 end
             end
