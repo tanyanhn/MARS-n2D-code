@@ -54,8 +54,11 @@ void trackInterfaceTest(const string& testName,
   RecorderFinalize();
 }
 
+TEST_CASE("Pig vortex T = 4, Order = 4", "[Pig][Vortex][T4][Order4]") {
+  trackInterfaceTest("Pig15VortexT4Order4");
+}
 TEST_CASE("Raccoon vortex T = 4, Order = 4", "[Raccoon][Vortex][T4][Order4]") {
-  trackInterfaceTest("RaccoonVortexT4Order4");
+  trackInterfaceTest("Raccoon22VortexT4Order4");
 }
 TEST_CASE("Dynamic Disk 4 vortex T = 4, Order = 4", "[Disk4][Vortex][T4][Order4][Dynamic]") {
   trackInterfaceTest("Disk4VortexT4Order4Dynamic");

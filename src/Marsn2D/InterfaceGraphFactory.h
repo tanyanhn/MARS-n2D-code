@@ -180,8 +180,24 @@ auto InterfaceGraphFactory::markCurve(const Curve<DIM, Order>& crv, Real hL, Rea
   vector<Point> pts;
   vector<Real> ptsT;
   Real localHL = hL;
-  int num = std::ceil(knotRange / localHL) * 2UL;
-  Real step = knotRange / num;
+  Real step = localHL;
+  const int sampleNum = 2;
+  if (step > knotRange / sampleNum) step = knotRange / sampleNum;
+  auto p0 = eValue(crv, 0);
+  auto p1 = eValue(crv, step);
+  double dist = norm(p0 - p1);
+  while (dist < localHL / sampleNum) {
+    step *= 2;
+    p1 = eValue(crv, step);
+    dist = norm(p0 - p1);
+  }
+  while (dist > 2 * localHL / sampleNum) {
+    step /= 2;
+    p1 = eValue(crv, step);
+    dist = norm(p0 - p1);
+  }
+  int num = std::ceil(knotRange / step) * 2UL;
+  step = knotRange / num;
   pts.push_back(startpoint);
   ptsT.push_back(0);
   for (int i = 0; i < num; i++) {
@@ -598,10 +614,13 @@ auto diskTEST(const std::string& jsonFile) {
       vecDomain.emplace_back(std::move(disk));
     } else if (params.domain.name == "Graph41") {
       vecDomain.emplace_back(InterfaceGraphFactory::createGraph41<Order>(initialDist));
-    } else if (params.domain.name == "raccoon") {
+    } else if (params.domain.name == "Raccoon22") {
       string path = std::string(ROOT_DIR) + "/test/data1/Raccoon.input";
       vecDomain.emplace_back(InterfaceGraphFactory::inputFromSVG<Order>(path,  initialDist));
-    }
+    } else if (params.domain.name == "Pig15") {
+      string path = std::string(ROOT_DIR) + "/test/data1/Pig.input";
+      vecDomain.emplace_back(InterfaceGraphFactory::inputFromSVG<Order>(path,  initialDist));
+    } 
     vecN.emplace_back(N);
     vecBox.emplace_back(0, N - 1);
     // vecH.emplace_back(h);
@@ -630,8 +649,18 @@ auto diskTEST(const std::string& jsonFile) {
                       plotConfig, printDetail, t0, vecDt, te, T, timeIntegrator,
                       velocityPtr);
   }
-  // if (params.domain.name == "raccoon") {
-  auto exactDomain = InterfaceGraphFactory::createGraph41<Order>(initialDist);
+  if (params.domain.name == "Raccoon22") {
+    string path = std::string(ROOT_DIR) + "/test/data1/Raccoon.input";
+    auto exactDomain =
+        InterfaceGraphFactory::inputFromSVG<Order>(path, initialDist);
+    return make_tuple(vecDomain, exactDomain, radius, exactArea, exactLength,
+                      vecBox, vecN, aimOrder, vecHL, rTiny, nGrid, curvConfig,
+                      plotConfig, printDetail, t0, vecDt, te, T, timeIntegrator,
+                      velocityPtr);
+  }
+  // if (params.domain.name == "Pig15") {
+  string path = std::string(ROOT_DIR) + "/test/data1/Pig.input";
+  auto exactDomain = InterfaceGraphFactory::inputFromSVG<Order>(path, initialDist);
   return make_tuple(vecDomain, exactDomain, radius, exactArea, exactLength,
                     vecBox, vecN, aimOrder, vecHL, rTiny, nGrid, curvConfig,
                     plotConfig, printDetail, t0, vecDt, te, T, timeIntegrator,

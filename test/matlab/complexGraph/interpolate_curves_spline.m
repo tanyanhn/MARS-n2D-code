@@ -33,7 +33,7 @@ function [curvesOut, splineE] = interpolate_curves_spline(curves, E)
             if c.isClosed
                 [xpp, ypp, breaks] = quinticSpline(pts');
             else
-                [xpp, ypp, breaks] = construct_spline(pts', 6);
+                [xpp, ypp, breaks] = construct_quintic_spline(pts');
             end
         catch ME
             error('曲线 %d 样条插值失败: %s', ci, ME.message);

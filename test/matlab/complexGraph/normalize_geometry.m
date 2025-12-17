@@ -4,7 +4,7 @@ function [Vn, En, S] = normalize_geometry(V, E, S, rect, theta)
 %   V    2xM 顶点矩阵
 %   E    1xN Cell，单元 struct(ctrl 8xk, k, v1, v2, idx)
 %   S    光滑结构 (原样返回)
-%   rect [lr, lc, rr, rc] 目标范围 (x_min, y_min, x_max, y_max)
+%   rect [lr, lc, rr, rc] 目标范围 (x_min, x_max, y_min, y_max)
 %   theta (可选) 旋转角度（弧度），绕源包围盒中心逆时针旋转
 % 输出:
 %   Vn, En 为正则化后的几何，S 原样透传
@@ -13,7 +13,7 @@ function [Vn, En, S] = normalize_geometry(V, E, S, rect, theta)
         theta = 0;
     end
 
-    x0 = rect(1); y0 = rect(2); x1 = rect(3); y1 = rect(4);
+    x0 = rect(1); y0 = rect(3); x1 = rect(2); y1 = rect(4);
     tgtW = x1 - x0; tgtH = y1 - y0;
     if tgtW <= 0 || tgtH <= 0
         error('目标范围无效: 宽高需为正 (rect = [%g %g %g %g])', rect);

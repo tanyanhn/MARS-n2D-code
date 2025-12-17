@@ -1,13 +1,16 @@
 clear; close all; clc;
+addpath ../
 
 % 数据文件路径（可切换为 Raccoon / Pig 等）
-name = '../../data1/Raccoon';
-addpath ../
+name = '../../data1/Pig';
+removeV = [];
+% removeV = [0, 1, 2, 3]; % Raccoon boundary vertex
+removeV = [2, 9, 36, 40]; % Pig boundary vertex
 
 % 解析 JSON
 [V, E, S, F] = parse_geometry_json(name + ".json");
-% rect = [.2, .1, .8, .9];
-rect = [.1, .1, .9, .9];
+[V, E, S, F, maps] = prune_geometry(V, E, S, F, removeV);
+rect = [.2 .8 .2 .8];
 [V, E, S] = normalize_geometry(V, E, S, rect, pi);
 
 % 构建光滑曲线集合
@@ -22,7 +25,7 @@ write_geometry_bin(filepath, V, E, S, curves, splineE, result);
 
 % 可视化（已抽离为独立函数）
 % f1 = figure('Name', 'Smooth Curves Visualization');
-% axis([.1 .9 .1 .9]);
+% axis(rect);
 % visualize_curves(curves, E, V);
 
 % figure
@@ -31,3 +34,17 @@ write_geometry_bin(filepath, V, E, S, curves, splineE, result);
 % targetIdx = [3];
 % plot_subtree(boundaries, parent, targetIdx, sampleE);
 % axis([.1 .9 .1 .9]);
+
+
+% 收集每个 YinSet 的颜色到 cell
+% yinColors = cell(1, numel(result.YinSet));
+% for yi = 1:numel(result.YinSet)
+%     yinColors{yi} = result.YinSet{yi}.color;
+% end
+% fprintf('yinColors = {');
+% for yi = 1:numel(yinColors)
+%     c = yinColors{yi};
+%     fprintf('[%d %d %d]', c(1), c(2), c(3));
+%     if yi ~= numel(yinColors), fprintf(', '); end
+% end
+% fprintf('};\n');

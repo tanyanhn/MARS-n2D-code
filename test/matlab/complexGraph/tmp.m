@@ -4,7 +4,8 @@ f = figure;
 % plot_subtree(boundaries, parent, targetIdx, sampleE);
 % newBoundaries = merge_boundaries(boundaries, parent, targetIdx, sampleE);
 % plot_bound(newBoundaries, sampleE);
+plot_yinset(result, [1]);
 
-result = build_yinset(F, V, curves, E);
+% result = build_yinset(F, V, curves, E);
 
 axis([.1 .9 .1 .9]);

@@ -1,4 +1,8 @@
-function plot_bound(boundaries, sampleE)
+function plot_bound(boundaries, sampleE, direct)
+
+if nargin < 3
+    direct = false;
+end
 
 holdState = ishold;
 hold on;
@@ -30,7 +34,12 @@ for k = 1:numel(boundaries)
     if nargin < 4
         col = 'k';
     end
-    plot(ptsAll(:, 1), ptsAll(:, 2), '-', 'Color', colors(k, :), 'LineWidth', 1.5);
+    if ~direct
+        plot(ptsAll(:, 1), ptsAll(:, 2), '-', 'Color', colors(k, :), 'LineWidth', 1.5);
+    else
+        plot(ptsAll(1:end-1, 1), ptsAll(1:end-1, 2), '-', 'Color', colors(k, :), 'LineWidth', 1.5);
+        plot(ptsAll(1, 1), ptsAll(1, 2), 'o', 'Color', colors(k, :), 'LineWidth', 1.5);
+    end
 end
 
 if ~holdState

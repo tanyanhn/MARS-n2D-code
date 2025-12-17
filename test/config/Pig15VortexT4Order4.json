@@ -1,6 +1,6 @@
 {
   "tolerance": {
-    "distTol": 1.0e-12,
+    "distTol": 1.0e-10,
     "newtonTol": 2.0e-16,
     "newtonMaxIter": 200
   },
@@ -26,16 +26,16 @@
   "curvature_adaption": {
       "curvUsed": true,
       "rCMin": 0.02,
-      "rhoMin": 5.0,
+      "rhoMin": 1.0,
       "rhoMax": 1e5
   },
   "plot": {
-      "plotOutput": 0,
+      "plotOutput": 2,
       "plotInner": true,
-      "plotStride": 4,
+      "plotStride": 8,
       "printDetail": false
   },
   "domain_disk": {             
-      "name" : "raccoon"
+      "name" : "Pig15"
   }
 }

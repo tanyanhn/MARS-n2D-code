@@ -30,13 +30,14 @@ function [V, E, S, F] = parse_geometry_json(filepath)
     E = cell(1, num_edges);
     edge_map = containers.Map('KeyType', 'char', 'ValueType', 'double'); % key -> 1-based edge idx
     edges_meta = repmat(struct('v1', 0, 'v2', 0, 'idx', 0, 'k', 0), 1, num_edges);
+    edge_orient = zeros(1, num_edges); % 0 未定, +1 保持, -1 反转
 
     for i = 1:num_edges
         item = raw_edges(i);
 
-        if item.v1 == item.v2
-            warning('闭合边检测：edgeId=%d (idx=%d) v1==v2==%d', i-1, item.idx, item.v1);
-        end
+        % if item.v1 == item.v2
+        %     warning('闭合边检测：edgeId=%d (idx=%d) v1==v2==%d', i-1, item.idx, item.v1);
+        % end
 
         segments = normalize_bezier(item.bezier);
         num_segs = size(segments, 1);
@@ -62,6 +63,10 @@ function [V, E, S, F] = parse_geometry_json(filepath)
         edges_meta(i).idx = item.idx;
         edges_meta(i).k = num_segs;
     end
+
+    % 规范化方向: 基于光滑条件 DFS 调整，使 e1.v2 == e2.v1
+    [edge_orient, edges_meta, edge_map, E, raw_vertices] ...
+        = enforce_smooth_orientation(raw_vertices, E, edge_map, edges_meta, edge_orient);
 
     %% 构建 V 和 S
     V = zeros(2, num_vertices);
@@ -96,6 +101,10 @@ function [V, E, S, F] = parse_geometry_json(filepath)
                 info1 = get_edge_info(ref1, current_vertex_idx, edge_map);
                 info2 = get_edge_info(ref2, current_vertex_idx, edge_map);
                 valid_count = valid_count + 1;
+                if info1(2) + info2(2) ~= 1, error("smooth(1)"); end
+                if info1(2) == 0
+                    [info1(1), info1(2), info2(1), info2(2)] = deal(info2(1), info2(2), info1(1), info1(2));
+                end
                 with_flag(valid_count, :) = [info1(1), info1(2), info2(1), info2(2)];
             catch ME
                 warning('平滑对解析失败: 顶点 %d, 行 %d, %s', current_vertex_idx, r, ME.message);
@@ -290,4 +299,156 @@ function edgeSet = unique_edgeSet(edgeSet)
     end
     [~, ia] = unique(edgeSet(:, 1), 'stable'); % 按 edgeId 去重
     edgeSet = edgeSet(ia, :);
+end
+
+function raw_vertices = adjust_smooth_refs(raw_vertices, edges_meta, orient)
+% 根据 orient 反向的边调整 smoothnessIndicator 中的 v1/v2
+    key_to_idx = containers.Map('KeyType', 'char', 'ValueType', 'double');
+    for i = 1:numel(edges_meta)
+        key = sprintf('%d_%d_%d', edges_meta(i).v1, edges_meta(i).v2, edges_meta(i).idx);
+        key_to_idx(key) = i;
+    end
+    for vi = 1:numel(raw_vertices)
+        sm = raw_vertices(vi).smoothnessIndicator;
+        if isempty(sm), continue; end
+        if isstruct(sm)
+            refs = sm;
+        elseif iscell(sm)
+            refs = [sm{:}];
+        else
+            continue;
+        end
+        for k = 1:numel(refs)
+            key = sprintf('%d_%d_%d', refs(k).v1, refs(k).v2, refs(k).idx);
+            if isKey(key_to_idx, key)
+                idx = key_to_idx(key);
+                if orient(idx) == -1
+                    [refs(k).v1, refs(k).v2] = deal(refs(k).v2, refs(k).v1);
+                end
+            end
+        end
+        if isstruct(sm)
+            raw_vertices(vi).smoothnessIndicator = reshape(refs, size(sm));
+        else
+            raw_vertices(vi).smoothnessIndicator = num2cell(refs);
+        end
+    end
+end
+
+function [edge_orient, edges_meta, edge_map, E, raw_vertices] = ...
+    enforce_smooth_orientation(raw_vertices, E, edge_map, edges_meta, edge_orient)
+% DFS 调整方向: 每条边最多处理一次，使每个光滑对满足 e1.v2 == e2.v1
+    num_edges = numel(E);
+    adj = cell(1, num_edges); % 邻接约束列表
+
+    % 建约束图
+    for vi = 1:numel(raw_vertices)
+        raw_smooth = raw_vertices(vi).smoothnessIndicator;
+        if isempty(raw_smooth), continue; end
+        ps = normalize_pairs(raw_smooth);
+        if isempty(ps), continue; end
+        vIdx = vi - 1; % 0-based
+        for r = 1:size(ps, 1)
+            ref1 = ps(r, 1); % 尾
+            ref2 = ps(r, 2); % 头
+            key1 = edge_key(ref1.v1, ref1.v2, ref1.idx);
+            key2 = edge_key(ref2.v1, ref2.v2, ref2.idx);
+            if ~isKey(edge_map, key1) || ~isKey(edge_map, key2), continue; end
+            e1 = edge_map(key1); % 1-based
+            e2 = edge_map(key2);
+            adj{e1}(end+1) = struct('nb', e2, 'vIdx', vIdx); %#ok<AGROW>
+            adj{e2}(end+1) = struct('nb', e1, 'vIdx', vIdx); %#ok<AGROW>
+        end
+    end
+
+    visited = false(1, num_edges);
+    for start = 1:num_edges
+        if visited(start), continue; end
+        if edge_orient(start) == 0, edge_orient(start) = 1; end
+        stack = [start, E{start}.v1];
+        visited(start) = 1;
+        while ~isempty(stack)
+            e = stack(end, 1);
+            v1 = stack(end, 2);
+            stack(end, :) = [];
+            % 调整自身以满足所有约束
+            if E{e}.v1 == v1
+                edge_orient(e) = 1;
+                v2 = E{e}.v2;
+            elseif E{e}.v2 == v1
+                edge_orient(e) = -1;
+                v2 = E{e}.v1;
+            else
+                error("unconnected(1).");
+            end
+            % 传播到邻居
+            for c = adj{e}
+                nb = c.nb;
+                if visited(nb), continue; end
+                visited(nb) = 1;
+                vIdx = c.vIdx;
+                if vIdx == v2
+                    stack = [stack; nb, vIdx];
+                elseif vIdx == v1
+                    if E{nb}.v1 == vIdx
+                        stack = [stack; nb, E{nb}.v2];
+                    else
+                        stack = [stack; nb, E{nb}.v1];
+                    end
+                else
+                    error("unconnected(2).");
+                end
+            end
+        end
+    end
+
+    % 同步 edges_meta
+    for i = 1:num_edges
+        edges_meta(i).v1 = E{i}.v1;
+        edges_meta(i).v2 = E{i}.v2;
+    end
+    % 调整平滑引用方向以匹配新边方向
+    raw_vertices = adjust_smooth_refs(raw_vertices, edges_meta, edge_orient);
+
+    % 应用方向并重建映射
+    edge_map = containers.Map('KeyType', 'char', 'ValueType', 'double');
+    for i = 1:num_edges
+        if edge_orient(i) == -1
+            E{i}.ctrl = reverse_ctrl(E{i}.ctrl);
+            [E{i}.v1, E{i}.v2] = deal(E{i}.v2, E{i}.v1);
+        end
+        key = edge_key(E{i}.v1, E{i}.v2, E{i}.idx);
+        edge_map(key) = i;
+    end
+end
+
+function sig = required_sign(edge, vIdx, wantTail)
+% 返回 +1 (保持) 或 -1 (反转) 使得顶点 vIdx 成为尾/头
+    if wantTail
+        if edge.v2 == vIdx
+            sig = 1;
+        elseif edge.v1 == vIdx
+            sig = -1;
+        else
+            error('顶点 %d 不在边(%d,%d)', vIdx, edge.v1, edge.v2);
+        end
+    else
+        if edge.v1 == vIdx
+            sig = 1;
+        elseif edge.v2 == vIdx
+            sig = -1;
+        else
+            error('顶点 %d 不在边(%d,%d)', vIdx, edge.v1, edge.v2);
+        end
+    end
+end
+
+function ctrl = reverse_ctrl(ctrl)
+% ctrl 8 x k, 反转段顺序并交换 P0<->P3, P1<->P2
+    ctrl = fliplr(ctrl);
+    x_rows = ctrl(1:4, :);
+    y_rows = ctrl(5:8, :);
+    x_rows = x_rows([4, 3, 2, 1], :);
+    y_rows = y_rows([4, 3, 2, 1], :);
+    ctrl = [x_rows; y_rows];
 end
