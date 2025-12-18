@@ -65,6 +65,9 @@ struct InterfaceGraphFactory {
   template <int Order>
   static auto inputFromSVG(const std::string& binPath, Real hL = 1e-3)
       -> approxInterfaceGraph<Order>;
+  template <int Order>
+  static auto createEmpty()
+      -> approxInterfaceGraph<Order>;
 };
 
 OPTNONE_FUNC
@@ -605,7 +608,7 @@ auto diskTEST(const std::string& jsonFile) {
   Real N = N0;
   for (uint i = 0; i < nGrid; ++i) {
     rVec h = (hi - lo) / N;
-    Real hL = hLCoefficient * std::pow(h[0] * h[1], 0.5 * aimOrder / Order);
+    Real hL = hLCoefficient * std::pow(min(h[0], h[1]), aimOrder / Order);
     Real dt = std::min(h[0], h[1]) / uM * Cr;
     Real initialDist = hL / 2 * (curvUsed ? std::sqrt(rCMin) : 1);
     if (params.domain.name == "Disk") {
@@ -630,43 +633,34 @@ auto diskTEST(const std::string& jsonFile) {
   }
 
   // accurate solution
-  Real hL = vecHL.back() / 4;
+  rVec h = (hi - lo) / (1 * N);
+  Real hL = hLCoefficient * std::pow(min(h[0], h[1]), aimOrder / Order);
   Real initialDist = hL / 2 * (curvUsed ? std::sqrt(rCMin) : 1);
+  auto exactDomain = InterfaceGraphFactory::createEmpty<Order>();
   if (params.domain.name == "Disk") {
-    auto exactDomain = InterfaceGraphFactory::createDiskGraph<Order>(
+    exactDomain = InterfaceGraphFactory::createDiskGraph<Order>(
         center, radius, initialDist, parts);
-
-    return make_tuple(vecDomain, exactDomain, radius, exactArea, exactLength,
-                      vecBox, vecN, aimOrder, vecHL, rTiny, nGrid, curvConfig,
-                      plotConfig, printDetail, t0, vecDt, te, T, timeIntegrator,
-                      velocityPtr);
-  }
-  if (params.domain.name == "Graph41") {
-    auto exactDomain = InterfaceGraphFactory::createGraph41<Order>(initialDist);
-
-    return make_tuple(vecDomain, exactDomain, radius, exactArea, exactLength,
-                      vecBox, vecN, aimOrder, vecHL, rTiny, nGrid, curvConfig,
-                      plotConfig, printDetail, t0, vecDt, te, T, timeIntegrator,
-                      velocityPtr);
-  }
-  if (params.domain.name == "Raccoon22") {
+  } else if (params.domain.name == "Graph41") {
+    exactDomain = InterfaceGraphFactory::createGraph41<Order>(initialDist);
+  } else if (params.domain.name == "Raccoon22") {
     string path = std::string(ROOT_DIR) + "/test/data1/Raccoon.input";
-    auto exactDomain =
-        InterfaceGraphFactory::inputFromSVG<Order>(path, initialDist);
-    return make_tuple(vecDomain, exactDomain, radius, exactArea, exactLength,
-                      vecBox, vecN, aimOrder, vecHL, rTiny, nGrid, curvConfig,
-                      plotConfig, printDetail, t0, vecDt, te, T, timeIntegrator,
-                      velocityPtr);
+    exactDomain = InterfaceGraphFactory::inputFromSVG<Order>(path, initialDist);
+  } else if (params.domain.name == "Pig15") {
+    string path = std::string(ROOT_DIR) + "/test/data1/Pig.input";
+    exactDomain = InterfaceGraphFactory::inputFromSVG<Order>(path, initialDist);
+  } else {
+    throw runtime_error("unDeal shape.");
   }
-  // if (params.domain.name == "Pig15") {
-  string path = std::string(ROOT_DIR) + "/test/data1/Pig.input";
-  auto exactDomain = InterfaceGraphFactory::inputFromSVG<Order>(path, initialDist);
+  MARSn2D<Order, VectorFunction> CM(timeIntegrator, hL, rTiny, curvConfig,
+                                    false);
+  CM.trackInterface(
+      *velocityPtr, exactDomain, t0, 0, t0,
+      typename Marsn2D::MARSn2D<Order, VectorFunction>::PlotConfig());
   return make_tuple(vecDomain, exactDomain, radius, exactArea, exactLength,
                     vecBox, vecN, aimOrder, vecHL, rTiny, nGrid, curvConfig,
                     plotConfig, printDetail, t0, vecDt, te, T, timeIntegrator,
                     velocityPtr);
-  // }
-}
+  }
 
 template <int Order>
 OPTNONE_FUNC
@@ -828,9 +822,21 @@ inline auto InterfaceGraphFactory::inputFromSVG(const std::string& binPath,
     }
   }
 
-  return approxInterfaceGraph<Order>(std::move(edgeMarks), smoothConditions,
-                                     std::move(cyclesEdgesId),
-                                     std::move(YinSetId), distTol());
+  return approxInterfaceGraph<Order>(
+      std::move(edgeMarks), std::move(smoothConditions),
+      std::move(cyclesEdgesId), std::move(YinSetId), distTol());
+}
+
+template <int Order>
+auto InterfaceGraphFactory::createEmpty()
+    -> approxInterfaceGraph<Order> {
+  vector<EdgeMark> edgeMarks;
+  vector<SmoothnessIndicator> smoothConditions;
+  vector<vector<EdgeIndex>> cyclesEdgesId;
+  vector<vector<size_t>> YinSetId;
+  return approxInterfaceGraph<Order>(
+      std::move(edgeMarks), std::move(smoothConditions),
+      std::move(cyclesEdgesId), std::move(YinSetId), distTol());
 }
 
 }  // namespace Marsn2D

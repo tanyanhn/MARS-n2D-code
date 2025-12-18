@@ -11,7 +11,8 @@ void MARSn2D<Order, VelocityField>::discreteFlowMap(const VectorFunction<2> &v,
                                                     Real dt) const {
   Timer t("discreteFlowMap");
   // using Eigen.
-  TI_->timeStep(v, marks, tn, dt);
+  if (dt > 0)
+    TI_->timeStep(v, marks, tn, dt);
   // for (auto & pt : marks) {
   //   pt = TI_->timeStep(v, pt, tn, dt);
   // }
@@ -45,15 +46,21 @@ OPTNONE_FUNC void MARSn2D<Order, VelocityField>::trackInterface(
     const VelocityField<DIM> &v, IG &ig, Real StartTime, Real dt, Real EndTime,
     const PlotConfig &plotConfig) const {
   Real tn = StartTime;
-  int stages = ceil(abs(EndTime - StartTime) / abs(dt));
-  Real k = (EndTime - StartTime) / stages;
+  int stages = 0;
+  int polyStep = 0;
+  Real k = 0;
+  if (StartTime > EndTime) {
+    stages = ceil(abs(EndTime - StartTime) / abs(dt));
+    k = (EndTime - StartTime) / stages;
+    polyStep = stages / plotConfig.opStride;
+  }
   int step = 0;
-  int polyStep = stages / plotConfig.opStride;
   vector<vector<int>> marksHistory;
   vector<vector<Real>> lengthHistory;
   // marksHistory.push_back(ig.countMarks());
   // lengthHistory.push_back(ig.countLengths());
   ProgressBar bar(stages, "Tracking...");
+  timeStep(v, ig, tn, 0);
   while (step < stages) {
     // if (plotConfig.output != NONE && (step + 40) % polyStep == 0) {
     //   plot(ig, step, plotConfig);
@@ -407,6 +414,8 @@ void MARSn2D<Order, VelocityField>::timeStep(const VelocityField<DIM> &v,
       if (inserted) {
         insertMarks(v, tn, dt, indices2Num, marks, preEdge, curv, para);
         insertCount++;
+        if (insertCount >= 10) 
+          std::cout << insertCount << ' ' << marks.size() << std::endl;
         if (insertCount >= insertTimesMax)
           throw std::runtime_error("insertCount >= insertTimesMax");
       }

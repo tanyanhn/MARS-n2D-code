@@ -188,7 +188,7 @@ inline Eigen::VectorXd solveSystem(int n, const Eigen::SparseMatrix<double>& A,
   // std::cout << "err:" << err.norm() << std::endl;
 
   if (solver.info() != Success) {
-    throw std::runtime_error("All iterative methods failed");
+    throw std::runtime_error("All solveSystem iterative methods failed");
   }
 
   return result;

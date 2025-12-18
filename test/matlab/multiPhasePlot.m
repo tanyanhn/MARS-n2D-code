@@ -17,21 +17,21 @@ vel = 'Vortex';
 % vel = 'Deformation';
 dynamic = "";
 % dynamic = "Dynamic";
-T = 4;
+T = 12;
 Order = 4;
 filedir = dir + Shape + num2str(part) + vel + "T" + num2str(T) + "Order" + num2str(Order)+ dynamic + "/";
 grid = 32;
-steps = 8;
-stepSize = 128;
+steps = 4;
+stepSize = 256;
 type = "_c.dat"; plotF = false;
 % type = "_f.dat"; plotF = true;
 figHandles = [];
 for plotI = 0:1:steps
 %     plotI = 1;
     step = plotI * stepSize;
-    if plotI == steps
-        step = T * 256;
-    end
+    % if plotI == steps
+    %     step = T * 256;
+    % end
     filename = "1Order4_grid" + num2str(grid) + "_Step" + num2str(step) + type;
     f = figure;
     if part == 41

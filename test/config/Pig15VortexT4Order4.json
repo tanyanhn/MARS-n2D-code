@@ -26,16 +26,16 @@
   "curvature_adaption": {
       "curvUsed": true,
       "rCMin": 0.02,
-      "rhoMin": 1.0,
+      "rhoMin": 5.0,
       "rhoMax": 1e5
   },
   "plot": {
       "plotOutput": 2,
       "plotInner": true,
-      "plotStride": 8,
+      "plotStride": 4,
       "printDetail": false
   },
-  "domain_disk": {             
+  "domain_disk": {
       "name" : "Pig15"
   }
 }
