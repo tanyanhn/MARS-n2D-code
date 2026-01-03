@@ -49,7 +49,7 @@ OPTNONE_FUNC void MARSn2D<Order, VelocityField>::trackInterface(
   int stages = 0;
   int polyStep = 0;
   Real k = 0;
-  if (StartTime > EndTime) {
+  if (StartTime < EndTime) {
     stages = ceil(abs(EndTime - StartTime) / abs(dt));
     k = (EndTime - StartTime) / stages;
     polyStep = stages / plotConfig.opStride;
@@ -60,7 +60,7 @@ OPTNONE_FUNC void MARSn2D<Order, VelocityField>::trackInterface(
   // marksHistory.push_back(ig.countMarks());
   // lengthHistory.push_back(ig.countLengths());
   ProgressBar bar(stages, "Tracking...");
-  timeStep(v, ig, tn, 0);
+  // timeStep(v, ig, tn, 0);
   while (step < stages) {
     // if (plotConfig.output != NONE && (step + 40) % polyStep == 0) {
     //   plot(ig, step, plotConfig);

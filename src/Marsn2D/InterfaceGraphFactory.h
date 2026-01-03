@@ -18,6 +18,10 @@ struct InterfaceGraphFactory {
   template <typename T>
   using vector = std::vector<T>;
 
+  template <int Order>
+  using MARScurvConfig =
+      typename Marsn2D::MARSn2D<Order, VectorFunction>::CurvatureAdaptionConfig;
+
  public:
   template <int Order>
   static auto createEllipse(Point center, rVec radius, Real hL,
@@ -39,6 +43,9 @@ struct InterfaceGraphFactory {
   template <int Order>
   static auto markCurve(const Curve<DIM, Order>& crv, Real hL, Real lo = 1,
                         Real hi = -1);
+  template <int Order>
+  static auto markCurve(const Curve<DIM, Order>& crv, Real hL, Real t0,
+                        Real t1, const MARScurvConfig<Order-2>& curvConfig);
   struct SplineCurvePP {
     uint32_t order{};
     std::vector<Real> breaks;
@@ -63,7 +70,8 @@ struct InterfaceGraphFactory {
     int eA{}, fA{}, eB{}, fB{};
   };
   template <int Order>
-  static auto inputFromSVG(const std::string& binPath, Real hL = 1e-3)
+  static auto inputFromSVG(const std::string& binPath, Real hL = 1e-3,
+                           const MARScurvConfig<Order>& curvConfig = {})
       -> approxInterfaceGraph<Order>;
   template <int Order>
   static auto createEmpty()
@@ -267,6 +275,52 @@ auto InterfaceGraphFactory::markCurve(const Curve<DIM, Order>& crv, Real hL, Rea
     ptsTNew.clear();
   }
 
+  return pts;
+}
+
+template <int Order>
+OPTNONE_FUNC
+auto InterfaceGraphFactory::markCurve(const Curve<DIM, Order>& crv, Real hL,
+                                      Real t0, Real t1,
+                                      const MARScurvConfig<Order-2>& curvConfig) {
+  const auto& knots = crv.getKnots();
+  if (t0 > t1) {
+    t0 = knots.front();
+    t1 = knots.back();
+  }
+  t0 = std::max(t0, knots.front());
+  t1 = std::min(t1, knots.back());
+  if (t0 >= t1) return std::vector<Point>{crv(t0)};
+
+  std::vector<Real> params;
+  params.reserve(knots.size() + 2);
+  params.push_back(t0);
+  for (auto k : knots) {
+    if (k > t0 && k < t1) params.push_back(k);
+  }
+  params.push_back(t1);
+
+  std::vector<int> fixed(params.size(), 0);
+  fixed.front() = 1;
+  fixed.back() = 1;
+
+  auto distBounds = [&](const std::vector<Real>& curv,
+                        std::vector<Real>& hLSeq, Real& lowerScale,
+                        Real& upperScale, Real base) {
+    if (curvConfig.used) {
+      curvConfig.hlGenerator(curv, hLSeq, lowerScale, upperScale, base);
+    } else {
+      lowerScale = 0.1;
+      upperScale = 0.8;
+      hLSeq.assign(curv.size(), base);
+    }
+  };
+
+  auto ts = crv.curvatureBoundParams(params, fixed, hL, distBounds);
+
+  std::vector<Point> pts;
+  pts.reserve(ts.size());
+  for (auto t : ts) pts.push_back(crv(t));
   return pts;
 }
 
@@ -570,12 +624,14 @@ auto diskTEST(const std::string& jsonFile) {
   const Real rCMin = params.curvature.rCMin;
   const Real rhoMin = params.curvature.rhoMin;
   const Real rhoMax = params.curvature.rhoMax;
-  const typename Marsn2D::MARSn2D<
-      Order, VectorFunction>::CurvatureAdaptionConfig curvConfig{
+  const auto sigma = [](Real x) { return x; };
+  const InterfaceGraphFactory::MARScurvConfig<Order> curvConfig{
       .used = curvUsed,
       .rCMin = rCMin,
       .rhoCRange = Interval<1>{rhoMin, rhoMax},
-      .sigma = [](Real x) { return x; },
+      .sigma = sigma,
+      .hlGenerator =
+          HLGeneratorFactory::create(rCMin, rhoMin, rhoMax, rTiny, sigma),
   };
 
   // plot
@@ -606,24 +662,36 @@ auto diskTEST(const std::string& jsonFile) {
   vector<Real> vecHL;
   vector<Real> vecDt;
   Real N = N0;
-  for (uint i = 0; i < nGrid; ++i) {
+  auto hLComp = [&](Real N) {
     rVec h = (hi - lo) / N;
     Real hL = hLCoefficient * std::pow(min(h[0], h[1]), aimOrder / Order);
     Real dt = std::min(h[0], h[1]) / uM * Cr;
-    Real initialDist = hL / 2 * (curvUsed ? std::sqrt(rCMin) : 1);
+    Real initialDist = hL;
+    // Real initialDist = hL / 2 * (curvUsed ? std::sqrt(rCMin) : 1);
+    return make_tuple(h, hL, dt, initialDist);
+  };
+  for (uint i = 0; i < nGrid; ++i) {
+    auto [h, hL, dt, initialDist] = hLComp(N);
+    // rVec h = (hi - lo) / N;
+    // Real hL = hLCoefficient * std::pow(min(h[0], h[1]), aimOrder / Order);
+    // Real dt = std::min(h[0], h[1]) / uM * Cr;
+    // Real initialDist = hL / 2 * (curvUsed ? std::sqrt(rCMin) : 1);
     if (params.domain.name == "Disk") {
       const auto disk = InterfaceGraphFactory::createDiskGraph<Order>(
           center, radius, initialDist, parts);
       vecDomain.emplace_back(std::move(disk));
     } else if (params.domain.name == "Graph41") {
-      vecDomain.emplace_back(InterfaceGraphFactory::createGraph41<Order>(initialDist));
+      vecDomain.emplace_back(
+          InterfaceGraphFactory::createGraph41<Order>(initialDist));
     } else if (params.domain.name == "Raccoon22") {
       string path = std::string(ROOT_DIR) + "/test/data1/Raccoon.input";
-      vecDomain.emplace_back(InterfaceGraphFactory::inputFromSVG<Order>(path,  initialDist));
+      vecDomain.emplace_back(InterfaceGraphFactory::inputFromSVG<Order>(
+          path, initialDist, curvConfig));
     } else if (params.domain.name == "Pig15") {
       string path = std::string(ROOT_DIR) + "/test/data1/Pig.input";
-      vecDomain.emplace_back(InterfaceGraphFactory::inputFromSVG<Order>(path,  initialDist));
-    } 
+      vecDomain.emplace_back(InterfaceGraphFactory::inputFromSVG<Order>(
+          path, initialDist, curvConfig));
+    }
     vecN.emplace_back(N);
     vecBox.emplace_back(0, N - 1);
     // vecH.emplace_back(h);
@@ -633,9 +701,10 @@ auto diskTEST(const std::string& jsonFile) {
   }
 
   // accurate solution
-  rVec h = (hi - lo) / (1 * N);
-  Real hL = hLCoefficient * std::pow(min(h[0], h[1]), aimOrder / Order);
-  Real initialDist = hL / 2 * (curvUsed ? std::sqrt(rCMin) : 1);
+  auto [h, hL, dt, initialDist] = hLComp(2 * N);
+  // rVec h = (hi - lo) / (1 * N);
+  // Real hL = hLCoefficient * std::pow(min(h[0], h[1]), aimOrder / Order);
+  // Real initialDist = hL / 2 * (curvUsed ? std::sqrt(rCMin) : 1);
   auto exactDomain = InterfaceGraphFactory::createEmpty<Order>();
   if (params.domain.name == "Disk") {
     exactDomain = InterfaceGraphFactory::createDiskGraph<Order>(
@@ -644,188 +713,190 @@ auto diskTEST(const std::string& jsonFile) {
     exactDomain = InterfaceGraphFactory::createGraph41<Order>(initialDist);
   } else if (params.domain.name == "Raccoon22") {
     string path = std::string(ROOT_DIR) + "/test/data1/Raccoon.input";
-    exactDomain = InterfaceGraphFactory::inputFromSVG<Order>(path, initialDist);
+    exactDomain = InterfaceGraphFactory::inputFromSVG<Order>(path, initialDist,
+                                                             curvConfig);
   } else if (params.domain.name == "Pig15") {
     string path = std::string(ROOT_DIR) + "/test/data1/Pig.input";
-    exactDomain = InterfaceGraphFactory::inputFromSVG<Order>(path, initialDist);
+    exactDomain = InterfaceGraphFactory::inputFromSVG<Order>(path, initialDist,
+                                                             curvConfig);
   } else {
     throw runtime_error("unDeal shape.");
   }
-  MARSn2D<Order, VectorFunction> CM(timeIntegrator, hL, rTiny, curvConfig,
-                                    false);
-  CM.trackInterface(
-      *velocityPtr, exactDomain, t0, 0, t0,
-      typename Marsn2D::MARSn2D<Order, VectorFunction>::PlotConfig());
+  // MARSn2D<Order, VectorFunction> CM(timeIntegrator, hL, rTiny, curvConfig,
+  //                                   false);
+  // CM.trackInterface(
+  //     *velocityPtr, exactDomain, t0, 0, t0,
+  //     typename Marsn2D::MARSn2D<Order, VectorFunction>::PlotConfig());
   return make_tuple(vecDomain, exactDomain, radius, exactArea, exactLength,
                     vecBox, vecN, aimOrder, vecHL, rTiny, nGrid, curvConfig,
                     plotConfig, printDetail, t0, vecDt, te, T, timeIntegrator,
                     velocityPtr);
   }
 
-template <int Order>
-OPTNONE_FUNC
-inline auto InterfaceGraphFactory::inputFromSVG(const std::string& binPath,
-                                                Real hL) -> approxInterfaceGraph<Order> {
-  std::ifstream in(binPath, std::ios::binary);
-  if (!in) {
-    throw std::runtime_error("Failed to open file: " + binPath);
-  }
-
-  auto readBytes = [&](auto& val) {
-    using T = std::decay_t<decltype(val)>;
-    in.read(reinterpret_cast<char*>(&val), sizeof(T));
-    if (!in) throw std::runtime_error("Unexpected EOF in " + binPath);
-  };
-
-  auto readVec = [&](auto& vec, size_t n) {
-    using T = typename std::decay_t<decltype(vec)>::value_type;
-    vec.resize(n);
-    if (n == 0) return;
-    in.read(reinterpret_cast<char*>(vec.data()), sizeof(T) * n);
-    if (!in) throw std::runtime_error("Unexpected EOF in " + binPath);
-  };
-
-  // header
-  char magic[4];
-  in.read(magic, 4);
-  if (std::string(magic, 4) != "GEOB") {
-    throw std::runtime_error("Invalid magic in " + binPath);
-  }
-  uint32_t version;
-  readBytes(version);
-  if (version != 4) {
-    throw std::runtime_error("Unsupported version in " + binPath);
-  }
-
-  uint32_t numV, numE, numCurves, numNB, numYin;
-  readBytes(numV);
-  readBytes(numE);
-  readBytes(numCurves);
-  readBytes(numNB);
-  readBytes(numYin);
-
-  // V
-  std::vector<Real> vbuf(2 * numV);
-  readVec(vbuf, vbuf.size());
-  vector<Point> V(numV);
-  for (uint32_t i = 0; i < numV; ++i) {
-    V[i] = Point{vbuf[2 * i], vbuf[2 * i + 1]};
-  }
-
-  // Edges meta
-  vector<SplineEdgeRef> edges(numE);
-  for (uint32_t i = 0; i < numE; ++i) {
-    int32_t v1, v2, idx, curveId;
-    int8_t dir;
-    Real t0, t1;
-    readBytes(v1);
-    readBytes(v2);
-    readBytes(idx);
-    readBytes(curveId);
-    readBytes(dir);
-    readBytes(t0);
-    readBytes(t1);
-    edges[i] = {v1, v2, idx, curveId, static_cast<int>(dir), t0, t1};
-  }
-
-  // Curves (Curve<2,Order>::load)
-  vector<Curve<2, Order + 2>> curves(numCurves);
-  for (uint32_t ci = 0; ci < numCurves; ++ci) {
-    curves[ci] = Curve<2, Order + 2>::load(in);
-  }
-
-  // Smoothness
-  vector<vector<SmoothPair>> smooth(numV);
-  for (uint32_t vi = 0; vi < numV; ++vi) {
-    uint32_t pairCount;
-    readBytes(pairCount);
-    if (pairCount == 0) continue;
-    vector<int32_t> ebuf(2 * pairCount);
-    vector<int8_t> fbuf(2 * pairCount);
-    in.read(reinterpret_cast<char*>(ebuf.data()),
-            sizeof(int32_t) * ebuf.size());
-    in.read(reinterpret_cast<char*>(fbuf.data()),
-            sizeof(int8_t) * fbuf.size());
-    if (!in) throw std::runtime_error("Unexpected EOF in " + binPath);
-    for (uint32_t k = 0; k < pairCount; ++k) {
-      smooth[vi].push_back(
-          SmoothPair{ebuf[2 * k + 0], fbuf[2 * k + 0], ebuf[2 * k + 1],
-                     fbuf[2 * k + 1]});
+  template <int Order>
+  OPTNONE_FUNC inline auto InterfaceGraphFactory::inputFromSVG(
+      const std::string& binPath, Real hL,
+      const MARScurvConfig<Order>& curvConfig) -> approxInterfaceGraph<Order> {
+    std::ifstream in(binPath, std::ios::binary);
+    if (!in) {
+      throw std::runtime_error("Failed to open file: " + binPath);
     }
-  }
 
-  // newBoundaries
-  vector<BoundaryLoop> newBoundaries;
-  for (uint32_t bi = 0; bi < numNB; ++bi) {
-    uint8_t col[3];
-    in.read(reinterpret_cast<char*>(col), 3);
-    BoundaryLoop loop;
-    loop.color = {static_cast<int>(col[0]), static_cast<int>(col[1]),
-                  static_cast<int>(col[2])};
-    uint32_t edgeCount;
-    readBytes(edgeCount);
-    loop.edges.resize(edgeCount);
-    for (uint32_t ej = 0; ej < edgeCount; ++ej) {
-      int32_t edgeId;
+    auto readBytes = [&](auto& val) {
+      using T = std::decay_t<decltype(val)>;
+      in.read(reinterpret_cast<char*>(&val), sizeof(T));
+      if (!in) throw std::runtime_error("Unexpected EOF in " + binPath);
+    };
+
+    auto readVec = [&](auto& vec, size_t n) {
+      using T = typename std::decay_t<decltype(vec)>::value_type;
+      vec.resize(n);
+      if (n == 0) return;
+      in.read(reinterpret_cast<char*>(vec.data()), sizeof(T) * n);
+      if (!in) throw std::runtime_error("Unexpected EOF in " + binPath);
+    };
+
+    // header
+    char magic[4];
+    in.read(magic, 4);
+    if (std::string(magic, 4) != "GEOB") {
+      throw std::runtime_error("Invalid magic in " + binPath);
+    }
+    uint32_t version;
+    readBytes(version);
+    if (version != 4) {
+      throw std::runtime_error("Unsupported version in " + binPath);
+    }
+
+    uint32_t numV, numE, numCurves, numNB, numYin;
+    readBytes(numV);
+    readBytes(numE);
+    readBytes(numCurves);
+    readBytes(numNB);
+    readBytes(numYin);
+
+    // V
+    std::vector<Real> vbuf(2 * numV);
+    readVec(vbuf, vbuf.size());
+    vector<Point> V(numV);
+    for (uint32_t i = 0; i < numV; ++i) {
+      V[i] = Point{vbuf[2 * i], vbuf[2 * i + 1]};
+    }
+
+    // Edges meta
+    vector<SplineEdgeRef> edges(numE);
+    for (uint32_t i = 0; i < numE; ++i) {
+      int32_t v1, v2, idx, curveId;
       int8_t dir;
-      readBytes(edgeId);
+      Real t0, t1;
+      readBytes(v1);
+      readBytes(v2);
+      readBytes(idx);
+      readBytes(curveId);
       readBytes(dir);
-      loop.edges[ej] = BoundaryEdge{edgeId, dir};
+      readBytes(t0);
+      readBytes(t1);
+      edges[i] = {v1, v2, idx, curveId, static_cast<int>(dir), t0, t1};
     }
-    newBoundaries.push_back(std::move(loop));
-  }
-  // YinSet boundary索引
-  vector<vector<size_t>> YinSetId;
-  YinSetId.resize(numYin);
-  for (uint32_t yi = 0; yi < numYin; ++yi) {
-    uint8_t col[3];
-    in.read(reinterpret_cast<char*>(col), 3);
-    uint32_t idxCount;
-    readBytes(idxCount);
-    vector<uint32_t> tmp(idxCount);
-    readVec(tmp, idxCount);
-    YinSetId[yi] = vector<size_t>(tmp.begin(), tmp.end());
-  }
-  if (YinSetId.empty()) {
-    YinSetId.push_back({});
-  }
 
-  // 采样样条生成 EdgeMark
-  vector<EdgeMark> edgeMarks(numE);
-  for (uint32_t ei = 0; ei < numE; ++ei) {
-    const auto& ref = edges[ei];
-    if (ref.curveId < 0 || ref.curveId >= (int)numCurves) continue;
-    const auto& crv = curves[ref.curveId];
-    double t0 = ref.t0;
-    double t1 = ref.t1;
-    if (ref.dir < 0) std::swap(t0, t1);
-    auto pts = markCurve(crv, hL, t0, t1);
-    if (ref.dir < 0) {
-      std::reverse(pts.begin(), pts.end());
+    // Curves (Curve<2,Order>::load)
+    vector<Curve<2, Order + 2>> curves(numCurves);
+    for (uint32_t ci = 0; ci < numCurves; ++ci) {
+      curves[ci] = Curve<2, Order + 2>::load(in);
     }
-    edgeMarks[ei] = std::move(pts);
-  }
 
-  // cyclesEdgesId 来自 newBoundaries (若无则 regions)
-  vector<vector<EdgeIndex>> cyclesEdgesId(newBoundaries.size());
-  for (size_t i = 0; i < newBoundaries.size(); ++i) {
-    for (const auto& e : newBoundaries[i].edges) {
-      cyclesEdgesId[i].push_back((int)(e.edgeId + 1) * (e.dir >= 0 ? 1 : -1));
+    // Smoothness
+    vector<vector<SmoothPair>> smooth(numV);
+    for (uint32_t vi = 0; vi < numV; ++vi) {
+      uint32_t pairCount;
+      readBytes(pairCount);
+      if (pairCount == 0) continue;
+      vector<int32_t> ebuf(2 * pairCount);
+      vector<int8_t> fbuf(2 * pairCount);
+      in.read(reinterpret_cast<char*>(ebuf.data()),
+              sizeof(int32_t) * ebuf.size());
+      in.read(reinterpret_cast<char*>(fbuf.data()),
+              sizeof(int8_t) * fbuf.size());
+      if (!in) throw std::runtime_error("Unexpected EOF in " + binPath);
+      for (uint32_t k = 0; k < pairCount; ++k) {
+        smooth[vi].push_back(SmoothPair{ebuf[2 * k + 0], fbuf[2 * k + 0],
+                                        ebuf[2 * k + 1], fbuf[2 * k + 1]});
+      }
     }
-  }
 
-  // smoothConditions (edge 下标 +1)
-  vector<SmoothnessIndicator> smoothConditions;
-  for (const auto& vlist : smooth) {
-    for (const auto& p : vlist) {
-      smoothConditions.emplace_back(p.eA + 1, p.eB + 1);
+    // newBoundaries
+    vector<BoundaryLoop> newBoundaries;
+    for (uint32_t bi = 0; bi < numNB; ++bi) {
+      uint8_t col[3];
+      in.read(reinterpret_cast<char*>(col), 3);
+      BoundaryLoop loop;
+      loop.color = {static_cast<int>(col[0]), static_cast<int>(col[1]),
+                    static_cast<int>(col[2])};
+      uint32_t edgeCount;
+      readBytes(edgeCount);
+      loop.edges.resize(edgeCount);
+      for (uint32_t ej = 0; ej < edgeCount; ++ej) {
+        int32_t edgeId;
+        int8_t dir;
+        readBytes(edgeId);
+        readBytes(dir);
+        loop.edges[ej] = BoundaryEdge{edgeId, dir};
+      }
+      newBoundaries.push_back(std::move(loop));
     }
-  }
+    // YinSet boundary索引
+    vector<vector<size_t>> YinSetId;
+    YinSetId.resize(numYin);
+    for (uint32_t yi = 0; yi < numYin; ++yi) {
+      uint8_t col[3];
+      in.read(reinterpret_cast<char*>(col), 3);
+      uint32_t idxCount;
+      readBytes(idxCount);
+      vector<uint32_t> tmp(idxCount);
+      readVec(tmp, idxCount);
+      YinSetId[yi] = vector<size_t>(tmp.begin(), tmp.end());
+    }
+    if (YinSetId.empty()) {
+      YinSetId.push_back({});
+    }
 
-  return approxInterfaceGraph<Order>(
-      std::move(edgeMarks), std::move(smoothConditions),
-      std::move(cyclesEdgesId), std::move(YinSetId), distTol());
-}
+    // 采样样条生成 EdgeMark
+    vector<EdgeMark> edgeMarks(numE);
+    for (uint32_t ei = 0; ei < numE; ++ei) {
+      const auto& ref = edges[ei];
+      if (ref.curveId < 0 || ref.curveId >= (int)numCurves) continue;
+      const auto& crv = curves[ref.curveId];
+      double t0 = ref.t0;
+      double t1 = ref.t1;
+      if (ref.dir < 0) std::swap(t0, t1);
+      // auto pts = markCurve(crv, hL, t0, t1);
+      auto pts = markCurve(crv, hL, t0, t1, curvConfig);
+      if (ref.dir < 0) {
+        std::reverse(pts.begin(), pts.end());
+      }
+      edgeMarks[ei] = std::move(pts);
+    }
+
+    // cyclesEdgesId 来自 newBoundaries (若无则 regions)
+    vector<vector<EdgeIndex>> cyclesEdgesId(newBoundaries.size());
+    for (size_t i = 0; i < newBoundaries.size(); ++i) {
+      for (const auto& e : newBoundaries[i].edges) {
+        cyclesEdgesId[i].push_back((int)(e.edgeId + 1) * (e.dir >= 0 ? 1 : -1));
+      }
+    }
+
+    // smoothConditions (edge 下标 +1)
+    vector<SmoothnessIndicator> smoothConditions;
+    for (const auto& vlist : smooth) {
+      for (const auto& p : vlist) {
+        smoothConditions.emplace_back(p.eA + 1, p.eB + 1);
+      }
+    }
+
+    return approxInterfaceGraph<Order>(
+        std::move(edgeMarks), std::move(smoothConditions),
+        std::move(cyclesEdgesId), std::move(YinSetId), distTol());
+  }
 
 template <int Order>
 auto InterfaceGraphFactory::createEmpty()

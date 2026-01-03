@@ -1,6 +1,7 @@
 #ifndef CURVE_H
 #define CURVE_H
 
+#include <functional>
 #include <vector>
 
 #include "Core/Interval.h"
@@ -163,6 +164,14 @@ OPTNONE_FUNC
   // type = 1, endpoint()
   auto getComparablePoint(Real tol, int type = 0) const -> rVec;
   bool equal(const Curve& rhs, Real tol) const;
+
+  vector<Real> curvature(const vector<Real>& params) const;
+
+  std::vector<Real> curvatureBoundParams(
+      const std::vector<Real>& params, std::vector<int> &fixed, Real hL_,
+      const std::function<void(const std::vector<Real>& curv, 
+                               std::vector<Real>& hL, Real& lowerScale,
+                               Real& upperScale, Real)>& distBounds) const;
 
   // curvature at t
   static Real curvature(const Polynomial<Order, Real>& xPoly,

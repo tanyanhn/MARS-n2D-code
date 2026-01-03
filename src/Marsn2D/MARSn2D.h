@@ -3,6 +3,7 @@
 #include "InterfaceTracking/TimeIntegrator.h"
 #include "Marsn2D/Elements.h"
 #include "Marsn2D/InterfaceGraph.h"
+#include "Marsn2D/HLGeneratorFactory.h"
 
 namespace Marsn2D {
 
@@ -18,11 +19,13 @@ class MARSn2D {
   using Point = Vertex;
 
  public:
+  using HLGenerator = Marsn2D::HLGeneratorFactory::Prod;
   struct CurvatureAdaptionConfig {
     bool used = false;
     Real rCMin;
     Interval<1> rhoCRange;
     std::function<Real(Real)> sigma;
+    HLGenerator hlGenerator;
   };
   enum { NONE = 0, NORMAL = 1, CUTCELL = 2 };
   struct PlotConfig {
@@ -93,7 +96,7 @@ class MARSn2D {
   Real rTiny_;
 
   bool printDetail;
-  int removeTimesMax = 20;  
-  int insertTimesMax = 20;
+  int removeTimesMax = 10;  
+  int insertTimesMax = 10;
 };
 }  // namespace MARSn2D

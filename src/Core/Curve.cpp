@@ -1,6 +1,7 @@
 #include "Curve.h"
 
 #include <algorithm>
+#include <cmath>
 #include <iostream>
 #include <limits>
 
@@ -768,6 +769,216 @@ bool Curve<Dim, Order>::equal(const Curve &rhs, Real tol) const {
     if (vCmp.compare(pl, pr) != 0) return false;
   }
   return true;
+}
+
+template <int Dim, int Order>
+auto Curve<Dim, Order>::curvature(const vector<Real> &params) const
+    -> vector<Real> {
+  vector<Real> res;
+  if (params.empty() || empty()) return res;
+  res.reserve(params.size());
+  for (const auto &t : params) {
+    const int piece = locatePiece(t);
+    const auto &poly = polys[piece];
+    const Real localT = t - knots[piece];
+    res.push_back(
+        Curve<Dim, Order>::curvature(getComp(poly, 0), getComp(poly, 1),
+                                     localT));
+  }
+  return res;
+}
+
+namespace {
+template <int Dim, int Order>
+static bool insertByUpper(const Curve<Dim, Order> &curve,
+                          const std::vector<Real> &upperBound,
+                          std::vector<Real> &params,
+                          std::vector<int> &fixed, Real tol) {
+  if (params.size() < 2) return false;
+
+  struct Insertion {
+    std::size_t index;
+    std::vector<Real> mids;
+  };
+  std::vector<Insertion> pending;
+  pending.reserve(params.size());
+
+  auto segDist = [&](std::size_t i, std::size_t j) {
+    return norm(curve(params[j]) - curve(params[i]), 2);
+  };
+
+  for (std::size_t i = 0; i + 1 < params.size(); ++i) {
+    const Real upperSeg = std::min(upperBound[i], upperBound[i + 1]);
+    if (upperSeg <= tol) continue;
+    const Real d = segDist(i, i + 1);
+    if (d <= upperSeg + tol) continue;
+
+    const std::size_t num =
+        static_cast<std::size_t>(std::ceil(d / upperSeg)) - 1;
+    if (num == 0) continue;
+    const Real dt = (params[i + 1] - params[i]) / (num + 1);
+    std::vector<Real> mids;
+    mids.reserve(num);
+    for (std::size_t k = 1; k <= num; ++k) {
+      const Real t = params[i] + dt * static_cast<Real>(k);
+      if (t <= params[i] + tol || t >= params[i + 1] - tol) continue;
+      mids.push_back(t);
+    }
+    if (!mids.empty()) pending.push_back({i, std::move(mids)});
+  }
+
+  if (pending.empty()) return false;
+
+  std::size_t totalInsert = 0;
+  for (const auto &ins : pending) totalInsert += ins.mids.size();
+
+  std::vector<Real> newParams;
+  std::vector<int> newFixed;
+  newParams.reserve(params.size() + totalInsert);
+  newFixed.reserve(fixed.size() + totalInsert);
+
+  std::size_t pendingIdx = 0;
+  for (std::size_t i = 0; i < params.size(); ++i) {
+    newParams.push_back(params[i]);
+    newFixed.push_back(fixed[i]);
+    if (pendingIdx < pending.size() && pending[pendingIdx].index == i) {
+      const auto &mids = pending[pendingIdx].mids;
+      newParams.insert(newParams.end(), mids.begin(), mids.end());
+      newFixed.insert(newFixed.end(), mids.size(), false);
+      ++pendingIdx;
+    }
+  }
+
+  params.swap(newParams);
+  fixed.swap(newFixed);
+
+  return true;
+}
+
+template <int Dim, int Order>
+static bool pruneByLower(const Curve<Dim, Order> &curve,
+                         const std::vector<Real> &lowerBound,
+                         std::vector<Real> &params,
+                         std::vector<int> &fixed, Real tol) {
+  if (params.size() < 3) return false;
+
+  auto segDist = [&](std::size_t i, std::size_t j) {
+    return norm(curve(params[j]) - curve(params[i]), 2);
+  };
+
+  std::vector<int> erased;
+  for (std::size_t i = 1; i + 1 < params.size(); ++i) {
+    if (fixed[i]) {
+      continue;
+    } 
+    const Real prevD = segDist(i - 1, i);
+    const Real nextD = segDist(i, i + 1);
+    const Real boundPrev =
+        std::max<Real>(0, std::min(lowerBound[i - 1], lowerBound[i]));
+    const Real boundNext =
+        std::max<Real>(0, std::min(lowerBound[i], lowerBound[i + 1]));
+    if (prevD < boundPrev - tol || nextD < boundNext - tol) {
+      erased.push_back(i);
+      ++i;
+    }
+  }
+  if (erased.empty()) return false;
+  
+  std::vector<Real> newParams;
+  std::vector<int> newFixed;
+  auto iter = erased.begin();
+  for (std::size_t i = 0; i < params.size(); ++i) {
+    if (i == *iter) {
+      ++iter;
+    } else {
+      newParams.push_back(params[i]);
+      newFixed.push_back(fixed[i]);
+    }
+  }
+  params.swap(newParams);
+  fixed.swap(newFixed);
+
+  return true;
+}
+}  // namespace
+
+template <int Dim, int Order>
+OPTNONE_FUNC
+auto Curve<Dim, Order>::curvatureBoundParams(
+    const std::vector<Real> &params, std::vector<int> &fixed, Real base,
+    const std::function<void(const std::vector<Real> &curv,
+                             std::vector<Real> &hL, Real &lowerScale,
+                             Real &upperScale, Real)> &distBounds) const
+    -> std::vector<Real> {
+  if constexpr (Order <= 2) {
+    throw std::runtime_error(
+        "curvatureBoundParams requires curve order greater than 2.");
+  }
+  if (params.size() < 2) return params;
+  std::vector<Real> res = params;
+  if (empty() || params.empty() || !distBounds) return res;
+
+  const Real lo = knots.front();
+  const Real hi = knots.back();
+  const Real tol = distTol();
+
+  // clamp to domain, sort and deduplicate; mark all provided params as fixed
+  if (fixed.empty()) {
+    std::vector<Real> sorted(params.size());
+    std::transform(params.begin(), params.end(), sorted.begin(),
+                   [&](Real t) { return std::min(std::max(t, lo), hi); });
+    std::sort(sorted.begin(), sorted.end());
+    fixed.reserve(sorted.size());
+    for (const auto &t : sorted) {
+      if (res.empty() || t - res.back() > tol) {
+        res.push_back(t);
+        fixed.push_back(true);
+      }
+    }
+  }
+
+  auto computeBounds = [&]() {
+    std::vector<Real> lower(res.size());
+    std::vector<Real> upper(res.size());
+    std::vector<Real> hL(res.size());
+    Real lowerScale = 0;
+    Real upperScale = 0;
+    auto curv = curvature(res);
+    distBounds(curv, hL, lowerScale, upperScale, base);
+    if (hL.size() != res.size()) {
+      throw std::runtime_error("distBounds returns size mismatch.");
+    }
+    for (std::size_t i = 0; i < res.size(); ++i) {
+      lower[i] = std::max<Real>(0, hL[i] * lowerScale);
+      upper[i] = hL[i] * upperScale;
+    }
+    return std::pair<std::vector<Real>, std::vector<Real>>(
+        std::move(lower), std::move(upper));
+  };
+
+  constexpr std::size_t kMaxIter = 10;
+
+  // enrich by upper distance bound
+  std::size_t iter = 0;
+  while (iter++ < kMaxIter) {
+    auto bounds = computeBounds();
+    auto &upperBound = bounds.second;
+    if (res.size() < 2) break;
+
+    const bool inserted = insertByUpper(*this, upperBound, res, fixed, tol);
+    if (!inserted) break;
+  }
+
+  // prune by lower distance bound (never remove initial params)
+  iter = 0;
+  while (iter++ < kMaxIter) {
+    auto bounds = computeBounds();
+    auto &lowerBound = bounds.first;
+    const bool erased = pruneByLower(*this, lowerBound, res, fixed, tol);
+    if (!erased) break;
+  }
+
+  return res;
 }
 
 template <int Dim, int Order>
