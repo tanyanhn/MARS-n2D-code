@@ -84,7 +84,7 @@ OPTNONE_FUNC void MARSn2D<Order, VelocityField>::trackInterface(
     lengthHistory.push_back(ig.countLengths());
     step++;
   }
-  if (plotConfig.output != NONE) {
+  if (stages > 0 && plotConfig.output != NONE) {
     plot(ig, step, plotConfig);
     auto dir = getExportDir();
     std::ofstream of1(plotConfig.fName + "_00marksHistory" + ".dat",

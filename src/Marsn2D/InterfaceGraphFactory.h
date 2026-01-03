@@ -293,13 +293,18 @@ auto InterfaceGraphFactory::markCurve(const Curve<DIM, Order>& crv, Real hL,
   if (t0 >= t1) return std::vector<Point>{crv(t0)};
 
   std::vector<Real> params;
-  params.reserve(knots.size() + 2);
+  params.reserve(2 * knots.size() + 2);
   params.push_back(t0);
   for (auto k : knots) {
-    if (k > t0 && k < t1) params.push_back(k);
+    if (k > t0 && k < t1) {
+      // params.push_back((params.back() + k) / 2);
+      params.push_back(k);
+    }
   }
+  // params.push_back((params.back() + t1) / 2);
   params.push_back(t1);
 
+  // std::vector<int> fixed;
   std::vector<int> fixed(params.size(), 0);
   fixed.front() = 1;
   fixed.back() = 1;
@@ -666,7 +671,7 @@ auto diskTEST(const std::string& jsonFile) {
     rVec h = (hi - lo) / N;
     Real hL = hLCoefficient * std::pow(min(h[0], h[1]), aimOrder / Order);
     Real dt = std::min(h[0], h[1]) / uM * Cr;
-    Real initialDist = hL;
+    Real initialDist = hL / 2;
     // Real initialDist = hL / 2 * (curvUsed ? std::sqrt(rCMin) : 1);
     return make_tuple(h, hL, dt, initialDist);
   };
@@ -701,7 +706,7 @@ auto diskTEST(const std::string& jsonFile) {
   }
 
   // accurate solution
-  auto [h, hL, dt, initialDist] = hLComp(2 * N);
+  auto [h, hL, dt, initialDist] = hLComp(N);
   // rVec h = (hi - lo) / (1 * N);
   // Real hL = hLCoefficient * std::pow(min(h[0], h[1]), aimOrder / Order);
   // Real initialDist = hL / 2 * (curvUsed ? std::sqrt(rCMin) : 1);

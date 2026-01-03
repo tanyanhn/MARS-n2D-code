@@ -948,6 +948,8 @@ auto Curve<Dim, Order>::curvatureBoundParams(
     if (hL.size() != res.size()) {
       throw std::runtime_error("distBounds returns size mismatch.");
     }
+    lowerScale = 0.2;
+    upperScale = 0.6;
     for (std::size_t i = 0; i < res.size(); ++i) {
       lower[i] = std::max<Real>(0, hL[i] * lowerScale);
       upper[i] = hL[i] * upperScale;

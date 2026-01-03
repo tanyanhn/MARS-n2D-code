@@ -22,7 +22,8 @@ inline auto HLGeneratorFactory::create(Real rCMin, Real rhoMin, Real rhoMax,
     -> Prod {
   return [rCMin, rhoMin, rhoMax, rTiny, sigma](
              const std::vector<Real>& curv, std::vector<Real>& hL,
-             Real& lowerScale, Real& upperScale, Real hL_) {
+             Real& lowerScale, Real& upperScale, Real hL_)
+OPTNONE_FUNC {
     lowerScale = rTiny;
     upperScale = 1 - 2 * rTiny;
 
