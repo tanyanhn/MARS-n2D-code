@@ -20,13 +20,14 @@ curves = constructSmoothCurves(V, E, S, opts);
 result = build_yinset(F, V, curves, E);
 
 [curves, splineE] = interpolate_curves_spline(curves, E);
-filepath = name + ".input";
+% print_curve(curves);
+filepath = name + ".inputbak";
 write_geometry_bin(filepath, V, E, S, curves, splineE, result);
 
 % 可视化（已抽离为独立函数）
-% f1 = figure('Name', 'Smooth Curves Visualization');
-% axis(rect);
-% visualize_curves(curves, E, V);
+f1 = figure('Name', 'Smooth Curves Visualization');
+axis(rect);
+visualize_curves(curves, E, V);
 
 % figure
 % fillIdx = [12:12]; % 例: [1 3] 仅渲染 F(1), F(3) 的区域；空数组则不按 F 上色
@@ -48,3 +49,17 @@ write_geometry_bin(filepath, V, E, S, curves, splineE, result);
 %     if yi ~= numel(yinColors), fprintf(', '); end
 % end
 % fprintf('};\n');
+
+
+
+function [] = print_curve(curves)
+    for i = 1:numel(curves)
+        spline = curves{i}.spline;
+        xsp = spline.xpp;
+        ysp = spline.ypp;
+        t = spline.breaks;
+        disp(["i = ", int2str(i), "\n"]);
+        print_pp_derivatives(xsp, t);
+        print_pp_derivatives(ysp, t);
+    end
+end

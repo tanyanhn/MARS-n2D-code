@@ -54,7 +54,9 @@ function [Vn, En, S] = normalize_geometry(V, E, S, rect, theta)
     else
         scaleY = tgtH / rotH; constY = y0;
     end
-
+    
+    scaleX = min(scaleX, scaleY);
+    scaleY = scaleX;
     % 统一的变换：先绕 center 旋转，再按旋转后包围盒缩放/平移
     function ptsT = apply_transform(pts)
         ptsR = rot * (pts - center) + center;
