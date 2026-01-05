@@ -173,6 +173,7 @@ auto approxInterfaceGraph<Order>::approxJordanCurves() const
 }
 
 template <int Order>
+OPTNONE_FUNC
 auto approxInterfaceGraph<Order>::approxYinSet() const
     -> vector<YinSet<DIM, Order>> {
   vector<YinSet<DIM, Order>> ret;

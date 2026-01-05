@@ -70,12 +70,18 @@ struct InterfaceGraphFactory {
     int eA{}, fA{}, eB{}, fB{};
   };
   template <int Order>
-  static auto inputFromSVG(const std::string& binPath, Real hL = 1e-3,
+  static auto inputFromSVG(const std::string& binPath, Real hL,
                            const MARScurvConfig<Order>& curvConfig = {})
       -> approxInterfaceGraph<Order>;
   template <int Order>
   static auto createEmpty()
       -> approxInterfaceGraph<Order>;
+  template <int Order>
+  static auto dealRaccoon(Real hL, const MARScurvConfig<Order>& curvConfig,
+                          vector<EdgeMark>& edgeMarks,
+                          vector<vector<EdgeIndex>>& cyclesEdgesId,
+                          vector<SmoothnessIndicator>& smoothConditions,
+                          vector<vector<size_t>>& YinSetId);
 };
 
 OPTNONE_FUNC
@@ -290,7 +296,7 @@ auto InterfaceGraphFactory::markCurve(const Curve<DIM, Order>& crv, Real hL,
   }
   t0 = std::max(t0, knots.front());
   t1 = std::min(t1, knots.back());
-  if (t0 >= t1) return std::vector<Point>{crv(t0)};
+  if (t0 >= t1) return std::vector<Real>{t0};
 
   std::vector<Real> params;
   params.reserve(2 * knots.size() + 2);
@@ -323,10 +329,11 @@ auto InterfaceGraphFactory::markCurve(const Curve<DIM, Order>& crv, Real hL,
 
   auto ts = crv.curvatureBoundParams(params, fixed, hL, distBounds);
 
-  std::vector<Point> pts;
-  pts.reserve(ts.size());
-  for (auto t : ts) pts.push_back(crv(t));
-  return pts;
+  return ts;
+  // std::vector<Point> pts;
+  // pts.reserve(ts.size());
+  // for (auto t : ts) pts.push_back(crv(t));
+  // return pts;
 }
 
 template <int Order>
@@ -671,8 +678,8 @@ auto diskTEST(const std::string& jsonFile) {
     rVec h = (hi - lo) / N;
     Real hL = hLCoefficient * std::pow(min(h[0], h[1]), ((double)aimOrder) / Order);
     Real dt = std::min(h[0], h[1]) / uM * Cr;
-    Real initialDist = hL / 2;
-    // Real initialDist = hL / 2 * (curvUsed ? std::sqrt(rCMin) : 1);
+    // Real initialDist = hL / 2;
+    Real initialDist = hL / 2 * (curvUsed ? std::sqrt(rCMin) : 1);
     return make_tuple(h, hL, dt, initialDist);
   };
   for (uint i = 0; i < nGrid; ++i) {
@@ -690,12 +697,13 @@ auto diskTEST(const std::string& jsonFile) {
           InterfaceGraphFactory::createGraph41<Order>(initialDist));
     } else if (params.domain.name == "Raccoon22") {
       string path = std::string(ROOT_DIR) + "/test/data1/Raccoon.input";
+      // string path = std::string(ROOT_DIR) + "/test/data1/Raccoon.inputbak";
       vecDomain.emplace_back(InterfaceGraphFactory::inputFromSVG<Order>(
-          path, initialDist, curvConfig));
+          path, hL / 2, curvConfig));
     } else if (params.domain.name == "Pig15") {
       string path = std::string(ROOT_DIR) + "/test/data1/Pig.input";
       vecDomain.emplace_back(InterfaceGraphFactory::inputFromSVG<Order>(
-          path, initialDist, curvConfig));
+          path, hL / 2, curvConfig));
     }
     vecN.emplace_back(N);
     vecBox.emplace_back(0, N - 1);
@@ -718,11 +726,12 @@ auto diskTEST(const std::string& jsonFile) {
     exactDomain = InterfaceGraphFactory::createGraph41<Order>(initialDist);
   } else if (params.domain.name == "Raccoon22") {
     string path = std::string(ROOT_DIR) + "/test/data1/Raccoon.input";
-    exactDomain = InterfaceGraphFactory::inputFromSVG<Order>(path, initialDist,
+    // string path = std::string(ROOT_DIR) + "/test/data1/Raccoon.inputbak";
+    exactDomain = InterfaceGraphFactory::inputFromSVG<Order>(path, hL / 2,
                                                              curvConfig);
   } else if (params.domain.name == "Pig15") {
     string path = std::string(ROOT_DIR) + "/test/data1/Pig.input";
-    exactDomain = InterfaceGraphFactory::inputFromSVG<Order>(path, initialDist,
+    exactDomain = InterfaceGraphFactory::inputFromSVG<Order>(path, hL / 2,
                                                              curvConfig);
   } else {
     throw runtime_error("unDeal shape.");
@@ -867,19 +876,26 @@ auto diskTEST(const std::string& jsonFile) {
 
     // 采样样条生成 EdgeMark
     vector<EdgeMark> edgeMarks(numE);
+    vector<vector<Real>> curveMarks(numCurves);
+    for (int32_t ci = 0; ci < numCurves; ++ci) {
+      curveMarks[ci] = markCurve(curves[ci], hL, 1, 0, curvConfig);
+    }
     for (uint32_t ei = 0; ei < numE; ++ei) {
       const auto& ref = edges[ei];
-      if (ref.curveId < 0 || ref.curveId >= (int)numCurves) continue;
+      auto& pts = edgeMarks[ei];
+      if (ref.curveId < 0 || ref.curveId >= (int)numCurves)
+        throw std::runtime_error("inputFromSVG::invalid curveId.");
+      if (ref.dir < 0 || ref.t0 > ref.t1)
+        throw std::runtime_error("inputFromSVG::edge reverse");
       const auto& crv = curves[ref.curveId];
-      double t0 = ref.t0;
-      double t1 = ref.t1;
-      if (ref.dir < 0) std::swap(t0, t1);
-      // auto pts = markCurve(crv, hL, t0, t1);
-      auto pts = markCurve(crv, hL, t0, t1, curvConfig);
-      if (ref.dir < 0) {
-        std::reverse(pts.begin(), pts.end());
-      }
-      edgeMarks[ei] = std::move(pts);
+      const auto& crvMark = curveMarks[ref.curveId];
+      auto iter0 = std::lower_bound(crvMark.begin(), crvMark.end(), ref.t0 + distTol());
+      auto iter1 = std::lower_bound(iter0, crvMark.end(), ref.t1 - distTol());
+      if (iter0 == crvMark.end() || iter1 == crvMark.end() || iter0 == iter1)
+        throw std::runtime_error("inputFromSVG::fail to search t0, t1");
+      pts.emplace_back(crv(ref.t0));
+      while (iter0 != iter1) pts.emplace_back(crv(*iter0++));
+      pts.emplace_back(crv(ref.t1));
     }
 
     // cyclesEdgesId 来自 newBoundaries (若无则 regions)
@@ -898,6 +914,12 @@ auto diskTEST(const std::string& jsonFile) {
       }
     }
 
+    auto name = binPath.substr(binPath.size()-13, 7);
+    bool isRaccoon = name == "Raccoon";
+    if (isRaccoon)
+      dealRaccoon<Order>(hL, curvConfig, edgeMarks, cyclesEdgesId,
+                         smoothConditions, YinSetId);
+
     return approxInterfaceGraph<Order>(
         std::move(edgeMarks), std::move(smoothConditions),
         std::move(cyclesEdgesId), std::move(YinSetId), distTol());
@@ -913,6 +935,47 @@ auto InterfaceGraphFactory::createEmpty()
   return approxInterfaceGraph<Order>(
       std::move(edgeMarks), std::move(smoothConditions),
       std::move(cyclesEdgesId), std::move(YinSetId), distTol());
+}
+
+template <int Order>
+auto InterfaceGraphFactory::dealRaccoon(
+    Real hL, const MARScurvConfig<Order>& curvConfig,
+    vector<EdgeMark>& edgeMarks, vector<vector<EdgeIndex>>& cyclesEdgesId,
+    vector<SmoothnessIndicator>& smoothConditions,
+    vector<vector<size_t>>& YinSetId) {
+  Real initialDist = hL * (curvConfig.used ? std::sqrt(curvConfig.rCMin) : 1);
+  Point roseCenter{0.45, 0.38};
+  Real radiusRose = 0.06;
+  int kEdge = edgeMarks.size();
+  edgeMarks.resize(kEdge + 4);
+
+  edgeMarks[kEdge] = markRoseCurve(roseCenter, radiusRose, initialDist,
+                                   {M_PI * 4.0 / 6, M_PI * 5.0 / 6});
+  std::reverse(edgeMarks[kEdge].begin(), edgeMarks[kEdge].end());
+  edgeMarks[kEdge + 1] = markRoseCurve(roseCenter, radiusRose, initialDist,
+                                       {M_PI * 5.0 / 6, M_PI * 6.0 / 6});
+  std::reverse(edgeMarks[kEdge + 1].begin(), edgeMarks[kEdge + 1].end());
+  edgeMarks[kEdge + 2] = markRoseCurve(roseCenter, radiusRose, initialDist,
+                                       {M_PI * 6.0 / 6, M_PI * 7.0 / 6});
+  std::reverse(edgeMarks[kEdge + 2].begin(), edgeMarks[kEdge + 2].end());
+  edgeMarks[kEdge + 3] = markRoseCurve(roseCenter, radiusRose, initialDist,
+                                       {M_PI * 7.0 / 6, M_PI * 8.0 / 6});
+  std::reverse(edgeMarks[kEdge + 3].begin(), edgeMarks[kEdge + 3].end());
+
+  smoothConditions.emplace_back(kEdge + 4, kEdge + 3);
+  smoothConditions.emplace_back(kEdge + 3, kEdge + 2);
+  smoothConditions.emplace_back(kEdge + 2, kEdge + 1);
+
+  int kCyc = cyclesEdgesId.size();
+  cyclesEdgesId.resize(kCyc + 2);
+  cyclesEdgesId[kCyc] = (vector<EdgeIndex>{kEdge + 2, kEdge + 1});
+  cyclesEdgesId[kCyc + 1] = (vector<EdgeIndex>{kEdge + 4, kEdge + 3});
+
+  YinSetId[19].push_back(kCyc);
+  YinSetId[19].push_back(kCyc + 1);
+  // auto val = YinSetId[19];
+  // YinSetId.clear();
+  // YinSetId.push_back(val);
 }
 
 }  // namespace Marsn2D

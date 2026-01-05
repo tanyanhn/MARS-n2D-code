@@ -62,9 +62,6 @@ OPTNONE_FUNC void MARSn2D<Order, VelocityField>::trackInterface(
   ProgressBar bar(stages, "Tracking...");
   // timeStep(v, ig, tn, 0);
   while (step < stages) {
-    // if (plotConfig.output != NONE && (step + 40) % polyStep == 0) {
-    //   plot(ig, step, plotConfig);
-    // }
     if (plotConfig.output != NONE && step % polyStep == 0) {
       plot(ig, step, plotConfig);
     }
@@ -84,22 +81,24 @@ OPTNONE_FUNC void MARSn2D<Order, VelocityField>::trackInterface(
     lengthHistory.push_back(ig.countLengths());
     step++;
   }
-  if (stages > 0 && plotConfig.output != NONE) {
+  if (plotConfig.output != NONE) {
     plot(ig, step, plotConfig);
-    auto dir = getExportDir();
-    std::ofstream of1(plotConfig.fName + "_00marksHistory" + ".dat",
-                      std::ios_base::binary);
-    std::ofstream of2(plotConfig.fName + "_00LengthHistory" + ".dat",
-                      std::ios_base::binary);
-    int rows = (int)marksHistory[0].size();
-    int cols = (int)marksHistory.size();
-    of1.write((char *)&rows, sizeof(int));
-    of1.write((char *)&cols, sizeof(int));
-    of2.write((char *)&rows, sizeof(int));
-    of2.write((char *)&cols, sizeof(int));
-    for (size_t i = 0; i < marksHistory.size(); i++) {
-      of1.write((char *)marksHistory[i].data(), rows * sizeof(int));
-      of2.write((char *)lengthHistory[i].data(), rows * sizeof(Real));
+    if (stages > 0) {
+      auto dir = getExportDir();
+      std::ofstream of1(plotConfig.fName + "_00marksHistory" + ".dat",
+                        std::ios_base::binary);
+      std::ofstream of2(plotConfig.fName + "_00LengthHistory" + ".dat",
+                        std::ios_base::binary);
+      int rows = (int)marksHistory[0].size();
+      int cols = (int)marksHistory.size();
+      of1.write((char *)&rows, sizeof(int));
+      of1.write((char *)&cols, sizeof(int));
+      of2.write((char *)&rows, sizeof(int));
+      of2.write((char *)&cols, sizeof(int));
+      for (size_t i = 0; i < marksHistory.size(); i++) {
+        of1.write((char *)marksHistory[i].data(), rows * sizeof(int));
+        of2.write((char *)lengthHistory[i].data(), rows * sizeof(Real));
+      }
     }
   }
 }
