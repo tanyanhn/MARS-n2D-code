@@ -275,10 +275,10 @@ TEST_CASE("Raccoon vortex T = 12, Order = 8", "[Raccoon][Vortex][T12][Order8]") 
 TEST_CASE("Raccoon vortex T = 16, Order = 4", "[Raccoon][Vortex][T16][Order4]") {
   trackInterfaceTest("Raccoon22VortexT16Order4");
 }
-TEST_CASE("Raccoon vortex T = 16, Order = 4", "[Raccoon][Vortex][T16][Order4]") {
+TEST_CASE("Raccoon vortex T = 16, Order = 6", "[Raccoon][Vortex][T16][Order6]") {
   trackInterfaceTest("Raccoon22VortexT16Order6");
 }
-TEST_CASE("Raccoon vortex T = 16, Order = 4", "[Raccoon][Vortex][T16][Order4]") {
+TEST_CASE("Raccoon vortex T = 16, Order = 8", "[Raccoon][Vortex][T16][Order8]") {
   trackInterfaceTest("Raccoon22VortexT16Order8");
 }
 

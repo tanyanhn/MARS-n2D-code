@@ -1,6 +1,6 @@
 {
   "tolerance": {
-    "distTol": 1.0e-11,
+    "distTol": 1.0e-10,
     "newtonTol": 2.0e-16,
     "newtonMaxIter": 200
   },
