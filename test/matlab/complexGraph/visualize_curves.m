@@ -1,10 +1,17 @@
-function visualize_curves(curves, E, V, F, fillIdx)
+function visualize_curves(curves, E, V, F, fillIdx, samplesPerBreak)
 % VISUALIZE_CURVES 展示光滑曲线集合
 % curves: constructSmoothCurves 的输出
 % E: 边列表（包含 v1/v2）
 % V: 顶点矩阵
 % F: 颜色分组信息（来自 parse_geometry_json，可选）
 % fillIdx: 可选，F 下标数组。仅渲染这些下标对应的 boundary，按 boundary 的定向决定实心/空洞。
+% samplesPerBreak: 每两个相邻 break 之间的采样点数（含端点，可选）
+
+    if nargin < 4, F = []; end
+    if nargin < 5, fillIdx = []; end
+    if nargin < 6 || isempty(samplesPerBreak)
+        samplesPerBreak = 10;
+    end
 
     if isempty(curves)
         warning('没有曲线数据可视化');
@@ -20,8 +27,25 @@ function visualize_curves(curves, E, V, F, fillIdx)
         c = curves{i};
         col = colors(i, :);
 
-        % 绘制曲线采样
-        plot(c.samples(:, 1), c.samples(:, 2), 'Color', col, 'LineWidth', 1.5);
+        % 绘制曲线（优先使用 spline 直接取点）
+        if isfield(c, 'spline') && isstruct(c.spline) && ...
+                isfield(c.spline, 'xpp') && isfield(c.spline, 'ypp')
+            sp = c.spline;
+            if isfield(sp, 'breaks') && ~isempty(sp.breaks)
+                breaks = sp.breaks;
+            else
+                breaks = sp.xpp.breaks;
+            end
+            pts = sample_spline(sp.xpp, sp.ypp, breaks, samplesPerBreak);
+            plot(pts(:, 1), pts(:, 2), 'Color', col, 'LineWidth', 1.5);
+        elseif isfield(c, 'xpp') && isfield(c, 'ypp')
+            breaks = c.xpp.breaks;
+            pts = sample_spline(c.xpp, c.ypp, breaks, samplesPerBreak);
+            plot(pts(:, 1), pts(:, 2), 'Color', col, 'LineWidth', 1.5);
+        else
+            plot(c.samples(:, 1), c.samples(:, 2), 'Color', col, ...
+                'LineWidth', 1.5);
+        end
 
         % 顶点序列
         vSeq = curve_vertex_sequence(c.edges, E);
@@ -102,5 +126,23 @@ function vSeq = curve_vertex_sequence(edgeList, E)
         else
             vSeq = [vSeq, endV]; %#ok<AGROW>
         end
+    end
+end
+
+function pts = sample_spline(xpp, ypp, breaks, samplesPerBreak)
+    pts = zeros(0, 2);
+    if numel(breaks) < 2
+        return;
+    end
+    samplesPerBreak = max(2, round(samplesPerBreak));
+    for bi = 1:(numel(breaks) - 1)
+        t0 = breaks(bi);
+        t1 = breaks(bi + 1);
+        t = linspace(t0, t1, samplesPerBreak);
+        segPts = [ppval(xpp, t)', ppval(ypp, t)'];
+        if ~isempty(pts)
+            segPts = segPts(2:end, :);
+        end
+        pts = [pts; segPts]; %#ok<AGROW>
     end
 end

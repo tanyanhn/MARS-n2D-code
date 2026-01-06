@@ -2,10 +2,12 @@ clear; close all; clc;
 addpath ../
 
 % 数据文件路径（可切换为 Raccoon / Pig 等）
-name = '../../data1/Pig';
+name = '../../data1/Raccoon';
 removeV = [];
-% removeV = [0, 1, 2, 3]; % Raccoon boundary vertex
-removeV = [2, 9, 36, 40]; % Pig boundary vertex
+opts = struct;
+removeV = [0, 1, 2, 3]; % Raccoon boundary vertex
+% removeV = [2, 9, 36, 40]; % Pig boundary vertex
+% opts.minSamples = 4; % pig 可设置 opts.maxStep / opts.minSamples
 
 % 解析 JSON
 [V, E, S, F] = parse_geometry_json(name + ".json");
@@ -14,14 +16,13 @@ rect = [.2 .8 .2 .8];
 [V, E, S] = normalize_geometry(V, E, S, rect, pi);
 
 % 构建光滑曲线集合
-opts = struct; % 可设置 opts.maxStep / opts.minSamples
 curves = constructSmoothCurves(V, E, S, opts);
 
 result = build_yinset(F, V, curves, E);
 
 [curves, splineE] = interpolate_curves_spline(curves, E);
 % print_curve(curves);
-filepath = name + ".inputbak";
+filepath = name + ".input";
 write_geometry_bin(filepath, V, E, S, curves, splineE, result);
 
 % 可视化（已抽离为独立函数）
@@ -31,9 +32,9 @@ visualize_curves(curves, E, V);
 
 % figure
 % fillIdx = [12:12]; % 例: [1 3] 仅渲染 F(1), F(3) 的区域；空数组则不按 F 上色
-% plot_boundaries(F, sampleE, fillIdx);
+% plot_boundaries(F, result.sampleE, fillIdx);
 % targetIdx = [3];
-% plot_subtree(boundaries, parent, targetIdx, sampleE);
+% plot_subtree(result.boundaries, parent, targetIdx, result.sampleE);
 % axis([.1 .9 .1 .9]);
 
 

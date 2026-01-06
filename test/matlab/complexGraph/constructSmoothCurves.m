@@ -15,7 +15,7 @@ function curves = constructSmoothCurves(V, E, S, opts)
     if ~isfield(opts, 'minSamples'); opts.minSamples = 2; end
 
     numEdges = numel(E);
-    minSegLen = compute_min_seg_length(E);
+    minSegLen = compute_min_seg_length(E) * 4;
     if ~isfield(opts, 'maxStep') || isempty(opts.maxStep)
         opts.maxStep = minSegLen;
     end

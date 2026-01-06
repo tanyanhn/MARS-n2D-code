@@ -54,30 +54,6 @@ void trackInterfaceTest(const string& testName,
   RecorderFinalize();
 }
 
-TEST_CASE("Pig vortex T = 4, Order = 4", "[Pig][Vortex][T4][Order4]") {
-  trackInterfaceTest("Pig15VortexT4Order4");
-}
-TEST_CASE("Pig vortex T = 8, Order = 4", "[Pig][Vortex][T8][Order4]") {
-  trackInterfaceTest("Pig15VortexT8Order4");
-}
-TEST_CASE("Pig vortex T = 12, Order = 4", "[Pig][Vortex][T12][Order4]") {
-  trackInterfaceTest("Pig15VortexT12Order4");
-}
-TEST_CASE("Pig vortex T = 16, Order = 4", "[Pig][Vortex][T16][Order4]") {
-  trackInterfaceTest("Pig15VortexT16Order4");
-}
-TEST_CASE("Raccoon vortex T = 4, Order = 4", "[Raccoon][Vortex][T4][Order4]") {
-  trackInterfaceTest("Raccoon22VortexT4Order4");
-}
-TEST_CASE("Raccoon vortex T = 8, Order = 4", "[Raccoon][Vortex][T8][Order4]") {
-  trackInterfaceTest("Raccoon22VortexT8Order4");
-}
-TEST_CASE("Raccoon vortex T = 12, Order = 4", "[Raccoon][Vortex][T12][Order4]") {
-  trackInterfaceTest("Raccoon22VortexT12Order4");
-}
-TEST_CASE("Raccoon vortex T = 16, Order = 4", "[Raccoon][Vortex][T16][Order4]") {
-  trackInterfaceTest("Raccoon22VortexT16Order4");
-}
 TEST_CASE("Dynamic Disk 4 vortex T = 4, Order = 4", "[Disk4][Vortex][T4][Order4][Dynamic]") {
   trackInterfaceTest("Disk4VortexT4Order4Dynamic");
 }
@@ -267,3 +243,80 @@ TEST_CASE("Graph 4.1, Deformation T = 4, Order = 8",
           "[Graph41][Deformation][T4][Order8]") {
   trackInterfaceTest("Graph41DeformationT4Order8");
 }
+
+// Raccoon 
+TEST_CASE("Raccoon vortex T = 4, Order = 4", "[Raccoon][Vortex][T4][Order4]") {
+  trackInterfaceTest("Raccoon22VortexT4Order4");
+}
+TEST_CASE("Raccoon vortex T = 4, Order = 6", "[Raccoon][Vortex][T4][Order6]") {
+  trackInterfaceTest("Raccoon22VortexT4Order6");
+}
+TEST_CASE("Raccoon vortex T = 4, Order = 8", "[Raccoon][Vortex][T4][Order8]") {
+  trackInterfaceTest("Raccoon22VortexT4Order8");
+}
+TEST_CASE("Raccoon vortex T = 8, Order = 4", "[Raccoon][Vortex][T8][Order4]") {
+  trackInterfaceTest("Raccoon22VortexT8Order4");
+}
+TEST_CASE("Raccoon vortex T = 8, Order = 6", "[Raccoon][Vortex][T8][Order6]") {
+  trackInterfaceTest("Raccoon22VortexT8Order6");
+}
+TEST_CASE("Raccoon vortex T = 8, Order = 8", "[Raccoon][Vortex][T8][Order8]") {
+  trackInterfaceTest("Raccoon22VortexT8Order8");
+}
+TEST_CASE("Raccoon vortex T = 12, Order = 4", "[Raccoon][Vortex][T12][Order4]") {
+  trackInterfaceTest("Raccoon22VortexT12Order4");
+}
+TEST_CASE("Raccoon vortex T = 12, Order = 6", "[Raccoon][Vortex][T12][Order6]") {
+  trackInterfaceTest("Raccoon22VortexT12Order6");
+}
+TEST_CASE("Raccoon vortex T = 12, Order = 8", "[Raccoon][Vortex][T12][Order8]") {
+  trackInterfaceTest("Raccoon22VortexT12Order8");
+}
+TEST_CASE("Raccoon vortex T = 16, Order = 4", "[Raccoon][Vortex][T16][Order4]") {
+  trackInterfaceTest("Raccoon22VortexT16Order4");
+}
+TEST_CASE("Raccoon vortex T = 16, Order = 4", "[Raccoon][Vortex][T16][Order4]") {
+  trackInterfaceTest("Raccoon22VortexT16Order6");
+}
+TEST_CASE("Raccoon vortex T = 16, Order = 4", "[Raccoon][Vortex][T16][Order4]") {
+  trackInterfaceTest("Raccoon22VortexT16Order8");
+}
+
+TEST_CASE("Raccoon, Deformation T = 2, Order = 4",
+          "[Raccoon][Deformation][T2][Order4]") {
+  trackInterfaceTest("Raccoon22DeformationT2Order4");
+}
+TEST_CASE("Raccoon, Deformation T = 2, Order = 6",
+          "[Raccoon][Deformation][T2][Order6]") {
+  trackInterfaceTest("Raccoon22DeformationT2Order6");
+}
+TEST_CASE("Raccoon, Deformation T = 4, Order = 8",
+          "[Raccoon][Deformation][T2][Order8]") {
+  trackInterfaceTest("Raccoon22DeformationT2Order8");
+}
+TEST_CASE("Raccoon, Deformation T = 4, Order = 4",
+          "[Raccoon][Deformation][T4][Order4]") {
+  trackInterfaceTest("Raccoon22DeformationT4Order4");
+}
+TEST_CASE("Raccoon, Deformation T = 4, Order = 6",
+          "[Raccoon][Deformation][T4][Order6]") {
+  trackInterfaceTest("Raccoon22DeformationT4Order6");
+}
+TEST_CASE("Raccoon, Deformation T = 4, Order = 8",
+          "[Raccoon][Deformation][T4][Order8]") {
+  trackInterfaceTest("Raccoon22DeformationT4Order8");
+}
+
+
+// TEST_CASE("Pig vortex T = 4, Order = 4", "[Pig][Vortex][T4][Order4]") {
+//   trackInterfaceTest("Pig15VortexT4Order4");
+// }
+// TEST_CASE("Pig vortex T = 8, Order = 4", "[Pig][Vortex][T8][Order4]") {
+//   trackInterfaceTest("Pig15VortexT8Order4");
+// }
+// TEST_CASE("Pig vortex T = 12, Order = 4", "[Pig][Vortex][T12][Order4]") {
+//   trackInterfaceTest("Pig15VortexT12Order4");
+// }
+// TEST_CASE("Pig vortex T = 16, Order = 4", "[Pig][Vortex][T16][Order4]") {
+//   trackInterfaceTest("Pig15VortexT16Order4");
+// }

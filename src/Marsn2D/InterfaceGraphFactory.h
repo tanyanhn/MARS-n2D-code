@@ -321,8 +321,8 @@ auto InterfaceGraphFactory::markCurve(const Curve<DIM, Order>& crv, Real hL,
     if (curvConfig.used) {
       curvConfig.hlGenerator(curv, hLSeq, lowerScale, upperScale, base);
     } else {
-      lowerScale = 0.1;
-      upperScale = 0.8;
+      lowerScale = 0.2;
+      upperScale = 0.6;
       hLSeq.assign(curv.size(), base);
     }
   };

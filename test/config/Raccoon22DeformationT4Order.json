@@ -1,0 +1,41 @@
+{
+  "tolerance": {
+    "distTol": 1.0e-11,
+    "newtonTol": 2.0e-16,
+    "newtonMaxIter": 200
+  },
+  "time": {
+      "te": 4.0,
+      "t0": 0.0,
+      "Cr": 0.125,
+      "uM": 1.0
+  },
+  "field": {
+      "velocityName" : "Deformation",
+      "pars" : [4]
+  },
+  "grid": {
+      "N0": 32,
+      "lo": [0.0, 0.0],
+      "hi": [1.0, 1.0],
+      "aimOrder": 4,
+      "hLCoefficient": 0.2,
+      "rTiny": 0.05,
+      "nGrid": 3
+  },
+  "curvature_adaption": {
+      "curvUsed": true,
+      "rCMin": 0.1,
+      "rhoMin": 1.0,
+      "rhoMax": 1e5
+  },
+  "plot": {
+      "plotOutput": 2,
+      "plotInner": true,
+      "plotStride": 4,
+      "printDetail": false
+  },
+  "domain_disk": {             
+      "name" : "Raccoon22"
+  }
+}
