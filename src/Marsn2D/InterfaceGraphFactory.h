@@ -301,13 +301,14 @@ auto InterfaceGraphFactory::markCurve(const Curve<DIM, Order>& crv, Real hL,
   std::vector<Real> params;
   params.reserve(2 * knots.size() + 2);
   params.push_back(t0);
-  for (auto k : knots) {
-    if (k > t0 && k < t1) {
-      // params.push_back((params.back() + k) / 2);
-      params.push_back(k);
-    }
-  }
-  // params.push_back((params.back() + t1) / 2);
+  const int initNum = 5;
+  double dt = (t1 - t0) / initNum;
+  for (int k = 1; k < initNum; ++k) params.push_back(t0 + k * dt);
+  // for (auto k : knots) {
+  //   if (k > t0 && k < t1) {
+  //     params.push_back(k);
+  //   }
+  // }
   params.push_back(t1);
 
   // std::vector<int> fixed;
@@ -973,7 +974,7 @@ auto InterfaceGraphFactory::dealRaccoon(
 
   YinSetId[19].push_back(kCyc);
   YinSetId[19].push_back(kCyc + 1);
-  // auto val = YinSetId[19];
+  // auto val = YinSetId[0];
   // YinSetId.clear();
   // YinSetId.push_back(val);
 }
