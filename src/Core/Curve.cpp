@@ -735,7 +735,7 @@ auto Curve<Dim, Order>::getComparablePoint(Real tol, int type) const
     Real lastRange = knots[i + 1] - knots[i];
     Real disturbance = std::min(tol, lastRange) / 2;
     Real t0 = disturbance;
-    return normalize(polys[i](t0));
+    return (polys[i](t0));
   }
   if (type == 1) {
     int i = polys.size() - 1;
@@ -743,7 +743,7 @@ auto Curve<Dim, Order>::getComparablePoint(Real tol, int type) const
     Real lastRange = knots[i + 1] - knots[i];
     Real disturbance = std::min(tol, lastRange) / 2;
     Real t0 = lastRange - disturbance;
-    return normalize(polys[i](t0));
+    return (polys[i](t0));
   }
   throw std::runtime_error("type error");
   return rVec();
