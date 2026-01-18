@@ -3,11 +3,13 @@ clear
 
 % Shape = "Disk4";
 % Shape = "Disk5";
-Shape = "Graph41";
+% Shape = "Graph41";
+Shape = "Raccoon22";
 vel = "Vortex";
 % vel = "Deformation";
 T = 16;
 Order = 4;
+sumColumns = false;
 dir = "../../results/TrackInterface/";
 filedir = sprintf('%s%s%sT%dOrder%d/', dir, Shape, vel, T, Order);
 % filedir = "../../results/TrackInterface/Disk5DeformationT4Order4/";
@@ -27,6 +29,13 @@ cols2 = fread(hd2, 1, 'int');
 
 A = fread(hd1, [rows1, cols1], "int");
 B = fread(hd2, [rows2, cols2], "double");
+
+if sumColumns
+    A = sum(A, 1);
+    B = sum(B, 1);
+    rows1 = 1;
+    rows2 = 1;
+end
 
 A = A ./ A(:, 1);
 B = B ./ B(:, 1);
