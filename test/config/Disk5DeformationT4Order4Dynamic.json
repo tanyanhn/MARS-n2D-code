@@ -30,7 +30,7 @@
       "rhoMax": 1e5
   },
   "plot": {
-      "plotOutput": 2,
+      "plotOutput": 0,
       "plotInner": true,
       "plotStride": 64,
       "printDetail": false

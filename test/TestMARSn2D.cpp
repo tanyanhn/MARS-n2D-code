@@ -22,8 +22,9 @@ void trackInterfaceTest(const string& testName,
           t0, vecDt, te, T, timeIntegrator, velocityPtr] =
         diskTEST<Order>(rootDir + "/test/config/" + testName + ".json");
     popLogStage();
-    pushLogStage("TrackInterface");
     for (uint i = 0; i < nGrid; ++i) {
+      pushLogStage(std::string("TrackInterface grid ") +
+                   std::to_string(vecN[i]));
       auto localPlotConfig = plotConfig;
       localPlotConfig.fName = std::string("1Order") + to_string(Order) +
                               "_grid" + to_string(vecN[i]);
@@ -33,8 +34,8 @@ void trackInterfaceTest(const string& testName,
                                         curvConfig, printDetail);
       CM.trackInterface(*velocityPtr, vecDomain[i], t0, vecDt[i], te,
                         localPlotConfig);
+      popLogStage();
     }
-    popLogStage();
     pushLogStage("CheckResult");
     // std::ofstream of(dir + "00test.dat");
     // for (auto& domain : vecDomain) {
