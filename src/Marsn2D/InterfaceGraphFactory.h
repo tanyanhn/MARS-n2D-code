@@ -39,6 +39,8 @@ struct InterfaceGraphFactory {
   static auto markEllipse(Point center, rVec radius, Real hL, rVec range);
   static auto markRoseCurve(Point center, Real a, Real hL, rVec range,
                             int numPetal = 3);
+  static auto markLemniscateBernoulli(Point center, Real a, Real hL,
+                                      rVec range);
   static auto markSegment(Segment<DIM> seg, Real hL);
   template <int Order>
   static auto markCurve(const Curve<DIM, Order>& crv, Real hL, Real lo = 1,
@@ -100,6 +102,49 @@ InterfaceGraphFactory::markRoseCurve(Point center, Real a, Real hL, rVec range,
     angle += range[0];
     Real radius = a * sin(numPetal * angle);
     return Point{center + rVec{radius * cos(angle), radius * sin(angle)}};
+  };
+  pts.reserve(step + 1);
+  pts.push_back(eValue(0));
+  for (int i = 0; i < step; i++) {
+    Real localAngle = stepAngle;
+    Real angle = stepAngle * i + localAngle;
+    Point local = eValue(angle);
+    while (norm(pts.back() - local) > hL) {
+      localAngle /= 2;
+      angle = stepAngle * i + localAngle;
+      local = eValue(angle);
+    }
+
+    while (angle < stepAngle * (i + 1) - distTol()) {
+      pts.push_back(eValue(angle));
+      angle += localAngle;
+    }
+    pts.push_back(eValue(stepAngle * (i + 1)));
+  }
+  auto p1 = eValue(range[1] - range[0]);
+  if (vCmp(pts.back(), p1) == 0) pts.pop_back();
+
+  pts.push_back(p1);
+  return pts;
+}
+
+OPTNONE_FUNC
+inline auto
+InterfaceGraphFactory::markLemniscateBernoulli(Point center, Real a, Real hL,
+                                               rVec range) {
+  vector<Point> pts;
+  VecCompare<Real, DIM> vCmp(distTol());
+  // x = a cos(t) / (1 + sin^2(t)), y = a sin(t) cos(t) / (1 + sin^2(t))
+  // |r'(t)| <= a
+  Real stepAngle = hL / a;
+  int step = std::ceil((range[1] - range[0]) / stepAngle);
+  stepAngle = (range[1] - range[0]) / step;
+  auto eValue = [a, center, range](Real angle) {
+    angle += range[0];
+    Real s = sin(angle);
+    Real c = cos(angle);
+    Real denom = 1 + s * s;
+    return Point{center + rVec{a * c / denom, a * s * c / denom}};
   };
   pts.reserve(step + 1);
   pts.push_back(eValue(0));
@@ -950,27 +995,36 @@ auto InterfaceGraphFactory::dealRaccoon(
   int kEdge = edgeMarks.size();
   edgeMarks.resize(kEdge + 4);
 
-  edgeMarks[kEdge] = markRoseCurve(roseCenter, radiusRose, initialDist,
-                                   {M_PI * 4.0 / 6, M_PI * 5.0 / 6});
-  std::reverse(edgeMarks[kEdge].begin(), edgeMarks[kEdge].end());
-  edgeMarks[kEdge + 1] = markRoseCurve(roseCenter, radiusRose, initialDist,
-                                       {M_PI * 5.0 / 6, M_PI * 6.0 / 6});
-  std::reverse(edgeMarks[kEdge + 1].begin(), edgeMarks[kEdge + 1].end());
-  edgeMarks[kEdge + 2] = markRoseCurve(roseCenter, radiusRose, initialDist,
-                                       {M_PI * 6.0 / 6, M_PI * 7.0 / 6});
-  std::reverse(edgeMarks[kEdge + 2].begin(), edgeMarks[kEdge + 2].end());
-  edgeMarks[kEdge + 3] = markRoseCurve(roseCenter, radiusRose, initialDist,
-                                       {M_PI * 7.0 / 6, M_PI * 8.0 / 6});
-  std::reverse(edgeMarks[kEdge + 3].begin(), edgeMarks[kEdge + 3].end());
+  // edgeMarks[kEdge] = markRoseCurve(roseCenter, radiusRose, initialDist,
+  //                                  {M_PI * 4.0 / 6, M_PI * 5.0 / 6});
+  // std::reverse(edgeMarks[kEdge].begin(), edgeMarks[kEdge].end());
+  // edgeMarks[kEdge + 1] = markRoseCurve(roseCenter, radiusRose, initialDist,
+  //                                      {M_PI * 5.0 / 6, M_PI * 6.0 / 6});
+  // std::reverse(edgeMarks[kEdge + 1].begin(), edgeMarks[kEdge + 1].end());
+  // edgeMarks[kEdge + 2] = markRoseCurve(roseCenter, radiusRose, initialDist,
+  //                                      {M_PI * 6.0 / 6, M_PI * 7.0 / 6});
+  // std::reverse(edgeMarks[kEdge + 2].begin(), edgeMarks[kEdge + 2].end());
+  // edgeMarks[kEdge + 3] = markRoseCurve(roseCenter, radiusRose, initialDist,
+  //                                      {M_PI * 7.0 / 6, M_PI * 8.0 / 6});
+  // std::reverse(edgeMarks[kEdge + 3].begin(), edgeMarks[kEdge + 3].end());
+  edgeMarks[kEdge] = markLemniscateBernoulli(roseCenter, radiusRose, initialDist,
+                                   {M_PI * -1.0 / 2, M_PI * 0.0 / 2});
+  edgeMarks[kEdge + 1] = markLemniscateBernoulli(roseCenter, radiusRose, initialDist,
+                                   {M_PI * 0.0 / 2, M_PI * 1.0 / 2});
+  edgeMarks[kEdge + 2] = markLemniscateBernoulli(roseCenter, radiusRose, initialDist,
+                                   {M_PI * 1.0 / 2, M_PI * 2.0 / 2});
+  edgeMarks[kEdge + 3] = markLemniscateBernoulli(roseCenter, radiusRose, initialDist,
+                                   {M_PI * 2.0 / 2, M_PI * 3.0 / 2});
 
-  smoothConditions.emplace_back(kEdge + 4, kEdge + 3);
-  smoothConditions.emplace_back(kEdge + 3, kEdge + 2);
-  smoothConditions.emplace_back(kEdge + 2, kEdge + 1);
+  smoothConditions.emplace_back(kEdge + 4, kEdge + 1);
+  smoothConditions.emplace_back(kEdge + 1, kEdge + 2);
+  smoothConditions.emplace_back(kEdge + 2, kEdge + 3);
+  smoothConditions.emplace_back(kEdge + 3, kEdge + 4);
 
   int kCyc = cyclesEdgesId.size();
   cyclesEdgesId.resize(kCyc + 2);
-  cyclesEdgesId[kCyc] = (vector<EdgeIndex>{kEdge + 2, kEdge + 1});
-  cyclesEdgesId[kCyc + 1] = (vector<EdgeIndex>{kEdge + 4, kEdge + 3});
+  cyclesEdgesId[kCyc] = (vector<EdgeIndex>{-(kEdge + 2), -(kEdge + 1)});
+  cyclesEdgesId[kCyc + 1] = (vector<EdgeIndex>{kEdge + 3, kEdge + 4});
 
   YinSetId[19].push_back(kCyc);
   YinSetId[19].push_back(kCyc + 1);
