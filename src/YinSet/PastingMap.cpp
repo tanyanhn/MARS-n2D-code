@@ -147,7 +147,7 @@ int OutEdgeSelectorByKnots<Order, Num>::compare(const size_t &lhsId,
   // auto d1 = normalize(lhs.midpoint() - lhs.startpoint());
   // auto d2 = normalize(rhs.midpoint() - rhs.startpoint());
   auto d1 = normalize(lhs.getComparablePoint(tol, 0) - lhs.startpoint());
-  auto d2 = normalize(rhs.getComparablePoint(tol, 0) - lhs.startpoint());
+  auto d2 = normalize(rhs.getComparablePoint(tol, 0) - rhs.startpoint());
   if (norm(d1 - d2) < tol) return 0;
   Num s1 = cross(d1, indir);
   Num s2 = cross(d2, indir);
