@@ -1,77 +1,101 @@
-%% 周期样条条件数实验：模块化版
-% 目的：对比不同几何形状下，扰动距离 r_tiny 对条件数的影响
+%% 周期样条条件数实验：N 列表对比版
+% 目的：输入一个 N 列表，为每种形状生成一张图，对比不同 N 下的条件数变化
 
 clear; clc; close all;
 
 %% 1. 实验配置
-N = 100;                        % 基础点数
-r_start = 0.1;                  % r_tiny 起始值
-r_end = 0.00001;                % r_tiny 结束值
-rate = 0.9;                     % 衰减率
+% --- [关键修改] 输入 N 的列表 ---
+% 建议 N 不要太大(如 >2000)，否则 cond() 计算会非常耗时
+N_list = [50, 100, 200, 500, 1000, 2000]; 
 
-% --- [关键选项] 选择曲线形状 ---
-% 选项: 'circle' 或 'sharp_bump'
-curve_type = 'sharpBump'; 
-% curve_type = 'circle'; 
+r_exponents = linspace(-1, -5, 50); % 指数范围
+r_tiny_vals = 10.^r_exponents;      % r_tiny 实际值
+
+% --- 形状列表 ---
+shape_list = {'circle', 'sharpBump'}; 
+type_list = {'not-a-knot', 'periodic'};
+display_names = {'Unit Circle', 'Sharp Bump'};
 
 % 尖锐参数: [基础半径, 凸起高度, 尖锐度]
-% 尖锐度建议: 5(圆润) ~ 50(极尖)
 bump_params = [1.0, 1.0, 10000]; 
 
-%% 2. 初始化
-r_tiny_vals = [r_start];
-cond_results = [];
+fprintf('开始计算... N_list = [%s]\n', num2str(N_list));
 
-% 基础参数空间分布 (0 到 2*pi)
-delta_theta = 2*pi / N;
-theta_base = linspace(0, 2*pi - delta_theta, N);
+%% 2. 循环计算
 
-fprintf('开始计算... N=%d, 形状: %s\n', N, curve_type);
-
-%% 3. 循环计算
-while r_tiny_vals(end) > r_end
-    % 获取当前 r
-    r = r_tiny_vals(end);
+% --- 第一层循环：遍历形状 (每个形状一张图) ---
+for s_idx = 2:length(type_list)
+%     current_type = shape_list{s_idx};
+    current_type = shape_list{1};
+    bc_type = type_list{s_idx};
+    shape_name = display_names{s_idx};
     
-    % --- 几何参数构建 ---
-    % 在 theta=0 附近插入扰动参数
-    theta_tiny = delta_theta * r; 
+    % 为当前形状新建一个图形窗口
+    f = figure('Color', 'w', 'Position', [100 + (s_idx-1)*50, 100, 800, 500]);
+    hold on;
     
-    % 合并并排序参数 t
-    thetas = sort([theta_base, theta_tiny]);
+    % 获取颜色列表 (让不同的 N 显示不同颜色)
+    colors = lines(length(N_list));
     
-    % --- [调用模块] 生成几何点 ---
-    % points 是一个 M x 2 的矩阵
-%     points = get_curve_points(thetas, curve_type, bump_params);
-    [points, ~, lookup] = get_adaptive_curve_points(N, r, curve_type, bump_params);
+    fprintf('>>> 正在处理形状: %s \n', current_type);
+    fprintf('>>> 正在处理条件: %s \n', bc_type);
     
-    % --- [调用模块] 构建矩阵 ---
-    % 这里内部会自动计算物理弦长并构建矩阵
-    A = build_periodic_matrix(points);
+    % --- 第二层循环：遍历 N 列表 (每条线对应一个 N) ---
+    for n_idx = 1:length(N_list)
+        N = N_list(n_idx);
+        current_color = colors(n_idx, :);
+        
+        cond_results = zeros(size(r_tiny_vals));
+        
+        % --- 第三层循环：计算该 N 下的条件数曲线 ---
+        for k = 1:length(r_tiny_vals)
+            r = r_tiny_vals(k);
+            
+            % [调用模块] 生成自适应分布的点
+            % 注意：r 是物理距离比例
+            [points, ~, lookup] = get_adaptive_curve_points(N, r, current_type, bump_params);
+            
+            % [调用模块] 构建矩阵
+            A = build_spline_matrix(points, bc_type);
+            fullA = full(A);
+            
+            % 计算条件数
+            cond_results(k) = cond(fullA); 
+        end
+        
+        % --- 绘图 (单条曲线) ---
+        plot(-log10(r_tiny_vals), cond_results, '.-', ...
+            'Color', current_color, ...
+            'LineWidth', 1.5, ...
+            'MarkerSize', 10, ...
+            'DisplayName', ['N = ', num2str(N)]);
+            
+        fprintf('    完成 N = %d\n', N);
+    end
     
-    % --- 计算条件数 ---
-    cond_results = [cond_results, cond(full(A))]; 
+    % --- 单张图的美化与保存 ---
+%     xlabel('-log_{10}(r_{tiny})', 'FontSize', 12);
+%     ylabel('Condition Number \kappa(A)', 'FontSize', 12);
+%     title(['Condition Number Growth: ' shape_name], 'FontSize', 14);
+    grid on;
+    legend('show', 'Location', 'east', 'FontSize', 14);
     
-    % 更新 r (准备下一次循环)
-    r_tiny_vals = [r_tiny_vals, r * rate];
+    % 自动保存图片
+    file_name = sprintf('CondNum_%s_%s.png', current_type, bc_type);
+    try
+        addpath export_fig-3.54\ % 如果你有这个库
+        ax = gca;
+        ax.FontSize = 14;
+        export_fig(f, file_name);
+        fprintf('    图片已保存: %s\n', file_name);
+    catch
+        saveas(f, file_name); % 使用 MATLAB 自带保存作为备选
+        fprintf('    图片已保存 (saveas): %s\n', file_name);
+    end
+    fprintf('\n');
 end
 
-% 移除最后多生成的一个 r 值(循环跳出条件导致的)
-r_tiny_vals = r_tiny_vals(1:end-1);
-
-%% 4. 结果可视化
-
-f = figure('Color', 'w', 'Position', [100, 100, 800, 500]);
-
-% 子图1: 条件数变化曲线
-% subplot(1, 2, 1);
-plot(-log10(r_tiny_vals), cond_results, 'b.-', 'LineWidth', 1.5, 'MarkerSize', 10);
-xlabel('-log_{10}(r_{tiny})', 'FontSize', 12);
-ylabel('Condition Number \kappa(A)', 'FontSize', 12);
-title(['Condition Number Growth (' curve_type ')'], 'FontSize', 14);
-grid on;
-addpath export_fig-3.54\
-export_fig(f, "condNum.png");
+fprintf('所有计算完成。\n');
 
 % 子图2: 几何形状展示 (画出最后一个极近点的情况)
 % subplot(1, 2, 2);
@@ -156,7 +180,7 @@ function [points, h_avg, lookup] = get_adaptive_curve_points(N, r_tiny_ratio, ty
     h_avg = total_length / N;
     
     % 生成 N 个均匀位置: 0, h, 2h, ..., (N-1)h
-    s_uniform = (0:N-1)' * h_avg;
+    s_uniform = (0:N)' * h_avg;
     
     % 生成扰动点位置: 在第1个点 (s=0) 之后 r_tiny * h_avg 处
     % 也可以选择在峰值最尖锐的地方(通常 t=0 处即 s=0 处)加扰动
@@ -177,43 +201,106 @@ function [points, h_avg, lookup] = get_adaptive_curve_points(N, r_tiny_ratio, ty
     points = [x_out, y_out];
 end
 
-function A = build_periodic_matrix(points)
-    % BUILD_PERIODIC_MATRIX 根据点集构建周期性三弯矩矩阵
-    % 注意：这里使用弦长(物理距离)作为步长 h，这样几何形状才会影响条件数
+function A = build_spline_matrix(points, bc_type)
+    % BUILD_SPLINE_MATRIX 构建三次样条插值系数矩阵
+    % 输入:
+    %   points:  Nx2 点集坐标
+    %   bc_type: 'periodic' (默认, 封闭圆环) 或 'not-a-knot' (开放曲线)
+    %
+    % 输出:
+    %   A:       系数矩阵 (对于 periodic 为循环矩阵，对于 not-a-knot 为三对角矩阵)
     
+    if nargin < 2
+        bc_type = 'periodic';
+    end
+
     M = size(points, 1);
     
-    % 1. 计算物理步长 h (欧几里得距离)
-    % h(i) = dist(P_i, P_{i+1})
+    % --- 1. 计算物理步长 h ---
+    % h_steps(i) = dist(P_i, P_{i+1})
+    % 共 M-1 个段
     diffs = diff(points);
     h_steps = sqrt(sum(diffs.^2, 2));
     
-    % 处理闭合段: dist(P_M, P_1)
-    d_close = sqrt(sum((points(1,:) - points(end,:)).^2));
-    h = [h_steps; d_close]; 
+    h = h_steps;
+    if strcmp(bc_type, 'periodic')
+        M = M - 1;
+    else
+    end
     
-    % 2. 构建稀疏矩阵
+    % --- 2. 构建稀疏矩阵 ---
     A = sparse(M, M);
     
-    for i = 1:M
-        % 周期性索引处理
-        idx_prev = mod(i - 2, M) + 1; 
-        idx_curr = i;
-        idx_next = mod(i, M) + 1;     
+    if strcmp(bc_type, 'periodic')
+        % ==============================
+        % Mode A: Periodic (周期性闭合)
+        % ==============================
+        for i = 1:M
+            idx_prev = mod(i - 2, M) + 1; 
+            idx_curr = i;
+            idx_next = mod(i, M) + 1;     
+            
+            % 周期性下，h 数组长度为 M，索引循环使用
+            h_prev_val = h(idx_prev);
+            h_curr_val = h(idx_curr); 
+            
+            sum_h = h_prev_val + h_curr_val;
+            
+            % 三弯矩方程系数
+            mu     = h_prev_val / sum_h;
+            lambda = h_curr_val / sum_h;
+            
+            A(i, idx_prev) = mu;
+            A(i, idx_curr) = 2;
+            A(i, idx_next) = lambda;
+        end
         
-        % 获取相邻步长
-        h_prev_val = h(idx_prev);
-        h_curr_val = h(idx_curr); % 注意：根据三弯矩定义，这里对应的是 h_i
+    elseif strcmp(bc_type, 'not-a-knot')
+        % ==============================
+        % Mode B: Not-a-Knot (开放端点)
+        % ==============================
         
-        sum_h = h_prev_val + h_curr_val;
+        % 1. 内部节点 (2 到 M-1)：使用标准三弯矩方程
+        for i = 2:M-1
+            % 对于开放曲线:
+            % h 索引: h(1)是P1->P2, h(i-1)是Pi-1->Pi, h(i)是Pi->Pi+1
+            h_prev_val = h(i-1);
+            h_curr_val = h(i);
+            
+            sum_h = h_prev_val + h_curr_val;
+            
+            mu     = h_prev_val / sum_h;
+            lambda = h_curr_val / sum_h;
+            
+            A(i, i-1) = mu;
+            A(i, i)   = 2;
+            A(i, i+1) = lambda;
+        end
         
-        % 样条权重参数
-        mu     = h_prev_val / sum_h;
-        lambda = h_curr_val / sum_h;
+        % 2. 边界条件处理 (基于三阶导数连续推导)
+        % 方程: h_2 * M_1 - (h_1 + h_2) * M_2 + h_1 * M_3 = 0
+        % 这保证了第一段和第二段的三次系数相同
         
-        % 填充矩阵
-        A(i, idx_prev) = mu;
-        A(i, idx_curr) = 2;
-        A(i, idx_next) = lambda;
+        % --- 第一个点 (Row 1) ---
+        h1 = h(1);
+        h2 = h(2);
+        A(1, 1) = h2 / (h1 + h2);
+        A(1, 2) = -1;
+        A(1, 3) = h1/ (h1 + h2);
+%         A(1, 1) = h2;
+%         A(1, 2) = -(h1 + h2);
+%         A(1, 3) = h1;
+        
+        % --- 最后一个点 (Row M) ---
+        % 方程对称: h_{end} * M_{end-2} - (...) * M_{end-1} + h_{end-1} * M_{end} = 0
+        h_end_1 = h(end-1); % h_{M-2}
+        h_end   = h(end);   % h_{M-1}
+        
+        A(M, M-2) = h_end/ (h_end_1 + h_end);
+        A(M, M-1) = -1;
+        A(M, M)   = h_end_1 / (h_end_1 + h_end);
+        
+    else
+        error('未知的边界条件类型: %s', bc_type);
     end
 end
