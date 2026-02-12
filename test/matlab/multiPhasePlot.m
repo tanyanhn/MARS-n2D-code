@@ -21,12 +21,13 @@ T = 4;
 Order = 4;
 filedir = dir + Shape + num2str(part) + vel + "T" + num2str(T) + "Order" + num2str(Order)+ dynamic + "/";
 grid = 32;
-steps = 0;
+steps = [0, 1, 2, 4];
 stepSize = 256;
 type = "_c.dat"; plotF = false;
 % type = "_f.dat"; plotF = true;
 figHandles = [];
-for plotI = 0:1:steps
+for iStep = 1:length(steps)
+    plotI = steps(iStep);
 %     plotI = 1;
     step = plotI * stepSize;
     % if plotI == steps
