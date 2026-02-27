@@ -435,9 +435,9 @@ void MARSn2D<Order, VelocityField>::timeStep(const VelocityField<DIM> &v,
     }
 
     // split boundary edge for not-a-knot splines.
-    updateHL(curv, marks, hL);
-    averageSplit(v, tn, dt, marks, preEdge, hL, para, splitDist,
-                 notaKnotLocation);
+    // updateHL(curv, marks, hL);
+    // averageSplit(v, tn, dt, marks, preEdge, hL, para, splitDist,
+    //              notaKnotLocation);
 
 #ifndef NDEBUG
     if (!checkMarks(marks, hL)) {

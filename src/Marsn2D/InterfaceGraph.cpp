@@ -105,8 +105,8 @@ void approxInterfaceGraph<Order>::updateCurve() {
           throw std::runtime_error("Invalid edge id");
         knots.pop_back();
         p0 = knots.back();
-        if (vCmp.compare(p0, p1) == 0)
-          throw std::runtime_error("Invalid edge id");
+        // if (vCmp.compare(p0, p1) == 0)
+        //   throw std::runtime_error("Invalid edge id");
       }
       knots.insert(knots.end(), marks_[crvId].begin(), marks_[crvId].end());
       brksId.push_back(knots.size() - 1);

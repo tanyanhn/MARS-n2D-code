@@ -887,8 +887,8 @@ static bool pruneByLower(const Curve<Dim, Order> &curve,
   std::vector<Real> newParams;
   std::vector<int> newFixed;
   auto iter = erased.begin();
-  for (std::size_t i = 0; i < params.size(); ++i) {
-    if (i == *iter) {
+  for (std::size_t i = 0; i < params.size() ; ++i) {
+    if (iter != erased.end() && i == *iter) {
       ++iter;
     } else {
       newParams.push_back(params[i]);

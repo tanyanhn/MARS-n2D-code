@@ -5,7 +5,7 @@
     "newtonMaxIter": 200
   },
   "time": {
-      "te": 8.0,
+      "te": 12.0,
       "t0": 0.0,
       "Cr": 0.125,
       "uM": 1.0
@@ -18,8 +18,8 @@
       "N0": 32,
       "lo": [0.0, 0.0],
       "hi": [1.0, 1.0],
-      "aimOrder": 4,
-      "hLCoefficient": 0.1,
+      "aimOrder": 8,
+      "hLCoefficient": 5,
       "rTiny": 0.05,
       "nGrid": 3
   },
@@ -30,12 +30,12 @@
       "rhoMax": 1e6
   },
   "plot": {
-      "plotOutput": 2,
+      "plotOutput": 0,
       "plotInner": true,
       "plotStride": 4,
       "printDetail": false
   },
-  "domain_disk": { 
+  "domain_disk": {  
       "name" : "Pig15"
   }
 }

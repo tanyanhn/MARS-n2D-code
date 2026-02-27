@@ -5,14 +5,14 @@
     "newtonMaxIter": 200
   },
   "time": {
-      "te": 8.0,
+      "te": 2.0,
       "t0": 0.0,
       "Cr": 0.125,
       "uM": 1.0
   },
   "field": {
-      "velocityName" : "Vortex",
-      "pars" : [-1.0]
+      "velocityName" : "Deformation",
+      "pars" : [4]
   },
   "grid": {
       "N0": 32,
@@ -26,7 +26,7 @@
   "curvature_adaption": {
       "curvUsed": true,
       "rCMin": 0.001,
-      "rhoMin": 5.0,
+      "rhoMin": 1.0,
       "rhoMax": 1e6
   },
   "plot": {
@@ -35,7 +35,7 @@
       "plotStride": 4,
       "printDetail": false
   },
-  "domain_disk": { 
+  "domain_disk": {           
       "name" : "Pig15"
   }
 }

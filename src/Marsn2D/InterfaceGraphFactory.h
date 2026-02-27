@@ -937,7 +937,7 @@ auto diskTEST(const std::string& jsonFile) {
       const auto& crvMark = curveMarks[ref.curveId];
       auto iter0 = std::lower_bound(crvMark.begin(), crvMark.end(), ref.t0 + distTol());
       auto iter1 = std::lower_bound(iter0, crvMark.end(), ref.t1 - distTol());
-      if (iter0 == crvMark.end() || iter1 == crvMark.end() || iter0 == iter1)
+      if (iter0 == crvMark.end() || iter1 == crvMark.end())
         throw std::runtime_error("inputFromSVG::fail to search t0, t1");
       pts.emplace_back(crv(ref.t0));
       while (iter0 != iter1) pts.emplace_back(crv(*iter0++));
