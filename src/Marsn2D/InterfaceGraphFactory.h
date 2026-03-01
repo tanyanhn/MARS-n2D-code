@@ -760,7 +760,7 @@ auto diskTEST(const std::string& jsonFile) {
   }
 
   // accurate solution
-  auto [h, hL, dt, initialDist] = hLComp(N);
+  auto [h, hL, dt, initialDist] = hLComp(N*5);
   // rVec h = (hi - lo) / (1 * N);
   // Real hL = hLCoefficient * std::pow(min(h[0], h[1]), aimOrder / Order);
   // Real initialDist = hL / 2 * (curvUsed ? std::sqrt(rCMin) : 1);
