@@ -51,3 +51,15 @@ BEGIN {
         print name
     }
 }' | parallel -j "$physical_cores" "$tests {}" 1>&1
+
+# 获取上一条命令（parallel）的退出状态
+exit_status=$?
+
+if [ $exit_status -eq 0 ]; then
+    echo "---------------------------------------"
+    echo "✅ 所有并行任务已成功完成！"
+else
+    echo "---------------------------------------"
+    echo "⚠️ 任务已结束，但部分任务返回了非零状态码 (Exit Code: $exit_status)。"
+    echo "请检查上方输出以确认错误详情。"
+fi
