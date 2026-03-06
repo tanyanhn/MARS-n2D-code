@@ -34,7 +34,7 @@ void InterfaceGraph::initVertices(
     kinks.erase(j);
   }
   for (const auto& [l, r] : smoothConditions) {
-    auto& p = edges_[r].front();
+    auto& p = edges_[r - 1].front();
     kinks.erase(p);
   }
   kinks_ = vector<Vertex>(kinks.begin(), kinks.end());
