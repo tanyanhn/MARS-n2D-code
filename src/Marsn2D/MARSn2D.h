@@ -13,7 +13,7 @@ class MARSn2D {
   using vector = std::vector<T>;
   using YS = YinSet<DIM, Order>;
   using IG = approxInterfaceGraph<Order>;
-  using Edge = IG::Edge;
+  using Edge = IG::ApproxEdge;
 
   using TIPtr = std::shared_ptr<TimeIntegrator<DIM, VelocityField>>;
   using Point = Vertex;

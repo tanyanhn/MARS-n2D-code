@@ -19,9 +19,7 @@ class InterfaceGraph {
   InterfaceGraph(vector<EdgeMark>&& edges,
                  const vector<SmoothnessIndicator>& smoothConditions);
 
-  // auto& getFitParameter() const {
-  //   return std::make_tuple(edges_, trials_, circuits_);
-  // }
+  void initVertices(const vector<SmoothnessIndicator>& smoothConditions);
 
   template <int Order>
   friend class approxInterfaceGraph;
@@ -37,6 +35,7 @@ class InterfaceGraph {
   vector<vector<EdgeIndex>> trials_;
   vector<vector<EdgeIndex>> circuits_;
   vector<Vertex> vertices_;
+  vector<Vertex> kinks_, junctions_, basepoints_;
   vector<EdgeMark> edges_;
   // std::vector<SmoothnessIndicator> smoothConditions_;
 };
@@ -49,7 +48,7 @@ class approxInterfaceGraph {
   using OrientedJordanCurve2D = OrientedJordanCurve<DIM, Order>;
   using Trial = Curve<DIM, Order>;
   using Circuit = Curve<DIM, Order>;
-  using Edge = Curve<DIM, Order>;
+  using ApproxEdge = Curve<DIM, Order>;
   using EdgeIndex = InterfaceGraph::EdgeIndex;
   using SmoothnessIndicator = InterfaceGraph::SmoothnessIndicator;
 
@@ -64,7 +63,7 @@ class approxInterfaceGraph {
   auto approxYinSet() const -> vector<YinSet<DIM, Order>>;
 
   auto accessEdges()
-      -> vector<std::tuple<typename vector<Edge>::iterator,
+      -> vector<std::tuple<typename vector<ApproxEdge>::iterator,
                            typename vector<EdgeMark>::iterator>>;
 
   void updateCurve();
@@ -79,7 +78,7 @@ class approxInterfaceGraph {
 
  private:
   InterfaceGraph undirectGraph_;
-  vector<Edge> edges_;
+  vector<ApproxEdge> approxEdges_;
   // vector<int> notaKnotBoundary_;
   // vector<Edge> reverseEdges_;
   // edges[abs(index) - 1], abs(index) starting from 1,

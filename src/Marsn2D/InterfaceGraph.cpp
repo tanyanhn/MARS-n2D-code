@@ -11,14 +11,33 @@ InterfaceGraph::InterfaceGraph(
     vector<EdgeMark>&& edges,
     const vector<SmoothnessIndicator>& smoothConditions)
     : edges_(edges) {
+    initVertices(smoothConditions);
+    partitionEdgeSet(smoothConditions, edges_, trials_, circuits_);
+}
+
+void InterfaceGraph::initVertices(
+    const vector<SmoothnessIndicator>& smoothConditions) {
   VecCompare<Real, DIM> vCmp(distTol());
-  set<Vertex, VecCompare<Real, DIM>> vert(vCmp);
-  for (int i = 0; i < edges.size(); ++i) {
-    vert.insert(edges[i].front());
-    vert.insert(edges[i].back());
+  set<Vertex, VecCompare<Real, DIM>> kinks(vCmp);
+  set<Vertex, VecCompare<Real, DIM>> junctions(vCmp);
+  for (int i = 0; i < edges_.size(); ++i) {
+    auto& front = edges_[i].front();
+    auto iter = kinks.find(front);
+    if (iter != kinks.end()) 
+      junctions.insert(front);
+    else 
+      kinks.insert(front);
   }
-  vertices_.insert(vertices_.end(), vert.begin(), vert.end());
-  partitionEdgeSet(smoothConditions, edges_, trials_, circuits_);
+  vertices_ = vector<Vertex>(kinks.begin(), kinks.end());
+  junctions_ = vector<Vertex>(junctions.begin(), junctions.end());
+  for (const auto& j :junctions) {
+    kinks.erase(j);
+  }
+  for (const auto& [l, r] : smoothConditions) {
+    auto& p = edges_[r].front();
+    kinks.erase(p);
+  }
+  kinks_ = vector<Vertex>(kinks.begin(), kinks.end());
 }
 
 void InterfaceGraph::partitionEdgeSet(
@@ -93,13 +112,13 @@ void approxInterfaceGraph<Order>::updateCurve() {
   auto& marks_ = undirectGraph_.edges_;
   auto& trials_ = undirectGraph_.trials_;
   auto& circuits_ = undirectGraph_.circuits_;
-  edges_.resize(marks_.size());
+  approxEdges_.resize(marks_.size());
   // reverseEdges_.resize(marks_.size());
   Real tol = this->tol_;
 
   auto fitFunction = [&marks_, tol](const vector<EdgeIndex>& spline,
                                     Curve<2, Order>::BCType type,
-                                    vector<Edge>& output) {
+                                    vector<ApproxEdge>& output) {
     vector<Vertex> knots;
     vector<size_t> brksId;
     vector<Real> brks;
@@ -131,7 +150,7 @@ void approxInterfaceGraph<Order>::updateCurve() {
     // checkFitCurve(crv, type);
     for (auto brkId : brksId) brks.push_back(crv.getKnots()[brkId]);
 
-    vector<Edge> pieces;
+    vector<ApproxEdge> pieces;
     crv.split(brks, pieces, tol);
 
     for (size_t i = 0; i < pieces.size(); ++i)
@@ -152,10 +171,10 @@ void approxInterfaceGraph<Order>::updateCurve() {
     //   reverseOutput[spline[pieces.size() - 1 - i]] = std::move(pieces[i]);
   };
   for (const auto& trial : trials_)
-    fitFunction(trial, Curve<DIM, Order>::notAKnot, edges_);
+    fitFunction(trial, Curve<DIM, Order>::notAKnot, approxEdges_);
 
   for (const auto& circuit : circuits_)
-    fitFunction(circuit, Curve<DIM, Order>::periodic, edges_);
+    fitFunction(circuit, Curve<DIM, Order>::periodic, approxEdges_);
 }
 
 template <int Order>
@@ -164,12 +183,12 @@ auto approxInterfaceGraph<Order>::approxJordanCurves() const
   vector<OrientedJordanCurve2D> ret;
 
   for (const auto& cycle : cyclesEdgesId_) {
-    Edge edge;
+    ApproxEdge edge;
     for (const auto& edgeId : cycle) {
       if (edgeId > 0) {
-        edge.concat(edges_[edgeId - 1]);
+        edge.concat(approxEdges_[edgeId - 1]);
       } else if (edgeId < 0) {
-        edge.concat(edges_[-edgeId - 1].reverse());
+        edge.concat(approxEdges_[-edgeId - 1].reverse());
       } else {
         throw std::runtime_error("invalid edge id");
       }
@@ -202,16 +221,16 @@ auto approxInterfaceGraph<Order>::approxYinSet() const
 
 template <int Order>
 auto approxInterfaceGraph<Order>::accessEdges()
-    -> vector<std::tuple<typename vector<Edge>::iterator,
+    -> vector<std::tuple<typename vector<ApproxEdge>::iterator,
                         typename vector<EdgeMark>::iterator>> {
   using std::vector;
-  vector<std::tuple<typename vector<Edge>::iterator,
+  vector<std::tuple<typename vector<ApproxEdge>::iterator,
                    typename vector<EdgeMark>::iterator>>
       ret;
 
   auto& marks = undirectGraph_.edges_;
   auto iterMarks = marks.begin();
-  auto iterEdges = edges_.begin();
+  auto iterEdges = approxEdges_.begin();
   // auto iterNotaKnot = notaKnotBoundary_.begin();
   for (; iterMarks != marks.cend(); ++iterMarks, ++iterEdges) {
     ret.emplace_back(iterEdges, iterMarks);
@@ -239,7 +258,7 @@ template <int Order>
 auto approxInterfaceGraph<Order>::countLengths() const -> vector<Real> {
   vector<Real> ret;
   vector<Real> edgeLengths;
-  for (const auto& edge : edges_) {
+  for (const auto& edge : approxEdges_) {
     Real length = arclength(edge);
     edgeLengths.push_back(length);
   }
