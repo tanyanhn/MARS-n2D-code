@@ -11,12 +11,20 @@ InterfaceGraph::InterfaceGraph(
     vector<EdgeMark>&& edges,
     const vector<SmoothnessIndicator>& smoothConditions)
     : edges_(edges) {
-  decomposeEdgeSet(smoothConditions, edges_, trials_, circuits_);
+  VecCompare<Real, DIM> vCmp(distTol());
+  set<Vertex, VecCompare<Real, DIM>> vert(vCmp);
+  for (int i = 0; i < edges.size(); ++i) {
+    vert.insert(edges[i].front());
+    vert.insert(edges[i].back());
+  }
+  vertices_.insert(vertices_.end(), vert.begin(), vert.end());
+  partitionEdgeSet(smoothConditions, edges_, trials_, circuits_);
 }
 
-void InterfaceGraph::decomposeEdgeSet(
+void InterfaceGraph::partitionEdgeSet(
     const vector<SmoothnessIndicator>& smoothConditions,
-    const vector<EdgeMark>& edges, vector<vector<EdgeIndex>>& trials,
+    const vector<EdgeMark>& edges, 
+    vector<vector<EdgeIndex>>& trials,
     vector<vector<EdgeIndex>>& circuits) {
   VecCompare<Real, DIM> vCmp(distTol());
   unordered_map<int, int> prevSmoothPairs;
@@ -71,11 +79,11 @@ approxInterfaceGraph<Order>::approxInterfaceGraph(
       cyclesEdgesId_(std::move(cyclesEdgesId)),
       yinSetId_(std::move(YinSetId)),
       tol_(tol) {
-  notaKnotBoundary_.resize(undirectGraph_.edges_.size(), None);
-  for (const auto& trial : undirectGraph_.trials_) {
-    notaKnotBoundary_[trial.front()] |= notAKnotBoundaryLocation::Left;
-    notaKnotBoundary_[trial.back()] |= notAKnotBoundaryLocation::Right;
-  }
+  // notaKnotBoundary_.resize(undirectGraph_.edges_.size(), None);
+  // for (const auto& trial : undirectGraph_.trials_) {
+  //   notaKnotBoundary_[trial.front()] |= notAKnotBoundaryLocation::Left;
+  //   notaKnotBoundary_[trial.back()] |= notAKnotBoundaryLocation::Right;
+  // }
   updateCurve();
 }
 
@@ -195,18 +203,18 @@ auto approxInterfaceGraph<Order>::approxYinSet() const
 template <int Order>
 auto approxInterfaceGraph<Order>::accessEdges()
     -> vector<std::tuple<typename vector<Edge>::iterator,
-                        typename vector<EdgeMark>::iterator, int>> {
+                        typename vector<EdgeMark>::iterator>> {
   using std::vector;
   vector<std::tuple<typename vector<Edge>::iterator,
-                   typename vector<EdgeMark>::iterator, int>>
+                   typename vector<EdgeMark>::iterator>>
       ret;
 
   auto& marks = undirectGraph_.edges_;
   auto iterMarks = marks.begin();
   auto iterEdges = edges_.begin();
-  auto iterNotaKnot = notaKnotBoundary_.begin();
+  // auto iterNotaKnot = notaKnotBoundary_.begin();
   for (; iterMarks != marks.cend(); ++iterMarks, ++iterEdges) {
-    ret.emplace_back(iterEdges, iterMarks, *iterNotaKnot);
+    ret.emplace_back(iterEdges, iterMarks);
   }
 
   return ret;

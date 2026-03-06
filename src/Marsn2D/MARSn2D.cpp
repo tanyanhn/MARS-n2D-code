@@ -377,8 +377,7 @@ void MARSn2D<Order, VelocityField>::timeStep(const VelocityField<DIM> &v,
   int insertCount = 0;
   int removeCount = 0;
   auto stepCrv = [this, &v, tn, dt, &insertCount, &removeCount](
-                     Edge &preEdge, EdgeMark &marks,
-                     int notaKnotLocation) OPTNONE_FUNC {
+                     Edge &preEdge, EdgeMark &marks) OPTNONE_FUNC {
     vector<Real> curv;
     vector<Real> para = preEdge.getKnots();
     vector<Real> hL;
@@ -449,11 +448,11 @@ void MARSn2D<Order, VelocityField>::timeStep(const VelocityField<DIM> &v,
 
   auto mark_edge = ig.accessEdges();
   // #pragma omp parallel for default(shared) schedule(static)
-  for (auto [edgeIter, markIter, notaKnotLocation] : mark_edge) {
+  for (auto [edgeIter, markIter] : mark_edge) {
     insertCount = 0;
     removeCount = 0;
     // discreteFlowMap(v, *markIter, tn, dt);
-    stepCrv(*edgeIter, *markIter, notaKnotLocation);
+    stepCrv(*edgeIter, *markIter);
     if (printDetail) {
       std::cout << fmt::v11::format("Insert: {}, Remove: {}. \n", insertCount,
                                     removeCount);

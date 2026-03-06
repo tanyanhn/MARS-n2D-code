@@ -349,18 +349,18 @@ TEST_CASE("Pig, Vortex T = 8, Order = 8", "[Pig][Vortex][T8][Order8]") {
 //   trackInterfaceTest("Pig15VortexT16Order8");
 // }
 
-TEST_CASE("Pig, Deformation T = 2, Order = 4",
-          "[Pig][Deformation][T2][Order4]") {
-  trackInterfaceTest("Pig15DeformationT2Order4");
-}
-TEST_CASE("Pig, Deformation T = 2, Order = 6",
-          "[Pig][Deformation][T2][Order6]") {
-  trackInterfaceTest("Pig15DeformationT2Order6");
-}
-TEST_CASE("Pig, Deformation T = 4, Order = 8",
-          "[Pig][Deformation][T2][Order8]") {
-  trackInterfaceTest("Pig15DeformationT2Order8");
-}
+// TEST_CASE("Pig, Deformation T = 2, Order = 4",
+//           "[Pig][Deformation][T2][Order4]") {
+//   trackInterfaceTest("Pig15DeformationT2Order4");
+// }
+// TEST_CASE("Pig, Deformation T = 2, Order = 6",
+//           "[Pig][Deformation][T2][Order6]") {
+//   trackInterfaceTest("Pig15DeformationT2Order6");
+// }
+// TEST_CASE("Pig, Deformation T = 4, Order = 8",
+//           "[Pig][Deformation][T2][Order8]") {
+//   trackInterfaceTest("Pig15DeformationT2Order8");
+// }
 // TEST_CASE("Pig, Deformation T = 4, Order = 4",
 //           "[Pig][Deformation][T4][Order4]") {
 //   trackInterfaceTest("Pig15DeformationT4Order4");

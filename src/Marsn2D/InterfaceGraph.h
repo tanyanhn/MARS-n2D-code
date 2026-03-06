@@ -28,13 +28,15 @@ class InterfaceGraph {
 
  protected:
   // Generate trials_ and circuits_ with edges, smoothConditions.
-  static void decomposeEdgeSet(
+  static void partitionEdgeSet(
       const vector<SmoothnessIndicator>& smoothConditions,
-      const vector<EdgeMark>& edges, vector<vector<EdgeIndex>>& trials,
+      const vector<EdgeMark>& edges, 
+      vector<vector<EdgeIndex>>& trials,
       vector<vector<EdgeIndex>>& circuits);
 
   vector<vector<EdgeIndex>> trials_;
   vector<vector<EdgeIndex>> circuits_;
+  vector<Vertex> vertices_;
   vector<EdgeMark> edges_;
   // std::vector<SmoothnessIndicator> smoothConditions_;
 };
@@ -63,7 +65,7 @@ class approxInterfaceGraph {
 
   auto accessEdges()
       -> vector<std::tuple<typename vector<Edge>::iterator,
-                           typename vector<EdgeMark>::iterator, int>>;
+                           typename vector<EdgeMark>::iterator>>;
 
   void updateCurve();
   auto countMarks() const -> vector<int>;
@@ -78,7 +80,7 @@ class approxInterfaceGraph {
  private:
   InterfaceGraph undirectGraph_;
   vector<Edge> edges_;
-  vector<int> notaKnotBoundary_;
+  // vector<int> notaKnotBoundary_;
   // vector<Edge> reverseEdges_;
   // edges[abs(index) - 1], abs(index) starting from 1,
   // and -index imply edges[-index - 1]->reverse()
