@@ -7,25 +7,30 @@ addpath 'export_fig-3.54';
 lineColor = '';
 % dir = "results/";
 dir = "../../results/TrackInterface/";
-% Shape = "Disk";
+Shape = "Disk";
 % Shape = "Graph";
-Shape = "Raccoon";
+% Shape = "Raccoon";
 % Shape = "Pig";
-fillColor = getColor(Shape);
-part = 22;
-vel = 'Vortex';
-% vel = 'Deformation';
+% fillColor = getColor(Shape);
+fillColor = {'r', 'g'};
+part = 2;
+% vel = 'Vortex';
+vel = 'Deformation';
 dynamic = "";
 % dynamic = "Dynamic";
-T = 4;
+T = 2;
 Order = 4;
 filedir = dir + Shape + num2str(part) + vel + "T" + num2str(T) + "Order" + num2str(Order)+ dynamic + "/";
 grid = 32;
-steps = [0, 1, 2, 4];
-stepSize = 256;
+steps = [0, 2, 4];
+stepSize = 128;
 type = "_c.dat"; plotF = false;
 % type = "_f.dat"; plotF = true;
-figHandles = [];
+% figHandles = [];
+plotInaSinglegraph = false;
+if plotInaSinglegraph
+    f = figure('Position', [100, 200, 1200, 350], 'Color', 'w');
+end
 for iStep = 1:length(steps)
     plotI = steps(iStep);
 %     plotI = 1;
@@ -34,30 +39,14 @@ for iStep = 1:length(steps)
     %     step = T * 256;
     % end
     filename = "1Order4_grid" + num2str(grid) + "_Step" + num2str(step) + type;
-    f = figure;
+    if plotInaSinglegraph
+        subplot(1, 3, iStep);
+    else
+        f = figure;
+    end
     if part == 41
         part = 5;
     end
-    % filedir = "results/CutCell/";
-    % filedir = "results/InterfaceGraph/";
-    % filedir = "../../results/TrackInterface/Disk4VortexT8Order4/";
-    % filedir = "../../results/TrackInterface/Disk2DeformationT2Order4/";
-    % filedir = "../../results/TrackInterface/Graph41VortexT8Order4/";
-    % filedir = "../../test/data1/";
-    % round = "No4_";
-
-    % filename = "spadjor-13.input.dat";
-    % filename = "localVolumes.dat";
-    % filename = "localYinset.dat";
-    % filename = "4Circle_grid32_Step256_c.dat";
-    % filename = "4Circle_grid32.dat";
-    % filename = "00test.dat";
-    % filename = "test.dat";
-    % Order = 4;
-    % N = 4;
-    % Shape = "Rose";
-    % Shape = "Rectangle";
-    % filename = num2str(Order) + Shape + num2str(N) + "_" + num2str(k) + ".dat";
     hd = fopen(filedir + filename);
     tensor = true;
     volume = false;
@@ -88,9 +77,20 @@ for iStep = 1:length(steps)
             end
         end
     end
-    saveFiguresAsFrames(vel, [f], plotI);
-    close(f);
+    if plotInaSinglegraph
+        hold on;
+        box on;
+        axis([0 1 0 1]);
+        axis square; % 强制坐标轴为正方形
+        set(gca, 'XTick', 0:0.2:1, 'YTick', 0:0.2:1, 'LineWidth', 1);
+    else
+        saveFiguresAsFrames(vel, [f], plotI);
+        close(f);
+    end
     fclose(hd);
+end
+if plotInaSinglegraph
+    saveFiguresAsFrames(vel, [f], plotI, 'Tight', 0);
 end
 % saveFiguresAsFrames(vel, figHandles, 0, 'Tight', 1);
 

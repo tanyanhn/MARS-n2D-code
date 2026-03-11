@@ -64,16 +64,7 @@ function saveFiguresAsFrames(outputDir, figHandles, ks, varargin)
         % 构造文件名
         filename = fullfile(outputDir, sprintf('%s%03d', prefix, k + ks));
 
-        % 保存图像
-        % if verLessThan('matlab', '9.8') % R2020a 之前
-        %     print(fig, '-dpng', ['-r' num2str(resolution)], filename);
-        % else
-        %     exportgraphics(fig, filename, ...
-        %         'Resolution', resolution, ...
-        %         'ContentType', 'auto', ...
-        %         'BackgroundColor', bg_color);
-        % end
-        export_fig(fig, filename, '-png', '-q101', '-m7');
+        export_fig(fig, filename, '-png', '-q101', '-m3');
         % export_fig(fig, filename, '-eps', '-q101', '-m10');
 
         fprintf('Saved: %s\n', filename);
