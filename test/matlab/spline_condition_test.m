@@ -6,14 +6,15 @@ clear; clc; close all;
 %% 1. 实验配置
 % --- [关键修改] 输入 N 的列表 ---
 % 建议 N 不要太大(如 >2000)，否则 cond() 计算会非常耗时
-N_list = [50, 100, 200, 500, 1000, 2000]; 
+N_list = [200]; 
 
-r_exponents = linspace(-1, -5, 50); % 指数范围
+r_exponents = linspace(-1, -8, 100); % 指数范围
 r_tiny_vals = 10.^r_exponents;      % r_tiny 实际值
 
 % --- 形状列表 ---
-shape_list = {'circle', 'sharpBump'}; 
-type_list = {'not-a-knot', 'periodic'};
+% shape_list = {'circle', 'sharpBump'}; 
+shape_list = {'manual'}; 
+type_list = {'not-a-knot'};
 display_names = {'Unit Circle', 'Sharp Bump'};
 
 % 尖锐参数: [基础半径, 凸起高度, 尖锐度]
@@ -24,7 +25,7 @@ fprintf('开始计算... N_list = [%s]\n', num2str(N_list));
 %% 2. 循环计算
 
 % --- 第一层循环：遍历形状 (每个形状一张图) ---
-for s_idx = 2:length(type_list)
+for s_idx = 1:length(type_list)
 %     current_type = shape_list{s_idx};
     current_type = shape_list{1};
     bc_type = type_list{s_idx};
@@ -48,19 +49,24 @@ for s_idx = 2:length(type_list)
         cond_results = zeros(size(r_tiny_vals));
         
         % --- 第三层循环：计算该 N 下的条件数曲线 ---
-        for k = 1:length(r_tiny_vals)
-            r = r_tiny_vals(k);
-            
-            % [调用模块] 生成自适应分布的点
-            % 注意：r 是物理距离比例
-            [points, ~, lookup] = get_adaptive_curve_points(N, r, current_type, bump_params);
-            
-            % [调用模块] 构建矩阵
-            A = build_spline_matrix(points, bc_type);
-            fullA = full(A);
-            
-            % 计算条件数
-            cond_results(k) = cond(fullA); 
+        for count = 1:100
+            for k = 1:length(r_tiny_vals)
+                r = r_tiny_vals(k);
+                
+                % [调用模块] 生成自适应分布的点
+                % 注意：r 是物理距离比例
+                % [points, ~, lookup] = get_adaptive_curve_points(N, r, current_type, bump_params);
+                
+                % [调用模块] 构建矩阵
+                % A = build_spline_matrix(points, bc_type);
+                % fullA = full(A);
+    
+                [~, condA] = not_a_knot_interpolation(N, r);
+                
+                % 计算条件数
+                cond_results(k) = max(condA, cond_results(k)); 
+            end
+            fprintf('完成: %.4f\n', count);
         end
         
         % --- 绘图 (单条曲线) ---
@@ -76,7 +82,8 @@ for s_idx = 2:length(type_list)
     % --- 单张图的美化与保存 ---
 %     xlabel('-log_{10}(r_{tiny})', 'FontSize', 12);
 %     ylabel('Condition Number \kappa(A)', 'FontSize', 12);
-%     title(['Condition Number Growth: ' shape_name], 'FontSize', 14);
+    % title(['h(i) = h, h(i+1) = randh, h(1) = h(end) = h, h(2) = h(end-1) = rh'], 'FontSize', 14);
+    title(['h(i) = randh, value on y = max(cond(100 times rand A))'], 'FontSize', 14);
     grid on;
     legend('show', 'Location', 'east', 'FontSize', 14);
     
@@ -99,19 +106,19 @@ fprintf('所有计算完成。\n');
 
 % 子图2: 几何形状展示 (画出最后一个极近点的情况)
 % subplot(1, 2, 2);
-f= figure;
-points = [points; points(1, :)];
-plot(lookup(:,1), lookup(:,2), '-', 'LineWidth', 1); hold on;
-plot(points(:,1), points(:,2), '.', 'LineWidth', 1, 'MarkerSize', 8);
-hold on;
-% 标记那个极近的点 (通常是前两个点)
-plot(points(1:2,1), points(1:2,2), 'ro', 'MarkerSize', 6, 'LineWidth', 1.5);
-axis equal; grid on;
-title('Geometry Shape (Red: Tiny Interval)', 'FontSize', 14);
-export_fig(f, "condNumShape.png");
-
-% 简单的数值检查
-fprintf('最小 r_tiny = %.5f 时, 条件数 = %.2e\n', min(r_tiny_vals), max(cond_results));
+% f= figure;
+% points = [points; points(1, :)];
+% plot(points(:,1), points(:,2), '-', 'LineWidth', 1); hold on;
+% plot(points(:,1), points(:,2), '.', 'LineWidth', 1, 'MarkerSize', 8);
+% hold on;
+% % 标记那个极近的点 (通常是前两个点)
+% plot(points(2:3,1), points(2:3,2), 'ro', 'MarkerSize', 6, 'LineWidth', 1.5);
+% axis equal; grid on;
+% title('Geometry Shape (Red: Tiny Interval)', 'FontSize', 14);
+% export_fig(f, "condNumShape.png");
+% 
+% % 简单的数值检查
+% fprintf('最小 r_tiny = %.5f 时, 条件数 = %.2e\n', min(r_tiny_vals), max(cond_results));
 
 
 function [points, h_avg, lookup] = get_adaptive_curve_points(N, r_tiny_ratio, type, sharp_params)
@@ -131,6 +138,19 @@ function [points, h_avg, lookup] = get_adaptive_curve_points(N, r_tiny_ratio, ty
     switch type
         case 'circle'
             geom_func = @(t) ones(size(t));
+            % 生成 N 个均匀位置: 0, h, 2h, ..., (N-1)h
+            % h_avg = (2 * pi / N);
+            % s_uniform = (0:N)' * h_avg;
+            % s_tiny = r_tiny_ratio * h_avg + h_avg;
+            % s_target = [s_uniform; s_tiny];
+            % s_target = sort(s_target);
+            % 
+            % r_dense = geom_func(s_target);
+            % x_dense = r_dense .* cos(s_target);
+            % y_dense = r_dense .* sin(s_target);
+            % points = [x_dense, y_dense];
+            % lookup = [];
+            % return;
         case 'sharpBump'
             if nargin < 4, sharp_params = [1.0, 3.0, 20]; end
             R_base = sharp_params(1);
@@ -138,15 +158,17 @@ function [points, h_avg, lookup] = get_adaptive_curve_points(N, r_tiny_ratio, ty
             K_sharp = sharp_params(3);
             % Von Mises 分布形状
             geom_func = @(t) R_base + H_bump * exp(K_sharp * (cos(t) - 1));
+            % error('未知的曲线类型');
         otherwise
             error('未知的曲线类型');
     end
 
     %% 2. 高密度采样 (计算累积弧长)
     % 为了保证插值精度，采样点数应远大于 N (例如 100倍)
-    num_dense = max(10000, N * 100); 
+    num_dense = max(5e7, N * 100); 
     t_dense = linspace(0, 2*pi, num_dense + 1)'; % 闭合区间 [0, 2pi]
     t_dense(end) = []; % 去掉最后一个重复点 (0 和 2pi 重合)
+
     
     % 计算高密度点坐标
     r_dense = geom_func(t_dense);
@@ -180,22 +202,25 @@ function [points, h_avg, lookup] = get_adaptive_curve_points(N, r_tiny_ratio, ty
     h_avg = total_length / N;
     
     % 生成 N 个均匀位置: 0, h, 2h, ..., (N-1)h
-    s_uniform = (0:N)' * h_avg;
+    s_uniform = (0:N-1)' * h_avg;
     
     % 生成扰动点位置: 在第1个点 (s=0) 之后 r_tiny * h_avg 处
     % 也可以选择在峰值最尖锐的地方(通常 t=0 处即 s=0 处)加扰动
     s_tiny = r_tiny_ratio * h_avg;
     
     % 合并所有目标弧长位置
-    s_target = [s_uniform; s_tiny];
+    s_target = [s_uniform(end); s_uniform(1) - s_tiny + total_length; s_uniform(1:end)];
     
     % 排序 (为了画图好看，虽然矩阵构建不依赖顺序，但排序是个好习惯)
-    s_target = sort(s_target);
+    % s_target = sort(s_target);
     
     %% 4. 插值映射回坐标系
     % 使用 linear 插值即可，因为 dense 足够密
     x_out = interp1(s_lookup, x_lookup, s_target, 'linear');
     y_out = interp1(s_lookup, y_lookup, s_target, 'linear');
+    % r_dense = geom_func(s_target);
+    % x_out = r_dense .* cos(s_target);
+    % y_out = r_dense .* sin(s_target);
     lookup = [x_lookup, y_lookup];
     
     points = [x_out, y_out];
@@ -222,85 +247,6 @@ function A = build_spline_matrix(points, bc_type)
     diffs = diff(points);
     h_steps = sqrt(sum(diffs.^2, 2));
     
-    h = h_steps;
-    if strcmp(bc_type, 'periodic')
-        M = M - 1;
-    else
-    end
+    A = cubic_spline_matrx(h_steps, bc_type);
     
-    % --- 2. 构建稀疏矩阵 ---
-    A = sparse(M, M);
-    
-    if strcmp(bc_type, 'periodic')
-        % ==============================
-        % Mode A: Periodic (周期性闭合)
-        % ==============================
-        for i = 1:M
-            idx_prev = mod(i - 2, M) + 1; 
-            idx_curr = i;
-            idx_next = mod(i, M) + 1;     
-            
-            % 周期性下，h 数组长度为 M，索引循环使用
-            h_prev_val = h(idx_prev);
-            h_curr_val = h(idx_curr); 
-            
-            sum_h = h_prev_val + h_curr_val;
-            
-            % 三弯矩方程系数
-            mu     = h_prev_val / sum_h;
-            lambda = h_curr_val / sum_h;
-            
-            A(i, idx_prev) = mu;
-            A(i, idx_curr) = 2;
-            A(i, idx_next) = lambda;
-        end
-        
-    elseif strcmp(bc_type, 'not-a-knot')
-        % ==============================
-        % Mode B: Not-a-Knot (开放端点)
-        % ==============================
-        
-        % 1. 内部节点 (2 到 M-1)：使用标准三弯矩方程
-        for i = 2:M-1
-            % 对于开放曲线:
-            % h 索引: h(1)是P1->P2, h(i-1)是Pi-1->Pi, h(i)是Pi->Pi+1
-            h_prev_val = h(i-1);
-            h_curr_val = h(i);
-            
-            sum_h = h_prev_val + h_curr_val;
-            
-            mu     = h_prev_val / sum_h;
-            lambda = h_curr_val / sum_h;
-            
-            A(i, i-1) = mu;
-            A(i, i)   = 2;
-            A(i, i+1) = lambda;
-        end
-        
-        % 2. 边界条件处理 (基于三阶导数连续推导)
-        % 方程: h_2 * M_1 - (h_1 + h_2) * M_2 + h_1 * M_3 = 0
-        % 这保证了第一段和第二段的三次系数相同
-        
-        % --- 第一个点 (Row 1) ---
-        h1 = h(1);
-        h2 = h(2);
-        A(1, 1) = h2 / (h1 + h2);
-        A(1, 2) = -1;
-        A(1, 3) = h1/ (h1 + h2);
-%         A(1, 1) = h2;
-%         A(1, 2) = -(h1 + h2);
-%         A(1, 3) = h1;
-        
-        % --- 最后一个点 (Row M) ---
-        % 方程对称: h_{end} * M_{end-2} - (...) * M_{end-1} + h_{end-1} * M_{end} = 0
-        h_end_1 = h(end-1); % h_{M-2}
-        h_end   = h(end);   % h_{M-1}
-        
-        A(M, M-2) = h_end/ (h_end_1 + h_end);
-        A(M, M-1) = -1;
-        A(M, M)   = h_end_1 / (h_end_1 + h_end);
-        
-    else
-        error('未知的边界条件类型: %s', bc_type);
-    end
 end
